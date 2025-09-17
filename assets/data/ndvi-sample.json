@@ -1,0 +1,17 @@
+{
+	"metadata": {
+		"area": "CFR-2024-OD-101",
+		"units": "NDVI",
+		"source": "Simulated",
+		"resolution_m": 10
+	},
+	"timeseries": [
+		{ "date": "2025-01-10", "ndvi_mean": 0.74 },
+		{ "date": "2025-03-10", "ndvi_mean": 0.72 },
+		{ "date": "2025-05-10", "ndvi_mean": 0.66 },
+		{ "date": "2025-07-10", "ndvi_mean": 0.58 },
+		{ "date": "2025-09-10", "ndvi_mean": 0.21 }
+	],
+	"threshold": 0.30
+}
+

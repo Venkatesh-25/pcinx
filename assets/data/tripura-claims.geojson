@@ -1,0 +1,68 @@
+{
+  "type": "FeatureCollection",
+  "name": "FRA_Claims_Tripura",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "claim_id": "CFR-2024-TR-301",
+        "village_name": "Jampui Hills",
+        "district": "North Tripura",
+        "state": "Tripura",
+        "area_hectares": 156.8,
+        "status": "Under Review",
+        "application_date": "2024-04-10",
+        "claimant_families": 67,
+        "rights_type": "Community Forest Rights",
+        "forest_type": "Reserved Forest",
+        "survey_number": "SF-TR-601/2024",
+        "gps_surveyed": false,
+        "ndvi_baseline": 0.76,
+        "last_monitored": "2025-09-12",
+        "alert_level": "Low",
+        "deforestation_detected": false
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [92.3100, 24.0800],
+          [92.3400, 24.0800],
+          [92.3400, 24.0500],
+          [92.3100, 24.0500],
+          [92.3100, 24.0800]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "claim_id": "IFR-2024-TR-302",
+        "village_name": "Reang Para",
+        "district": "South Tripura",
+        "state": "Tripura",
+        "area_hectares": 98.5,
+        "status": "Rejected",
+        "rejection_date": "2024-08-05",
+        "claimant_families": 23,
+        "rights_type": "Individual Forest Rights",
+        "forest_type": "Protected Forest",
+        "survey_number": "SF-TR-602/2024",
+        "gps_surveyed": true,
+        "ndvi_baseline": 0.64,
+        "last_monitored": "2025-09-11",
+        "alert_level": "Low",
+        "deforestation_detected": false
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [91.4200, 23.1500],
+          [91.4500, 23.1500],
+          [91.4500, 23.1200],
+          [91.4200, 23.1200],
+          [91.4200, 23.1500]
+        ]]
+      }
+    }
+  ]
+}

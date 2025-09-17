@@ -1,0 +1,130 @@
+{
+	"type": "FeatureCollection",
+	"name": "Odisha_FRA_Claims",
+	"features": [
+		{
+			"type": "Feature",
+			"properties": {
+				"claim_id": "CFR-2024-OD-001",
+				"village_name": "Kendrapada Village",
+				"district": "Kendrapada",
+				"state": "Odisha",
+				"area_hectares": 156.7,
+				"status": "Approved",
+				"approval_date": "2024-02-20",
+				"claimant_families": 45,
+				"rights_type": "Community Forest Rights",
+				"forest_type": "Reserved Forest",
+				"survey_number": "SF-001/2024",
+				"gps_surveyed": true,
+				"ndvi_baseline": 0.72,
+				"last_monitored": "2025-09-15",
+				"alert_level": "Low",
+				"deforestation_detected": false
+			},
+			"geometry": {
+				"type": "Polygon",
+				"coordinates": [[
+					[86.4200, 20.5000],
+					[86.4500, 20.5000],
+					[86.4500, 20.4700],
+					[86.4200, 20.4700],
+					[86.4200, 20.5000]
+				]]
+			}
+		},
+		{
+			"type": "Feature",
+			"properties": {
+				"claim_id": "CFR-2024-OD-002",
+				"village_name": "Balasore Coastal",
+				"district": "Balasore",
+				"state": "Odisha",
+				"area_hectares": 234.5,
+				"status": "Approved",
+				"approval_date": "2024-04-10",
+				"claimant_families": 78,
+				"rights_type": "Individual Forest Rights",
+				"forest_type": "Mangrove Forest",
+				"survey_number": "SF-002/2024",
+				"gps_surveyed": true,
+				"ndvi_baseline": 0.68,
+				"last_monitored": "2025-09-15",
+				"alert_level": "Medium",
+				"deforestation_detected": false
+			},
+			"geometry": {
+				"type": "Polygon",
+				"coordinates": [[
+					[87.1200, 21.4500],
+					[87.1600, 21.4500],
+					[87.1600, 21.4200],
+					[87.1200, 21.4200],
+					[87.1200, 21.4500]
+				]]
+			}
+		},
+		{
+			"type": "Feature",
+			"properties": {
+				"claim_id": "CFR-2024-OD-003",
+				"village_name": "Mayurbhanj Tribal",
+				"district": "Mayurbhanj",
+				"state": "Odisha",
+				"area_hectares": 189.3,
+				"status": "Under Review",
+				"approval_date": null,
+				"claimant_families": 56,
+				"rights_type": "Community Forest Rights",
+				"forest_type": "Dense Forest",
+				"survey_number": "SF-003/2024",
+				"gps_surveyed": true,
+				"ndvi_baseline": 0.81,
+				"last_monitored": "2025-09-15",
+				"alert_level": "High",
+				"deforestation_detected": true
+			},
+			"geometry": {
+				"type": "Polygon",
+				"coordinates": [[
+					[86.7200, 22.1000],
+					[86.7600, 22.1000],
+					[86.7600, 22.0700],
+					[86.7200, 22.0700],
+					[86.7200, 22.1000]
+				]]
+			}
+		},
+		{
+			"type": "Feature",
+			"properties": {
+				"claim_id": "CFR-2024-OD-004",
+				"village_name": "Sundargarh Mining Area",
+				"district": "Sundargarh",
+				"state": "Odisha",
+				"area_hectares": 312.1,
+				"status": "Pending",
+				"approval_date": null,
+				"claimant_families": 92,
+				"rights_type": "Community Forest Rights",
+				"forest_type": "Degraded Forest",
+				"survey_number": "SF-004/2024",
+				"gps_surveyed": false,
+				"ndvi_baseline": 0.45,
+				"last_monitored": "2025-09-15",
+				"alert_level": "Critical",
+				"deforestation_detected": true
+			},
+			"geometry": {
+				"type": "Polygon",
+				"coordinates": [[
+					[84.0200, 22.2000],
+					[84.0700, 22.2000],
+					[84.0700, 22.1600],
+					[84.0200, 22.1600],
+					[84.0200, 22.2000]
+				]]
+			}
+		}
+	]
+}

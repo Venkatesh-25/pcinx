@@ -1,0 +1,100 @@
+{
+	"type": "FeatureCollection",
+	"name": "FRA_Claims_Sample",
+	"features": [
+		{
+			"type": "Feature",
+			"properties": {
+				"claim_id": "CFR-2024-OD-101",
+				"village_name": "Khandagiri",
+				"district": "Khurda",
+				"state": "Odisha",
+				"area_hectares": 245.6,
+				"status": "Approved",
+				"approval_date": "2024-03-15",
+				"claimant_families": 127,
+				"rights_type": "Community Forest Rights",
+				"forest_type": "Reserved Forest",
+				"survey_number": "SF-789/2024",
+				"gps_surveyed": true,
+				"ndvi_baseline": 0.75,
+				"last_monitored": "2025-09-15",
+				"alert_level": "High",
+				"deforestation_detected": true
+			},
+			"geometry": {
+				"type": "Polygon",
+				"coordinates": [[
+					[85.8100, 20.3100],
+					[85.8300, 20.3100],
+					[85.8300, 20.2900],
+					[85.8100, 20.2900],
+					[85.8100, 20.3100]
+				]]
+			}
+		},
+		{
+			"type": "Feature",
+			"properties": {
+				"claim_id": "IFR-2024-OD-102",
+				"village_name": "Mancheswar",
+				"district": "Khurda",
+				"state": "Odisha",
+				"area_hectares": 89.3,
+				"status": "Pending",
+				"application_date": "2024-08-20",
+				"claimant_families": 45,
+				"rights_type": "Individual Forest Rights",
+				"forest_type": "Protected Forest",
+				"survey_number": "SF-790/2024",
+				"gps_surveyed": true,
+				"ndvi_baseline": 0.68,
+				"last_monitored": "2025-09-14",
+				"alert_level": "Low",
+				"deforestation_detected": false
+			},
+			"geometry": {
+				"type": "Polygon",
+				"coordinates": [[
+					[85.8400, 20.3200],
+					[85.8550, 20.3200],
+					[85.8550, 20.3050],
+					[85.8400, 20.3050],
+					[85.8400, 20.3200]
+				]]
+			}
+		},
+		{
+			"type": "Feature",
+			"properties": {
+				"claim_id": "CFR-2024-OD-103",
+				"village_name": "Patia",
+				"district": "Bhubaneswar",
+				"state": "Odisha",
+				"area_hectares": 156.8,
+				"status": "Under Review",
+				"application_date": "2024-07-10",
+				"claimant_families": 78,
+				"rights_type": "Community Forest Rights",
+				"forest_type": "Reserved Forest",
+				"survey_number": "SF-791/2024",
+				"gps_surveyed": false,
+				"ndvi_baseline": 0.71,
+				"last_monitored": "2025-09-13",
+				"alert_level": "Medium",
+				"deforestation_detected": false
+			},
+			"geometry": {
+				"type": "Polygon",
+				"coordinates": [[
+					[85.8200, 20.2700],
+					[85.8450, 20.2700],
+					[85.8450, 20.2500],
+					[85.8200, 20.2500],
+					[85.8200, 20.2700]
+				]]
+			}
+		}
+	]
+}
+

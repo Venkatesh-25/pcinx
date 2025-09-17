@@ -1,0 +1,99 @@
+{
+  "type": "FeatureCollection",
+  "name": "FRA_Claims_Telangana",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "claim_id": "CFR-2024-TL-401",
+        "village_name": "Sammakka Saralamma",
+        "district": "Mulugu",
+        "state": "Telangana",
+        "area_hectares": 245.7,
+        "status": "Approved",
+        "approval_date": "2024-06-20",
+        "claimant_families": 112,
+        "rights_type": "Community Forest Rights",
+        "forest_type": "Reserved Forest",
+        "survey_number": "SF-TL-801/2024",
+        "gps_surveyed": true,
+        "ndvi_baseline": 0.72,
+        "last_monitored": "2025-09-14",
+        "alert_level": "Medium",
+        "deforestation_detected": true
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [79.8500, 18.0200],
+          [79.8900, 18.0200],
+          [79.8900, 17.9800],
+          [79.8500, 17.9800],
+          [79.8500, 18.0200]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "claim_id": "IFR-2024-TL-402",
+        "village_name": "Kondakal",
+        "district": "Adilabad",
+        "state": "Telangana",
+        "area_hectares": 134.2,
+        "status": "Pending",
+        "application_date": "2024-03-28",
+        "claimant_families": 45,
+        "rights_type": "Individual Forest Rights",
+        "forest_type": "Revenue Forest",
+        "survey_number": "SF-TL-802/2024",
+        "gps_surveyed": true,
+        "ndvi_baseline": 0.68,
+        "last_monitored": "2025-09-13",
+        "alert_level": "High",
+        "deforestation_detected": true
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [79.0100, 19.7200],
+          [79.0400, 19.7200],
+          [79.0400, 19.6900],
+          [79.0100, 19.6900],
+          [79.0100, 19.7200]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "claim_id": "CFR-2024-TL-403",
+        "village_name": "Eturnagaram",
+        "district": "Bhadradri Kothagudem",
+        "state": "Telangana",
+        "area_hectares": 189.3,
+        "status": "Under Review",
+        "application_date": "2024-05-15",
+        "claimant_families": 78,
+        "rights_type": "Community Forest Rights",
+        "forest_type": "Protected Forest",
+        "survey_number": "SF-TL-803/2024",
+        "gps_surveyed": false,
+        "ndvi_baseline": 0.74,
+        "last_monitored": "2025-09-15",
+        "alert_level": "Medium",
+        "deforestation_detected": false
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [80.4200, 17.9500],
+          [80.4600, 17.9500],
+          [80.4600, 17.9100],
+          [80.4200, 17.9100],
+          [80.4200, 17.9500]
+        ]]
+      }
+    }
+  ]
+}

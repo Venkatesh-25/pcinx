@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Test - FRA Atlas Basic</title>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+	<style>
+		#map { height: 60vh; }
+		body { font-family: Segoe UI, Arial; margin: 20px; }
+		.pass { color: #2e7d32; }
+		.fail { color: #c62828; }
+	</style>
+	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+	<script>
+		function runTests() {
+			const results = [];
+			results.push({ name: 'Leaflet defined', ok: !!window.L });
+			const map = L.map('map').setView([20.2961,85.8245], 11);
+			L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+			results.push({ name: 'Map created', ok: !!map });
+			const out = document.getElementById('results');
+			out.innerHTML = results.map(r => `<div class="${r.ok?'pass':'fail'}">${r.ok?'✔':'✘'} ${r.name}</div>`).join('');
+		}
+		window.onload = runTests;
+	</script>
+	</head>
+<body>
+	<h2>FRA Atlas DSS - Basic Test</h2>
+	<div id="map"></div>
+	<h3>Results</h3>
+	<div id="results"></div>
+</body>
+</html>

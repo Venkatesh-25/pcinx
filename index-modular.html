@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>FRA Atlas DSS - Decision Support System</title>
+	
+	<!-- External Dependencies -->
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+	
+	<!-- Modular CSS Files -->
+	<link rel="stylesheet" href="css/main.css">
+	<link rel="stylesheet" href="css/dashboard.css">
+	<link rel="stylesheet" href="css/modal.css">
+	<link rel="stylesheet" href="css/map.css">
+	
+	<link rel="preconnect" href="https://unpkg.com" />
+	<link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+</head>
+<body>
+	<!-- Loading Indicator -->
+	<div class="loading" id="loading">
+		<div class="spinner"></div>
+		<div style="margin-top: 15px; color: #2d5016; font-weight: 600;">Loading FRA Atlas...</div>
+	</div>
+
+	<!-- Header -->
+	<div class="header">
+		<div class="logo">
+			<i class="fas fa-leaf"></i>
+			<h1>FRA Atlas DSS</h1>
+		</div>
+		<div class="status-bar">
+			<button class="status-item status-btn" id="satelliteBtn" title="View Sentinel-2 satellite data sources">
+				<i class="fas fa-satellite-dish"></i>
+				<span>Sentinel-2 Connected</span>
+			</button>
+			<button class="status-item status-btn" id="statesBtn" title="View 4-state coverage details">
+				<i class="fas fa-database"></i>
+				<span>4 States Loaded</span>
+			</button>
+			<button class="status-item status-btn" id="monitoringBtn" title="Real-time monitoring status">
+				<i class="fas fa-circle" style="color: #4CAF50;"></i>
+				<span>Real-time Monitoring</span>
+			</button>
+			<a href="analytics.html" class="status-item" style="color: #2196F3; text-decoration: none; border: 1px solid #2196F3; border-radius: 4px; padding: 4px 8px;">
+				<i class="fas fa-chart-bar"></i>
+				<span>View Analytics</span>
+			</a>
+		</div>
+	</div>
+
+	<!-- Main Container -->
+	<div class="main-container">
+		<!-- Map Container -->
+		<div id="map"></div>
+
+		<!-- Dashboard Sidebar -->
+		<div class="dashboard">
+			<!-- Deforestation Alert -->
+			<div class="alert">
+				<i class="fas fa-exclamation-triangle"></i>
+				<div>
+					<strong>Deforestation Alert!</strong><br>
+					<small>3 new alerts in Telangana region</small>
+				</div>
+			</div>
+
+			<!-- Claim Statistics -->
+			<div class="dashboard-section">
+				<h3><i class="fas fa-chart-pie"></i>Claim Statistics</h3>
+				<div class="stat-grid">
+					<div class="stat-card">
+						<div class="stat-number" id="approved-count">234</div>
+						<div class="stat-label">Approved</div>
+					</div>
+					<div class="stat-card">
+						<div class="stat-number" id="pending-count">156</div>
+						<div class="stat-label">Pending</div>
+					</div>
+					<div class="stat-card">
+						<div class="stat-number" id="review-count">43</div>
+						<div class="stat-label">Under Review</div>
+					</div>
+					<div class="stat-card">
+						<div class="stat-number" id="rejected-count">12</div>
+						<div class="stat-label">Rejected</div>
+					</div>
+				</div>
+				<div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px; font-size: 0.9em;">
+					<strong>Live Updates:</strong> <span id="last-update">Real-time monitoring active</span>
+				</div>
+			</div>
+
+			<!-- Satellite Monitoring Controls -->
+			<div class="dashboard-section">
+				<h3><i class="fas fa-satellite-dish"></i>Satellite Monitoring</h3>
+				<p style="color: #666; margin-bottom: 15px; font-size: 0.9em;">
+					Compare vegetation health using NDVI analysis from Sentinel-2 imagery
+				</p>
+				<button class="control-btn btn-before" id="beforeBtn">
+					<i class="fas fa-leaf"></i>
+					January 2025 (Baseline)
+				</button>
+				<button class="control-btn btn-after" id="afterBtn">
+					<i class="fas fa-exclamation-triangle"></i>
+					September 2025 (Current)
+				</button>
+				<button class="control-btn btn-reset" id="resetBtn">
+					<i class="fas fa-undo"></i>
+					Reset View
+				</button>
+				<button class="control-btn" id="exportBtn" style="background: linear-gradient(135deg, #28a745, #20c997); color: white;">
+					<i class="fas fa-download"></i>
+					Generate Report
+				</button>
+				<button class="control-btn" id="reportBtn" style="background: linear-gradient(135deg, #dc3545, #c82333); color: white;">
+					<i class="fas fa-exclamation-circle"></i>
+					Report Issue
+				</button>
+			</div>
+
+			<!-- System Analytics -->
+			<div class="dashboard-section">
+				<h3><i class="fas fa-chart-line"></i>System Analytics</h3>
+				<div style="color: #666; font-size: 0.9em; line-height: 1.6;">
+					<p><strong>Coverage:</strong> 4 States (Odisha, MP, Tripura, Telangana)</p>
+					<p><strong>Last Update:</strong> 2 hours ago</p>
+					<p><strong>NDVI Threshold:</strong> 0.3 (Deforestation Alert)</p>
+					<p><strong>Spatial Resolution:</strong> 10m (Sentinel-2)</p>
+				</div>
+			</div>
+
+			<!-- Community Impact -->
+			<div class="dashboard-section">
+				<h3><i class="fas fa-users"></i>Community Impact</h3>
+				<div class="stat-grid">
+					<div class="stat-card">
+						<div class="stat-number">8,542</div>
+						<div class="stat-label">Families Protected</div>
+					</div>
+					<div class="stat-card">
+						<div class="stat-number">24,156</div>
+						<div class="stat-label">Hectares Secured</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Report Issue Modal -->
+	<div id="reportModal" class="modal">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h2><i class="fas fa-exclamation-triangle"></i> Report Environmental Issue</h2>
+				<span class="close" id="closeModal">&times;</span>
+			</div>
+			<div class="modal-body">
+				<form id="reportForm">
+					<div class="form-group">
+						<label for="issueType">Issue Type *</label>
+						<select id="issueType" name="issueType" required>
+							<option value="">Select issue type</option>
+							<option value="deforestation">Illegal Deforestation</option>
+							<option value="encroachment">Forest Encroachment</option>
+							<option value="mining">Unauthorized Mining</option>
+							<option value="dumping">Waste Dumping</option>
+							<option value="other">Other Environmental Violation</option>
+						</select>
+					</div>
+					
+					<div class="form-row">
+						<div class="form-group">
+							<label for="reporterName">Your Name *</label>
+							<input type="text" id="reporterName" name="reporterName" required>
+						</div>
+						<div class="form-group">
+							<label for="reporterPhone">Phone Number</label>
+							<input type="tel" id="reporterPhone" name="reporterPhone">
+						</div>
+					</div>
+					
+					<div class="form-row">
+						<div class="form-group">
+							<label for="location">Location/Village *</label>
+							<input type="text" id="location" name="location" required>
+						</div>
+						<div class="form-group">
+							<label for="district">District *</label>
+							<input type="text" id="district" name="district" required>
+						</div>
+					</div>
+					
+					<div class="form-group">
+						<label for="description">Detailed Description *</label>
+						<textarea id="description" name="description" placeholder="Please describe the environmental issue in detail, including when you noticed it, estimated area affected, and any other relevant information..." required></textarea>
+					</div>
+					
+					<div class="form-group">
+						<label for="coordinates">GPS Coordinates (if available)</label>
+						<input type="text" id="coordinates" name="coordinates" placeholder="Latitude, Longitude (e.g., 20.2961, 85.8245)">
+					</div>
+					
+					<button type="submit" class="submit-btn">
+						<i class="fas fa-paper-plane"></i> Submit Report
+					</button>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<!-- Loading Spinner -->
+	<div id="loadingSpinner" class="loading-spinner">
+		<div class="spinner"></div>
+		<div style="text-align: center; color: #2d5016; font-weight: 600;">Processing...</div>
+	</div>
+
+	<!-- Map Legend -->
+	<div class="legend">
+		<h4 style="margin-bottom: 10px; color: #2d5016;">Map Legend</h4>
+		<div class="legend-item">
+			<div class="legend-color" style="background-color: #ff7800;"></div>
+			<span>FRA Claim Boundary</span>
+		</div>
+		<div class="legend-item">
+			<div class="legend-color" style="background-color: #4CAF50; opacity: 0.7;"></div>
+			<span>Healthy Vegetation (High NDVI)</span>
+		</div>
+		<div class="legend-item">
+			<div class="legend-color" style="background-color: #ff6b6b; opacity: 0.7;"></div>
+			<span>Forest Loss (Low NDVI)</span>
+		</div>
+	</div>
+
+	<!-- JavaScript Dependencies and Components -->
+	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+	
+	<!-- Component Scripts -->
+	<script src="js/components/map-manager.js"></script>
+	<script src="js/components/dashboard.js"></script>
+	<script src="js/components/data-stats.js"></script>
+	<script src="js/components/report-modal.js"></script>
+	
+	<!-- Main Application -->
+	<script src="js/app.js"></script>
+</body>
+</html>

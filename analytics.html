@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>FRA Atlas - 4-State Analytics Dashboard</title>
+	
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="css/styles.css">
+	
+	<style>
+		.analytics-container {
+			padding: 2rem;
+			max-width: 1200px;
+			margin: 0 auto;
+		}
+		
+		.state-overview {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+			gap: 1.5rem;
+			margin-bottom: 3rem;
+		}
+		
+		.state-card {
+			background: white;
+			border-radius: 10px;
+			padding: 1.5rem;
+			box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+			border-left: 4px solid #2196F3;
+		}
+		
+		.state-card h3 {
+			color: #2196F3;
+			margin: 0 0 1rem 0;
+			font-size: 1.3rem;
+		}
+		
+		.stat-grid {
+			display: grid;
+			grid-template-columns: repeat(2, 1fr);
+			gap: 0.8rem;
+		}
+		
+		.stat-item {
+			text-align: center;
+			padding: 0.8rem;
+			background: #f8f9fa;
+			border-radius: 6px;
+		}
+		
+		.stat-number {
+			font-size: 1.4rem;
+			font-weight: bold;
+			color: #333;
+			display: block;
+		}
+		
+		.stat-label {
+			font-size: 0.85rem;
+			color: #666;
+		}
+		
+		.summary-stats {
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			color: white;
+			padding: 2rem;
+			border-radius: 15px;
+			margin-bottom: 2rem;
+		}
+		
+		.summary-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+			gap: 1.5rem;
+		}
+		
+		.summary-item {
+			text-align: center;
+		}
+		
+		.summary-number {
+			font-size: 2.2rem;
+			font-weight: bold;
+			display: block;
+			margin-bottom: 0.3rem;
+		}
+		
+		.summary-label {
+			font-size: 0.9rem;
+			opacity: 0.9;
+		}
+		
+		.coverage-map {
+			background: white;
+			border-radius: 10px;
+			padding: 1.5rem;
+			box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+			margin-bottom: 2rem;
+		}
+		
+		.state-list {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+			gap: 1rem;
+			margin-top: 1rem;
+		}
+		
+		.state-item {
+			display: flex;
+			align-items: center;
+			padding: 0.8rem;
+			background: #f8f9fa;
+			border-radius: 6px;
+		}
+		
+		.state-icon {
+			width: 40px;
+			height: 40px;
+			background: #2196F3;
+			border-radius: 50%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			color: white;
+			margin-right: 1rem;
+		}
+		
+		.back-link {
+			display: inline-flex;
+			align-items: center;
+			color: #2196F3;
+			text-decoration: none;
+			margin-bottom: 2rem;
+			font-weight: 500;
+		}
+		
+		.back-link:hover {
+			color: #1976D2;
+		}
+		
+		.back-link i {
+			margin-right: 0.5rem;
+		}
+	</style>
+</head>
+<body>
+	<div class="analytics-container">
+		<a href="index-modular.html" class="back-link">
+			<i class="fas fa-arrow-left"></i>
+			Back to FRA Atlas
+		</a>
+		
+		<h1><i class="fas fa-chart-bar"></i> 4-State Forest Rights Analytics</h1>
+		
+		<!-- Summary Statistics -->
+		<div class="summary-stats">
+			<h2>National Overview - Forest Rights Act Implementation</h2>
+			<div class="summary-grid" id="summaryGrid">
+				<div class="summary-item">
+					<span class="summary-number" id="totalClaims">...</span>
+					<span class="summary-label">Total Claims</span>
+				</div>
+				<div class="summary-item">
+					<span class="summary-number" id="totalFamilies">...</span>
+					<span class="summary-label">Families Protected</span>
+				</div>
+				<div class="summary-item">
+					<span class="summary-number" id="totalHectares">...</span>
+					<span class="summary-label">Hectares Secured</span>
+				</div>
+				<div class="summary-item">
+					<span class="summary-number" id="approvalRate">...</span>
+					<span class="summary-label">Approval Rate</span>
+				</div>
+			</div>
+		</div>
+		
+		<!-- Coverage Map Info -->
+		<div class="coverage-map">
+			<h3><i class="fas fa-map"></i> Geographic Coverage</h3>
+			<p>Our FRA Atlas currently monitors forest rights implementation across 4 key states, representing diverse tribal populations and forest ecosystems.</p>
+			
+			<div class="state-list">
+				<div class="state-item">
+					<div class="state-icon">
+						<i class="fas fa-tree"></i>
+					</div>
+					<div>
+						<strong>Odisha</strong><br>
+						<small>Eastern tribal region</small>
+					</div>
+				</div>
+				<div class="state-item">
+					<div class="state-icon">
+						<i class="fas fa-mountain"></i>
+					</div>
+					<div>
+						<strong>Madhya Pradesh</strong><br>
+						<small>Central India forests</small>
+					</div>
+				</div>
+				<div class="state-item">
+					<div class="state-icon">
+						<i class="fas fa-leaf"></i>
+					</div>
+					<div>
+						<strong>Tripura</strong><br>
+						<small>Northeast corridor</small>
+					</div>
+				</div>
+				<div class="state-item">
+					<div class="state-icon">
+						<i class="fas fa-seedling"></i>
+					</div>
+					<div>
+						<strong>Telangana</strong><br>
+						<small>Deccan plateau</small>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<!-- State-wise Breakdown -->
+		<h2><i class="fas fa-chart-pie"></i> State-wise Breakdown</h2>
+		<div class="state-overview" id="stateOverview">
+			<!-- States will be populated dynamically -->
+		</div>
+	</div>
+
+	<!-- Include our data stats calculator -->
+	<script src="js/components/data-stats.js"></script>
+	<script>
+		// Initialize analytics dashboard
+		document.addEventListener('DOMContentLoaded', async function() {
+			try {
+				const statsCalculator = new DataStatsCalculator();
+				const stats = await statsCalculator.calculateAllStats();
+				
+				// Update summary statistics
+				document.getElementById('totalClaims').textContent = stats.totalClaims.toLocaleString();
+				document.getElementById('totalFamilies').textContent = stats.totalFamilies.toLocaleString();
+				document.getElementById('totalHectares').textContent = `${stats.totalHectares.toLocaleString()} ha`;
+				
+				const approvalRate = ((stats.statusCounts.approved / stats.totalClaims) * 100).toFixed(1);
+				document.getElementById('approvalRate').textContent = `${approvalRate}%`;
+				
+				// Create state cards
+				const stateOverview = document.getElementById('stateOverview');
+				
+				stats.stateStats.forEach(state => {
+					const card = document.createElement('div');
+					card.className = 'state-card';
+					
+					const approvalRate = state.totalClaims > 0 ? 
+						((state.statusCounts.approved / state.totalClaims) * 100).toFixed(1) : 0;
+					
+					card.innerHTML = `
+						<h3><i class="fas fa-map-marker-alt"></i> ${state.state}</h3>
+						<div class="stat-grid">
+							<div class="stat-item">
+								<span class="stat-number">${state.totalClaims}</span>
+								<span class="stat-label">Total Claims</span>
+							</div>
+							<div class="stat-item">
+								<span class="stat-number">${state.statusCounts.approved}</span>
+								<span class="stat-label">Approved</span>
+							</div>
+							<div class="stat-item">
+								<span class="stat-number">${state.totalFamilies.toLocaleString()}</span>
+								<span class="stat-label">Families</span>
+							</div>
+							<div class="stat-item">
+								<span class="stat-number">${approvalRate}%</span>
+								<span class="stat-label">Success Rate</span>
+							</div>
+						</div>
+					`;
+					
+					stateOverview.appendChild(card);
+				});
+				
+			} catch (error) {
+				console.error('Error loading analytics:', error);
+				document.getElementById('totalClaims').textContent = 'Error loading data';
+			}
+		});
+	</script>
+</body>
+</html>

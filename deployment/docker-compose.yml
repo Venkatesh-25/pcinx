@@ -1,0 +1,162 @@
+# FRA Atlas DSS - Docker Compose Configuration
+# Production deployment for Smart India Hackathon 2025
+
+version: '3.8'
+
+services:
+  # PostgreSQL Database with PostGIS
+  postgres:
+    image: postgis/postgis:15-3.3
+    container_name: fra_atlas_db
+    environment:
+      POSTGRES_DB: fra_atlas_db
+      POSTGRES_USER: fra_user
+      POSTGRES_PASSWORD: fra_password
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fra_user -d fra_atlas_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fra_atlas_network
+
+  # Redis for caching and task queue
+  redis:
+    image: redis:7-alpine
+    container_name: fra_atlas_redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fra_atlas_network
+
+  # Flask Backend API
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: fra_atlas_backend
+    environment:
+      FLASK_ENV: production
+      DATABASE_URL: postgresql://fra_user:fra_password@postgres:5432/fra_atlas_db
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: ${SECRET_KEY:-fra-atlas-production-secret-2025}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-jwt-production-secret-2025}
+    volumes:
+      - ../backend:/app
+      - uploads_data:/app/uploads
+      - logs_data:/app/logs
+    ports:
+      - "5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - fra_atlas_network
+    restart: unless-stopped
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: fra_atlas_nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ../:/var/www/html:ro
+      - nginx_logs:/var/log/nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - fra_atlas_network
+    restart: unless-stopped
+
+  # Celery Worker for background tasks
+  celery_worker:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: fra_atlas_celery
+    command: celery -A app.celery worker --loglevel=info
+    environment:
+      FLASK_ENV: production
+      DATABASE_URL: postgresql://fra_user:fra_password@postgres:5432/fra_atlas_db
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - ../backend:/app
+      - uploads_data:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - fra_atlas_network
+    restart: unless-stopped
+
+  # Celery Beat for scheduled tasks
+  celery_beat:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: fra_atlas_beat
+    command: celery -A app.celery beat --loglevel=info
+    environment:
+      FLASK_ENV: production
+      DATABASE_URL: postgresql://fra_user:fra_password@postgres:5432/fra_atlas_db
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - ../backend:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - fra_atlas_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  uploads_data:
+    driver: local
+  logs_data:
+    driver: local
+  nginx_logs:
+    driver: local
+
+networks:
+  fra_atlas_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
