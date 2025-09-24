@@ -1,7 +1,4 @@
-"""
-Alerts API Routes
-Alert management and notification endpoints
-"""
+
 
 from flask import Blueprint, request, jsonify
 from flask_restful import Api, Resource
@@ -15,11 +12,9 @@ alerts_bp = Blueprint('alerts', __name__)
 api = Api(alerts_bp)
 
 class AlertsListAPI(Resource):
-    """GET /api/alerts - List all alerts with filtering"""
     
     def get(self):
         try:
-            # Parse query parameters
             severity = request.args.get('severity')
             status = request.args.get('status', 'active')
             alert_type = request.args.get('type')
@@ -28,10 +23,8 @@ class AlertsListAPI(Resource):
             page = request.args.get('page', 1, type=int)
             per_page = min(request.args.get('per_page', 50, type=int), 100)
             
-            # Build query
             query = Alert.query.join(FRAClaim)
             
-            # Apply filters
             if severity:
                 query = query.filter(Alert.severity == severity)
             if status:
@@ -46,7 +39,6 @@ class AlertsListAPI(Resource):
                 cutoff_date = datetime.utcnow() - timedelta(days=days)
                 query = query.filter(Alert.detected_at >= cutoff_date)
             
-            # Order by severity and detection time
             severity_order = func.case(
                 (Alert.severity == 'critical', 4),
                 (Alert.severity == 'high', 3),
@@ -57,14 +49,12 @@ class AlertsListAPI(Resource):
             
             query = query.order_by(desc(severity_order), desc(Alert.detected_at))
             
-            # Paginate
             alerts = query.paginate(
                 page=page,
                 per_page=per_page,
                 error_out=False
             )
             
-            # Prepare response
             result = {
                 'alerts': [
                     {
@@ -120,17 +110,14 @@ class AlertCreateAPI(Resource):
             if missing_fields:
                 return {'error': f'Missing required fields: {missing_fields}'}, 400
             
-            # Validate claim exists
             claim = FRAClaim.query.filter_by(claim_id=data['claim_id']).first()
             if not claim:
                 return {'error': 'Claim not found'}, 404
             
-            # Validate severity
             valid_severities = ['low', 'medium', 'high', 'critical']
             if data['severity'] not in valid_severities:
                 return {'error': f'Invalid severity. Must be one of: {valid_severities}'}, 400
             
-            # Create alert
             alert = Alert(
                 claim_id=claim.id,
                 alert_type=data['alert_type'],
@@ -166,7 +153,6 @@ class AlertUpdateAPI(Resource):
             if not data:
                 return {'error': 'No data provided'}, 400
             
-            # Update allowed fields
             if 'status' in data:
                 valid_statuses = ['active', 'resolved', 'false_positive']
                 if data['status'] not in valid_statuses:
@@ -204,29 +190,24 @@ class AlertStatsAPI(Resource):
             days = request.args.get('days', 30, type=int)
             cutoff_date = datetime.utcnow() - timedelta(days=days)
             
-            # Overall alert statistics
             total_alerts = Alert.query.count()
             active_alerts = Alert.query.filter_by(status='active').count()
             resolved_alerts = Alert.query.filter_by(status='resolved').count()
             
-            # Recent alerts
             recent_alerts = Alert.query.filter(
                 Alert.detected_at >= cutoff_date
             ).count()
             
-            # Severity breakdown
             severity_stats = db.session.query(
                 Alert.severity,
                 func.count(Alert.id).label('count')
             ).filter(Alert.status == 'active').group_by(Alert.severity).all()
             
-            # Type breakdown
             type_stats = db.session.query(
                 Alert.alert_type,
                 func.count(Alert.id).label('count')
             ).filter(Alert.status == 'active').group_by(Alert.alert_type).all()
             
-            # State-wise alerts
             state_stats = db.session.query(
                 FRAClaim.state,
                 func.count(Alert.id).label('alert_count')
@@ -234,7 +215,6 @@ class AlertStatsAPI(Resource):
                 Alert.status == 'active'
             ).group_by(FRAClaim.state).all()
             
-            # Response time analysis
             resolved_with_response = Alert.query.filter(
                 Alert.status == 'resolved',
                 Alert.authority_response_date.isnot(None),
@@ -248,7 +228,6 @@ class AlertStatsAPI(Resource):
             
             avg_response_time = sum(response_times) / len(response_times) if response_times else 0
             
-            # Critical alerts requiring immediate attention
             critical_alerts = Alert.query.filter(
                 Alert.status == 'active',
                 Alert.severity == 'critical',
@@ -297,7 +276,6 @@ class AlertStatsAPI(Resource):
         except Exception as e:
             return {'error': str(e)}, 500
 
-# Register API resources
 api.add_resource(AlertsListAPI, '/')
 api.add_resource(AlertCreateAPI, '/create')
 api.add_resource(AlertUpdateAPI, '/<string:alert_id>')
