@@ -5,121 +5,124 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>VisionForge — FRA Atlas DSS</title>
 
-<!-- Required unchanged Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 
-<!-- MarkerCluster & heat plugins (client-side visualization only) -->
+<!-- marker cluster & heat -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
 
 <style>
-:root{
-  --bg-r: 20; --bg-g: 22; --bg-b: 28;
-  --glass-a: 0.06;
-  --accent: #2d5016;
-  --muted: #9aa3ab;
-  --card-radius: 14px;
-  --btn-text-dark: #0b1220;
-  --btn-text-light: #fff;
-}
+  :root{
+    --bg-r: 20; --bg-g: 22; --bg-b: 28;
+    --glass-a: 0.06;
+    --primary-1: #0f766e; /* teal-ish primary */
+    --primary-2: #10b981; /* green accent */
+    --muted: #9aa3ab;
+    --card-radius: 14px;
+    --btn-text-light: #ffffff;
+    --btn-text-dark: #0b1220;
+  }
 
-/* Light theme overrides */
-body[data-theme="light"]{
-  --bg-r: 245; --bg-g: 247; --bg-b: 250;
-  --glass-a: 0.9;
-  --muted: #556270;
-  --btn-text-dark: #0b1220;
-  --btn-text-light: #0b1220;
-  --accent: #25603f;
-}
+  body[data-theme="light"]{
+    --bg-r: 245; --bg-g: 247; --bg-b: 250;
+    --glass-a: 0.92;
+    --muted: #4b5563;
+    --primary-1: #0f766e;
+    --btn-text-light: #0b1220;
+    --btn-text-dark: #0b1220;
+  }
 
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
-body{
-  font-family:'Inter',system-ui,-apple-system,"Segoe UI",Roboto,Arial;
-  background: radial-gradient(900px 400px at 10% 10%, rgba(45,80,22,0.03), transparent), rgba(var(--bg-r),var(--bg-g),var(--bg-b),1);
-  color: #e6eef8;
-  -webkit-font-smoothing:antialiased;
-  height:100vh;
-  overflow:hidden;
-}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:'Inter',system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+    background: radial-gradient(900px 400px at 10% 10%, rgba(15,118,110,0.03), transparent), rgba(var(--bg-r),var(--bg-g),var(--bg-b),1);
+    color: #e6eef8;
+    -webkit-font-smoothing:antialiased;
+    height:100vh;
+    overflow:hidden;
+  }
 
-/* Header */
-.header{
-  display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px;margin:14px;border-radius:12px;
-  background: linear-gradient(180deg, rgba(255,255,255,var(--glass-a)), rgba(255,255,255,calc(var(--glass-a) - 0.02)));
-  backdrop-filter: blur(10px) saturate(120%);
-  box-shadow: 0 8px 36px rgba(0,0,0,0.28);
-  border:1px solid rgba(255,255,255,0.03);
-}
-.brand{display:flex;align-items:center;gap:12px}
-.logo-mark{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, rgba(45,80,22,0.12), rgba(255,255,255,0.02));border:1px solid rgba(0,0,0,0.06)}
-.logo-mark i{color:var(--accent);font-size:20px}
-.title h1{font-size:18px;color:var(--accent);margin-bottom:2px}
-.title p{font-size:12px;color:var(--muted)}
+  /* header */
+  .header{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px;margin:14px;border-radius:12px;
+    background: linear-gradient(180deg, rgba(255,255,255,var(--glass-a)), rgba(255,255,255,calc(var(--glass-a)-0.02)));
+    backdrop-filter: blur(10px) saturate(120%);
+    box-shadow: 0 8px 36px rgba(0,0,0,0.28);
+    border:1px solid rgba(255,255,255,0.03);
+  }
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo-mark{width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, rgba(15,118,110,0.12), rgba(255,255,255,0.02));border:1px solid rgba(0,0,0,0.06)}
+  .logo-mark i{color:var(--primary-1);font-size:22px}
+  .title h1{
+    font-size:18px;
+    margin-bottom:2px;
+    background: linear-gradient(90deg, var(--primary-1), var(--primary-2));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    font-weight:800;
+  }
+  .title p{font-size:12px;color:var(--muted);margin:0}
 
-/* Header controls */
-.header-controls{display:flex;align-items:center;gap:10px}
-.btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.02);color:var(--btn-text-light);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.03);}
-.btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--btn-text-light)}
-.btn.ghost{background:transparent;border:1px dashed rgba(255,255,255,0.03);color:var(--btn-text-light)}
-.btn:focus{outline:2px solid rgba(0,0,0,0.06)}
+  .header-controls{display:flex;align-items:center;gap:10px}
+  .btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.02);color:var(--btn-text-light);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.03)}
+  .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06)}
+  .btn.ghost{background:transparent;border:1px dashed rgba(255,255,255,0.03)}
+  .btn:focus{outline:2px solid rgba(0,0,0,0.06)}
+  .auth-controls{display:flex;gap:8px;align-items:center}
 
-/* Layout */
-.main-container{display:flex;height:calc(100vh - 120px);margin:14px;gap:18px}
-#map{flex:1;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.02);position:relative}
-.dashboard{width:400px;padding:18px;border-radius:var(--card-radius);backdrop-filter:blur(10px);background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);box-shadow:0 20px 60px rgba(0,0,0,0.45);overflow:auto}
+  /* layout */
+  .main-container{display:flex;height:calc(100vh - 120px);margin:14px;gap:18px}
+  #map{flex:1;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.02);position:relative}
+  .dashboard{width:400px;padding:18px;border-radius:var(--card-radius);backdrop-filter:blur(10px);background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);box-shadow:0 20px 60px rgba(0,0,0,0.45);overflow:auto}
 
-/* Dashboard sections */
-.dashboard-section{margin-bottom:16px;padding:14px;border-radius:10px;background:linear-gradient(180deg, rgba(0,0,0,0.14), rgba(0,0,0,0.08));border:1px solid rgba(255,255,255,0.02)}
-.section-title{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-.section-title h3{font-size:14px;color:var(--accent)}
-.section-title p{font-size:12px;color:var(--muted);margin-left:auto}
+  .dashboard-section{margin-bottom:16px;padding:14px;border-radius:10px;background:linear-gradient(180deg, rgba(0,0,0,0.14), rgba(0,0,0,0.08));border:1px solid rgba(255,255,255,0.02)}
+  .section-title{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  .section-title h3{font-size:14px;color:var(--primary-1)}
+  .section-title p{font-size:12px;color:var(--muted);margin-left:auto}
 
-/* Stats */
-.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.stat-card{padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(0,0,0,0.16), rgba(0,0,0,0.12));border:1px solid rgba(255,255,255,0.02);text-align:center}
-.stat-number{font-size:20px;font-weight:800;color:#fff}
-.stat-label{font-size:12px;color:var(--muted);margin-top:6px;text-transform:uppercase;letter-spacing:0.6px}
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .stat-card{padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(0,0,0,0.16), rgba(0,0,0,0.12));border:1px solid rgba(255,255,255,0.02);text-align:center}
+  .stat-number{font-size:20px;font-weight:800;color:#fff}
+  .stat-label{font-size:12px;color:var(--muted);margin-top:6px;text-transform:uppercase;letter-spacing:0.6px}
 
-/* controls & inputs */
-.search-row{display:flex;gap:8px;margin-bottom:10px}
-.search-row input{flex:1;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.05);background:transparent;color:#fff}
-.search-row select{padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.05);background:transparent;color:#fff}
+  .search-row{display:flex;gap:8px;margin-bottom:10px}
+  .search-row input{flex:1;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.05);background:transparent;color:#fff}
+  .search-row select{padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.05);background:transparent;color:#fff}
 
-/* small */
-.small{font-size:12px;color:var(--muted)}
+  .small{font-size:12px;color:var(--muted)}
 
-/* Legend */
-.legend{position:absolute;bottom:22px;left:22px;padding:12px;border-radius:10px;z-index:1100;background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.28));border:1px solid rgba(255,255,255,0.04)}
-.legend h4{margin:0 0 10px 0;color:var(--accent)}
-.legend-item{display:flex;gap:10px;align-items:center;color:#e6eef8;margin-bottom:8px}
+  .legend{position:absolute;bottom:22px;left:22px;padding:12px;border-radius:10px;z-index:1100;background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.28));border:1px solid rgba(255,255,255,0.04)}
+  .legend h4{margin:0 0 10px 0;color:var(--primary-1)}
+  .legend-item{display:flex;gap:10px;align-items:center;color:#e6eef8;margin-bottom:8px}
 
-/* popup style */
-.leaflet-popup-content-wrapper{border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.3)}
+  .leaflet-popup-content-wrapper{border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.3)}
 
-/* modals */
-.modal{display:none;position:fixed;z-index:1400;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.45);align-items:center;justify-content:center}
-.modal.open{display:flex}
-.modal-card{width:94%;max-width:720px;border-radius:14px;overflow:hidden;background:linear-gradient(180deg,#fff,#fafafa);color:#111;box-shadow:0 30px 70px rgba(0,0,0,0.5)}
-.modal-header{padding:16px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(0,0,0,0.06)}
-.modal-body{padding:16px 18px;max-height:65vh;overflow:auto}
+  /* compare */
+  .compare-container{position:absolute;top:80px;right:40px;width:560px;height:360px;z-index:1400;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.06);background:rgba(0,0,0,0.5);backdrop-filter:blur(6px)}
+  .compare-bottom, .compare-top{position:absolute;left:0;top:0;height:100%;width:100%;overflow:hidden}
+  .compare-top{width:50%}
+  .compare-bottom img, .compare-top img{width:100%;height:100%;object-fit:cover;display:block}
+  .compare-divider{position:absolute;left:50%;top:0;height:100%;width:4px;margin-left:-2px;background:linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.6));cursor:ew-resize;box-shadow:0 4px 12px rgba(0,0,0,0.4)}
 
-/* compare slider container */
-.compare-container{position:absolute;top:80px;right:40px;width:520px;height:320px;z-index:1400;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.06);background:rgba(0,0,0,0.4);backdrop-filter:blur(6px)}
-.compare-top{position:absolute;left:0;top:0;height:100%;width:50%;overflow:hidden}
-.compare-top img{width:100%;height:100%;object-fit:cover}
-.compare-bottom img{width:100%;height:100%;object-fit:cover}
-.compare-divider{position:absolute;left:50%;top:0;height:100%;width:4px;margin-left:-2px;background:linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.6));cursor:ew-resize;box-shadow:0 4px 12px rgba(0,0,0,0.4)}
+  /* timeline */
+  .timeline-controls{display:flex;gap:8px;align-items:center;margin-top:8px}
+  .range{flex:1}
 
-/* timeline controls */
-.timeline-controls{display:flex;gap:8px;align-items:center;margin-top:8px}
-.range{flex:1}
+  /* role actions box (moved to top) */
+  .role-actions{display:flex;gap:8px;margin-bottom:12px;align-items:center}
+  .role-actions .btn{flex:1}
 
-/* responsive */
-@media(max-width:900px){ .dashboard{ display:none } }
+  .modal{display:none;position:fixed;z-index:1600;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.45);align-items:center;justify-content:center}
+  .modal.open{display:flex}
+  .modal-card{width:94%;max-width:640px;border-radius:14px;overflow:hidden;background:linear-gradient(180deg,#fff,#fafafa);color:#111;box-shadow:0 30px 70px rgba(0,0,0,0.5)}
+  .modal-header{padding:16px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(0,0,0,0.06)}
+  .modal-body{padding:16px 18px;max-height:70vh;overflow:auto}
+  .form-group{margin-bottom:12px}
+  .form-control{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(0,0,0,0.08)}
+  @media(max-width:900px){ .dashboard{ display:none } }
+
 </style>
 </head>
 <body data-theme="dark">
@@ -129,21 +132,25 @@ body{
     <div class="logo-mark"><i class="fas fa-cube"></i></div>
     <div class="title">
       <h1>VisionForge</h1>
-      <p>Intelligent FRA Atlas — Empowering Tribal Rights through Satellite & Community Evidence</p>
+      <p>Intelligent FRA Atlas — Empowering Tribal Rights through Satellite + Community Evidence</p>
     </div>
   </div>
 
-  <div style="display:flex;align-items:center;gap:14px">
-    <div style="display:flex;gap:10px;align-items:center;margin-right:12px">
-      <div class="small"><i class="fas fa-satellite"></i> Sentinel-2 Connected</div>
-      <div class="small"><i class="fas fa-database"></i> 4 States Loaded</div>
+  <div class="header-controls">
+    <div style="display:flex;gap:10px;align-items:center;margin-right:8px">
+      <div class="small">Sentinel-2 Connected</div>
+      <div class="small">4 States Loaded</div>
     </div>
 
-    <div class="header-controls">
-      <button id="themeToggle" class="btn secondary" title="Toggle theme">Theme</button>
+    <div class="auth-controls">
+      <button id="themeToggle" class="btn secondary">Theme</button>
       <button id="aboutBtn" class="btn ghost">About</button>
       <button id="loginOpen" class="btn">Login</button>
-      <div id="userBadge" class="btn" style="display:none;cursor:pointer"><span id="userName">user</span>&nbsp;<span id="userRoleTag" style="font-weight:700;color:var(--muted);font-size:12px"></span></div>
+      <!-- after login, hide login and show user+logout -->
+      <div id="userPanel" style="display:none;align-items:center;gap:8px;">
+        <div id="userBadge" class="btn" style="pointer-events:none"></div>
+        <button id="logoutBtn" class="btn secondary">Logout</button>
+      </div>
     </div>
   </div>
 </header>
@@ -156,6 +163,11 @@ body{
       <div class="section-title">
         <h3>FRA Claims Overview</h3>
         <p id="coverageInfo">Coverage: 4 States</p>
+      </div>
+
+      <!-- role actions moved here (prominent) -->
+      <div class="role-actions" id="roleActionsBox" style="display:none">
+        <!-- filled by JS based on role -->
       </div>
 
       <div class="search-row">
@@ -191,20 +203,16 @@ body{
       <div class="section-title"><h3>Satellite Monitoring</h3><p>NDVI overlays & timeline</p></div>
 
       <div style="display:flex;gap:8px">
-        <button id="beforeBtn" class="control-btn btn" style="background:linear-gradient(135deg,#2ecc71,#27ae60);color:var(--btn-text-light)">January 2025 (Baseline)</button>
-        <button id="afterBtn" class="control-btn btn" style="background:linear-gradient(135deg,#ef4444,#c026d3);color:var(--btn-text-light)">September 2025 (Current)</button>
-      </div>
-
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <button id="resetBtn" class="control-btn btn" style="background:linear-gradient(135deg,#60a5fa,#3b82f6);color:var(--btn-text-light)">Reset View</button>
-        <button id="compareOpen" class="control-btn btn secondary">Open Compare</button>
+        <button id="beforeBtn" class="btn" style="background:linear-gradient(135deg,#2ecc71,#27ae60);color:var(--btn-text-light)">Baseline</button>
+        <button id="afterBtn" class="btn" style="background:linear-gradient(135deg,#ef4444,#c026d3);color:var(--btn-text-light)">Current</button>
+        <button id="toggleTimelineOverlay" class="btn secondary">Toggle NDVI</button>
       </div>
 
       <div style="margin-top:12px">
         <div class="timeline-controls">
           <button id="playTimeline" class="btn secondary">Play</button>
           <button id="pauseTimeline" class="btn secondary">Pause</button>
-          <div style="flex:1"><input id="timelineRange" class="range" type="range" min="0" max="4" step="1" value="0" /></div>
+          <input id="timelineRange" class="range" type="range" min="0" max="4" step="1" value="0" />
           <select id="timelineSpeed" class="small"><option value="1200">1x</option><option value="800">1.5x</option><option value="400">2x</option></select>
         </div>
         <div style="margin-top:8px">
@@ -215,37 +223,20 @@ body{
     </div>
 
     <div class="dashboard-section">
-      <div class="section-title"><h3>Visual Tools</h3><p>Cluster / Heatmap</p></div>
-
+      <div class="section-title"><h3>Visual Tools</h3><p>Cluster / Heatmap / Compare</p></div>
       <div style="display:flex;gap:8px;margin-bottom:8px">
-        <button id="toggleCluster" class="btn">Toggle Clusters</button>
-        <button id="toggleHeatmap" class="btn">Toggle Heatmap</button>
+        <button id="toggleCluster" class="btn">Show Clusters</button>
+        <button id="toggleHeatmap" class="btn">Show Heatmap</button>
       </div>
-      <div style="margin-top:8px">
-        <button id="exportBtn" class="btn btn" style="width:100%;background:linear-gradient(135deg,#10b981,#06b6d4);color:var(--btn-text-light)">Generate Report</button>
+      <div style="display:flex;gap:8px">
+        <button id="compareOpen" class="btn secondary">Open Compare</button>
+        <button id="exportBtn" class="btn" style="background:linear-gradient(135deg,#10b981,#06b6d4);color:var(--btn-text-light)">Generate Report</button>
       </div>
-    </div>
-
-    <div class="dashboard-section">
-      <div class="section-title"><h3>Community & Roles</h3><p>Citizen & Officer actions</p></div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <div id="citizenActions" style="display:none">
-          <button id="raiseClaimBtn" class="btn secondary">Raise Claim</button>
-          <button id="trackClaimBtn" class="btn secondary">Track My Claims</button>
-          <button id="myReportsBtn" class="btn secondary">My Reports</button>
-        </div>
-        <div id="officerActions" style="display:none">
-          <button id="reviewQueueBtn" class="btn">Review Queue</button>
-          <button id="assignBtn" class="btn">Assign Verification</button>
-          <button id="auditBtn" class="btn">Export Audit Log</button>
-        </div>
-      </div>
-      <div style="margin-top:12px;color:var(--muted);font-size:13px">Saved filters and search autocomplete available for quick workflows.</div>
     </div>
   </aside>
 </div>
 
-<!-- Compare small UI -->
+<!-- Compare floating panel -->
 <div id="compareContainer" class="compare-container" style="display:none">
   <div class="compare-bottom"><img id="compareBefore" src="" alt="before"/></div>
   <div id="compareTop" class="compare-top"><img id="compareAfter" src="" alt="after"/></div>
@@ -260,22 +251,22 @@ body{
   <div class="legend-item"><div class="legend-color" style="background-color:#ff6b6b;opacity:0.8"></div><div>Forest Loss (Low NDVI)</div></div>
 </div>
 
-<!-- Modals: report, login, about -->
+<!-- Modals -->
 <div id="reportModal" class="modal" aria-hidden="true">
   <div class="modal-card">
     <div class="modal-header"><h3 style="margin:0">Report Environmental Issue</h3><button class="close" id="closeReport">&times;</button></div>
     <div class="modal-body">
       <form id="reportForm">
-        <div class="form-group"><label>Issue Type *</label><select id="issueType"><option value="deforestation">Illegal Deforestation</option><option value="encroachment">Encroachment</option><option value="mining">Unauthorized Mining</option><option value="dumping">Waste Dumping</option></select></div>
+        <div class="form-group"><label>Issue Type *</label><select id="issueType" class="form-control"><option>Illegal Deforestation</option><option>Encroachment</option><option>Unauthorized Mining</option><option>Waste Dumping</option></select></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div class="form-group"><label>Your Name</label><input id="reportName" required/></div>
-          <div class="form-group"><label>Phone</label><input id="reportPhone"/></div>
+          <div class="form-group"><label>Your Name</label><input id="reportName" class="form-control" required/></div>
+          <div class="form-group"><label>Phone</label><input id="reportPhone" class="form-control"/></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div class="form-group"><label>Location / Village</label><input id="reportLocation" required/></div>
-          <div class="form-group"><label>District</label><input id="reportDistrict" required/></div>
+          <div class="form-group"><label>Location / Village</label><input id="reportLocation" class="form-control" required/></div>
+          <div class="form-group"><label>District</label><input id="reportDistrict" class="form-control" required/></div>
         </div>
-        <div class="form-group"><label>Description</label><textarea id="reportDesc" required></textarea></div>
+        <div class="form-group"><label>Description</label><textarea id="reportDesc" class="form-control" required></textarea></div>
         <div style="display:flex;gap:8px"><button type="submit" class="btn" style="flex:1;background:linear-gradient(135deg,#10b981,#06b6d4);color:var(--btn-text-light)">Submit</button><button type="button" id="reportCancel" class="btn secondary" style="flex:1">Cancel</button></div>
       </form>
     </div>
@@ -283,16 +274,15 @@ body{
 </div>
 
 <div id="loginModal" class="modal" aria-hidden="true">
-  <div class="modal-card">
-    <div class="modal-header"><h3 style="margin:0">Login</h3><button class="close" id="closeLogin">&times;</button></div>
+  <div class="modal-card" style="max-width:520px">
+    <div class="modal-header"><h3 style="margin:0">Sign in to VisionForge</h3><button class="close" id="closeLogin">&times;</button></div>
     <div class="modal-body">
-      <form id="loginForm">
-        <div class="form-group"><label>Login As</label><select id="roleSelect"><option value="citizen">Citizen</option><option value="official">Government Official</option></select></div>
-        <div class="form-group"><label>Email</label><input id="username" type="email" required/></div>
-        <div class="form-group"><label>Password</label><input id="password" type="password" required/></div>
-        <div style="display:flex;gap:8px"><button type="submit" class="btn" style="flex:1;background:linear-gradient(135deg,#3b82f6,#2563eb);color:var(--btn-text-light)">Sign in</button>
-        <button type="button" id="loginDemo" class="btn secondary" style="flex:1">Demo</button></div>
-        <p class="small" style="margin-top:10px">Demo mode for UI only. For production use Firebase or your auth endpoint.</p>
+      <form id="loginForm" style="display:grid;gap:10px">
+        <div class="form-group"><label>Login As</label><select id="roleSelect" class="form-control"><option value="citizen">Citizen</option><option value="official">Government Official</option></select></div>
+        <div class="form-group"><label>Email</label><input id="username" class="form-control" type="email" placeholder="you@example.com" required/></div>
+        <div class="form-group"><label>Password</label><input id="password" class="form-control" type="password" placeholder="password" required/></div>
+        <div style="display:flex;gap:8px"><button type="submit" class="btn" style="flex:1;background:linear-gradient(135deg,#3b82f6,#2563eb);color:var(--btn-text-light)">Sign in</button><button type="button" id="loginDemo" class="btn secondary" style="flex:1">Demo</button></div>
+        <p class="small" style="margin-top:6px">Demo: sign in with any credentials. Firebase is optional (you said you'll add it later).</p>
       </form>
     </div>
   </div>
@@ -302,70 +292,45 @@ body{
   <div class="modal-card">
     <div class="modal-header"><h3 style="margin:0">About VisionForge</h3><button class="close" id="closeAbout">&times;</button></div>
     <div class="modal-body">
-      <p style="color:#111">VisionForge is built to provide an AI-powered FRA Atlas combined with WebGIS-based Decision Support for integrated monitoring of FRA implementation. Supports multi-state datasets, NDVI analysis, citizen reporting and officer review workflows. For production, connect to secure backend for auth and claim persistence.</p>
+      <p style="color:#111">VisionForge — an AI & WebGIS decision support prototype for FRA monitoring. Multi-state claim loading, NDVI visualization, citizen reporting, and officer review workflows are included. Replace demo persistence with your backend when ready.</p>
     </div>
   </div>
 </div>
 
-<!-- Keep Leaflet script unchanged + plugin scripts -->
+<!-- Leaflet & plugins -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
 
-<!-- Optional Firebase compat libs (only used if you paste firebaseConfig below) -->
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-
 <script>
-/* =============================
-   CONFIGURATION: paste firebaseConfig or leave null
-   ============================= */
+/* ===========================
+   Keep firebaseConfig = null for now (you'll add it later)
+   =========================== */
 const firebaseConfig = null;
-/*
-Example:
-const firebaseConfig = {
-  apiKey: "YOUR_KEY",
-  authDomain: "yourproject.firebaseapp.com",
-  projectId: "yourproject",
-  storageBucket: "yourproject.appspot.com",
-  messagingSenderId: "...",
-  appId: "..."
-};
-*/
-
-/* Initialize Firebase if present */
-let useFirebase = false, firebaseAuth = null, firestore = null;
+let useFirebase = false;
 if (firebaseConfig) {
-  try {
-    firebase.initializeApp(firebaseConfig);
-    firebaseAuth = firebase.auth();
-    firestore = firebase.firestore();
-    useFirebase = true;
-    console.log('Firebase configured');
-  } catch (e) {
-    console.warn('Firebase init error', e);
-    useFirebase = false;
-  }
+  try { firebase.initializeApp(firebaseConfig); useFirebase = true; } catch(e){ console.warn('Firebase init failed',e); }
 }
 
-/* ===== App state ===== */
+/* App state */
 let currentUser = null; // {username, role}
-const layerMap = new Map(); // claim_id -> layer
-let heatLayer = null, clusterLayer = null;
+const layerMap = new Map(); // id -> layer
+let clusterGroup = null, heatmapLayer = null;
 let timelineTimer = null;
-const ndviImages = []; // timeline images dataURLs
 let timelineIndex = 0;
+const ndviImages = []; // high-res images for timeline/compare
+const ndviOverlays = [];
 
-/* ===== UI refs ===== */
+/* DOM refs */
 const loginOpen = document.getElementById('loginOpen');
 const loginModal = document.getElementById('loginModal');
 const closeLogin = document.getElementById('closeLogin');
 const loginForm = document.getElementById('loginForm');
 const loginDemo = document.getElementById('loginDemo');
+const roleSelect = document.getElementById('roleSelect');
+const userPanel = document.getElementById('userPanel');
 const userBadge = document.getElementById('userBadge');
-const userNameEl = document.getElementById('userName');
-const userRoleTag = document.getElementById('userRoleTag');
+const logoutBtn = document.getElementById('logoutBtn');
 
 const aboutBtn = document.getElementById('aboutBtn');
 const aboutModal = document.getElementById('aboutModal');
@@ -382,18 +347,20 @@ const themeToggle = document.getElementById('themeToggle');
 const searchInput = document.getElementById('searchInput');
 const autoList = document.getElementById('autocompleteList');
 const statusFilter = document.getElementById('statusFilter');
-const savedFilters = document.getElementById('savedFilters');
 const saveFilterBtn = document.getElementById('saveFilterBtn');
-
-const toggleClusterBtn = document.getElementById('toggleCluster');
-const toggleHeatmapBtn = document.getElementById('toggleHeatmap');
-const exportBtn = document.getElementById('exportBtn');
+const savedFilters = document.getElementById('savedFilters');
 
 const beforeBtn = document.getElementById('beforeBtn');
 const afterBtn = document.getElementById('afterBtn');
-const resetBtn = document.getElementById('resetBtn');
-
+const toggleTimelineOverlay = document.getElementById('toggleTimelineOverlay');
+const playBtn = document.getElementById('playTimeline');
+const pauseBtn = document.getElementById('pauseTimeline');
+const timelineRange = document.getElementById('timelineRange');
+const timelineSpeed = document.getElementById('timelineSpeed');
 const ndviOpacity = document.getElementById('ndviOpacity');
+
+const toggleClusterBtn = document.getElementById('toggleCluster');
+const toggleHeatmapBtn = document.getElementById('toggleHeatmap');
 
 const compareOpen = document.getElementById('compareOpen');
 const compareContainer = document.getElementById('compareContainer');
@@ -402,41 +369,29 @@ const compareAfter = document.getElementById('compareAfter');
 const compareTop = document.getElementById('compareTop');
 const divider = document.getElementById('divider');
 
-const playTimeline = document.getElementById('playTimeline');
-const pauseTimeline = document.getElementById('pauseTimeline');
-const timelineRange = document.getElementById('timelineRange');
-const timelineSpeed = document.getElementById('timelineSpeed');
+const roleActionsBox = document.getElementById('roleActionsBox');
 
-/* role buttons */
-const citizenActions = document.getElementById('citizenActions');
-const officerActions = document.getElementById('officerActions');
-const raiseClaimBtn = document.getElementById('raiseClaimBtn');
-const trackClaimBtn = document.getElementById('trackClaimBtn');
-const myReportsBtn = document.getElementById('myReportsBtn');
+/* helper to show/hide modals */
+function showModal(node){ node.classList.add('open'); node.style.display='flex' }
+function hideModal(node){ node.classList.remove('open'); node.style.display='none' }
 
-const reviewQueueBtn = document.getElementById('reviewQueueBtn');
-const assignBtn = document.getElementById('assignBtn');
-const auditBtn = document.getElementById('auditBtn');
+/* header wiring */
+loginOpen.addEventListener('click', ()=> showModal(loginModal));
+closeLogin.addEventListener('click', ()=> hideModal(loginModal));
+aboutBtn.addEventListener('click', ()=> showModal(aboutModal));
+closeAbout.addEventListener('click', ()=> hideModal(aboutModal));
 
-/* Utility modals */
-function showModal(el){ el.classList.add('open'); el.style.display='flex' }
-function hideModal(el){ el.classList.remove('open'); el.style.display='none' }
+reportBtn && reportBtn.addEventListener('click', ()=> showModal(reportModal));
+closeReport && closeReport.addEventListener('click', ()=> hideModal(reportModal));
+reportCancel && reportCancel.addEventListener('click', ()=> hideModal(reportModal));
 
-/* wire UI */
-loginOpen.addEventListener('click', ()=>showModal(loginModal));
-closeLogin.addEventListener('click', ()=>hideModal(loginModal));
-aboutBtn.addEventListener('click', ()=>showModal(aboutModal));
-closeAbout.addEventListener('click', ()=>hideModal(aboutModal));
-reportBtn && reportBtn.addEventListener('click', ()=>showModal(reportModal));
-closeReport && closeReport.addEventListener('click', ()=>hideModal(reportModal));
-reportCancel.addEventListener('click', ()=>hideModal(reportModal));
-reportForm.addEventListener('submit', e => { e.preventDefault(); hideModal(reportModal); alert('Report submitted. ID: RPT-' + Date.now().toString().slice(-6)); reportForm.reset(); });
-
-themeToggle.addEventListener('click', () => {
-  const b = document.body; const cur = b.getAttribute('data-theme') || 'dark'; const next = cur==='dark'?'light':'dark'; b.setAttribute('data-theme', next);
+themeToggle.addEventListener('click', ()=>{
+  const b = document.body;
+  const cur = b.getAttribute('data-theme') || 'dark';
+  b.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
 });
 
-/* ===== Map setup (preserve original paths) ===== */
+/* map setup */
 const map = L.map('map', { center:[20.2961,85.8245], zoom:12, zoomControl:true });
 L.control.zoom({ position:'topright' }).addTo(map);
 
@@ -445,13 +400,13 @@ const positron = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x
 
 L.control.layers({ "OpenStreetMap": osm, "Positron (Light)": positron }, {}, { position:'topright', collapsed:true }).addTo(map);
 
-/* fallback feature (unchanged) */
+/* fallback sample feature (unchanged) */
 const fallbackFeature = {
   "type":"Feature","properties":{"name":"CFR-2024-OD-101","village":"Khandagiri","district":"Khurda","area":"245 hectares","status":"Approved","claimants":"127 families","approval_date":"2024-03-15","claim_id":"CFR-2024-OD-101","state":"Odisha","deforestation_detected":true,"area_hectares":245,"claimant_families":127},
   "geometry":{"type":"Polygon","coordinates":[[[85.8100,20.3100],[85.8300,20.3100],[85.8300,20.2900],[85.8100,20.2900],[85.8100,20.3100]]]}
 };
 
-/* helper to style claim */
+/* style + popup */
 function claimStyle(feature){
   const props = feature.properties||{};
   const s = (props.status||'').toLowerCase();
@@ -463,8 +418,6 @@ function claimStyle(feature){
   const hasAlert = !!props.deforestation_detected;
   return { color: hasAlert ? '#e74c3c' : color, weight: hasAlert?3.5:2.5, fillColor:color, fillOpacity:hasAlert?0.4:0.18, dashArray:hasAlert?'5,5':null };
 }
-
-/* popup builder */
 function buildPopup(feature){
   const p = feature.properties || {};
   const name = p.claim_id || p.name || 'Claim';
@@ -476,10 +429,9 @@ function buildPopup(feature){
   const families = p.claimant_families || p.claimants || '—';
   const alertHTML = p.deforestation_detected ? '<div style="color:#c0392b;font-weight:700;margin-top:8px;padding:6px;border-radius:6px;background:#fff5f5">DEFORESTATION ALERT</div>' : '<div style="color:#27ae60;font-weight:700;margin-top:8px">No Active Alerts</div>';
   const claimId = p.claim_id || name;
-
   return `
     <div style="min-width:260px;font-family:inherit;">
-      <h4 style="margin:0 0 8px 0;color:var(--accent)">${name}</h4>
+      <h4 style="margin:0 0 8px 0;color:var(--primary-1)">${name}</h4>
       <p style="margin:4px 0"><strong>State:</strong> ${state}</p>
       <p style="margin:4px 0"><strong>Village:</strong> ${village}</p>
       <p style="margin:4px 0"><strong>District:</strong> ${district}</p>
@@ -492,130 +444,120 @@ function buildPopup(feature){
   `;
 }
 
-/* Add feature function (stores in map of layers for search/filter) */
+/* add feature & store layer */
 function addFeature(feature){
   const layer = L.geoJSON(feature, {
     style: claimStyle,
-    onEachFeature: (f, l) => {
-      l.bindPopup(buildPopup(f), { maxWidth:350, className:'custom-popup' });
-    }
+    onEachFeature: (f,l) => { l.bindPopup(buildPopup(f), { maxWidth:350, className:'custom-popup' }); }
   });
   const id = feature.properties && (feature.properties.claim_id || feature.properties.name) || ('claim-'+Date.now());
   layerMap.set(id, layer);
   layer.addTo(map);
 }
 
-/* Start with fallback (and will load external ones next) */
+/* add fallback & later load external files */
 addFeature(fallbackFeature);
 
-/* NDVI timeline: create synthetic images for the demo (but code allows replacing with your actual tiles/images) */
-function createNDVIImage(type, seed){
-  const c = document.createElement('canvas'); c.width=600; c.height=400; const ctx = c.getContext('2d');
-  // base green
-  if (type==='healthy'){
-    const g = ctx.createLinearGradient(0,0,600,400); g.addColorStop(0,'rgba(76,175,80,0.9)'); g.addColorStop(1,'rgba(139,195,74,0.9)');
-    ctx.fillStyle = g; ctx.fillRect(0,0,600,400);
-    // light texture
-    ctx.fillStyle = 'rgba(255,255,255,0.03)'; for(let i=0;i<120;i++){ ctx.fillRect(Math.random()*600,Math.random()*400,Math.random()*6,Math.random()*6) }
+/* High-resolution NDVI images for timeline & compare (improved resolution) */
+function createHighResNDVI(type, seed){
+  // 1600x1000 for smooth compare
+  const W = 1600, H = 1000;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+  if (type === 'healthy') {
+    const g = ctx.createLinearGradient(0,0,W,H); g.addColorStop(0,'rgba(34,197,94,1)'); g.addColorStop(1,'rgba(16,185,129,1)');
+    ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+    ctx.globalAlpha = 0.04;
+    ctx.fillStyle = '#000';
+    for (let i=0;i<500;i++){ ctx.fillRect(Math.random()*W, Math.random()*H, Math.random()*4, Math.random()*4) }
+    ctx.globalAlpha = 1;
+  } else if (type === 'mixed') {
+    ctx.fillStyle = 'rgba(34,197,94,0.9)'; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle = 'rgba(244,67,54,0.85)';
+    for (let i=0;i<12;i++){ ctx.fillRect(80 + (i*120 + (seed*17)%80), 80 + ((i*45 + seed*7)%200), 80 + (seed%40), 50 + ((i*23)%60)) }
   } else {
-    ctx.fillStyle = 'rgba(76,175,80,0.6)'; ctx.fillRect(0,0,600,400);
-    ctx.fillStyle = 'rgba(244,67,54,0.9)';
-    // seed-driven patches
-    for (let i=0;i<6;i++){ ctx.fillRect(30 + (i*80 + (seed*10)%60), 60 + ((i*40 + seed*15)%100), 60 + (seed%20), 30 + ((i*13)%40)) }
+    ctx.fillStyle = 'rgba(76,175,80,0.6)'; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle = 'rgba(244,67,54,0.95)';
+    for (let i=0;i<24;i++){ ctx.fillRect(40 + (i*60 + (seed*31)%120), 40 + ((i*30 + seed*19)%260), 90, 60) }
   }
-  return c.toDataURL();
+  return c.toDataURL('image/png', 0.9);
 }
-/* Precompute timeline (0..4) mixing healthy -> degraded -> critical */
+
+/* Build timeline images: 0..4 (mix healthy -> critical) */
 for (let t=0;t<=4;t++){
-  if (t < 2) ndviImages.push(createNDVIImage('healthy', t));
-  else if (t === 2) ndviImages.push(createNDVIImage('mixed', t));
-  else ndviImages.push(createNDVIImage('degraded', t));
+  if (t <= 1) ndviImages.push(createHighResNDVI('healthy', t));
+  else if (t === 2) ndviImages.push(createHighResNDVI('mixed', t));
+  else ndviImages.push(createHighResNDVI('degraded', t));
 }
 
-/* Create image overlays for timeline on map (for demo use imageOverlay) */
+/* Create image overlays (stored but not added) */
 const imageBounds = [[20.2900,85.8100],[20.3100,85.8300]];
-const ndviOverlays = ndviImages.map(img => L.imageOverlay(img, imageBounds, { opacity: Number(ndviOpacity.value) }));
+ndviImages.forEach(img => {
+  const o = L.imageOverlay(img, imageBounds, { opacity: Number(ndviOpacity.value) });
+  ndviOverlays.push(o);
+});
 
-/* cluster + heat layers (created on demand) */
-let clusterGroup = null;
-let heatmapLayer = null;
-
-/* functions to create cluster & heat layers from loaded features */
-function rebuildClusterAndHeat(){
-  // gather center points for each feature (use centroid of bounds)
-  const points = [];
-  const markers = L.markerClusterGroup();
-  layerMap.forEach((layer, id) => {
-    const inner = layer.getLayers ? layer.getLayers()[0] : layer;
-    if (!inner) return;
-    const bounds = inner.getBounds ? inner.getBounds() : null;
-    if (bounds) {
-      const c = bounds.getCenter();
-      const marker = L.marker([c.lat, c.lng]);
-      // attach claim id to marker popup (quick)
-      const feat = (inner.feature || inner);
-      marker.bindPopup(`<div style="min-width:200px"><strong>${feat.properties.claim_id||feat.properties.name||'Claim'}</strong><div style="font-size:12px;color:var(--muted);">Status: ${feat.properties.status||'—'}</div></div>`);
-      markers.addLayer(marker);
-      points.push([c.lat, c.lng, 0.6 + (feat.properties.deforestation_detected ? 0.8 : 0.0)]);
-    }
-  });
-  // replace cluster
-  if (clusterGroup) map.removeLayer(clusterGroup);
-  clusterGroup = markers;
-  // don't add automatically; toggled by user
-
-  // heat
-  if (heatmapLayer) map.removeLayer(heatmapLayer);
-  heatmapLayer = L.heatLayer(points, { radius: 25, blur: 20, maxZoom: 12 });
+/* timeline display helper */
+function setTimelineOverlay(idx){
+  // remove all first
+  ndviOverlays.forEach(o => { if (map.hasLayer(o)) map.removeLayer(o) });
+  if (ndviOverlays[idx]) ndviOverlays[idx].addTo(map);
+  timelineRange.max = Math.max(0, ndviOverlays.length - 1);
+  timelineRange.value = idx;
 }
 
-/* Toggle cluster & heat */
-let clusterShown = false;
-let heatShown = false;
-toggleClusterBtn.addEventListener('click', () => {
-  if (!clusterGroup) rebuildClusterAndHeat();
-  clusterShown = !clusterShown;
-  if (clusterShown) clusterGroup.addTo(map); else map.removeLayer(clusterGroup);
-  toggleClusterBtn.textContent = clusterShown ? 'Hide Clusters' : 'Show Clusters';
-});
-toggleHeatmapBtn.addEventListener('click', () => {
-  if (!heatmapLayer) rebuildClusterAndHeat();
-  heatShown = !heatShown;
-  if (heatShown) heatmapLayer.addTo(map); else map.removeLayer(heatmapLayer);
-  toggleHeatmapBtn.textContent = heatShown ? 'Hide Heatmap' : 'Show Heatmap';
-});
+/* initial: overlays off */
+ndviOverlays.forEach(o => { if (map.hasLayer(o)) map.removeLayer(o); });
 
-/* timeline controls */
-playTimeline.addEventListener('click', () => {
+/* timeline controls working */
+playBtn.addEventListener('click', ()=> {
   const speed = Number(timelineSpeed.value) || 1200;
   if (timelineTimer) clearInterval(timelineTimer);
-  timelineTimer = setInterval(()=>{ timelineIndex = (timelineIndex+1) % ndviOverlays.length; setTimelineImage(timelineIndex); timelineRange.value = timelineIndex }, speed);
+  timelineTimer = setInterval(()=>{
+    timelineIndex = (timelineIndex + 1) % ndviOverlays.length;
+    setTimelineOverlay(timelineIndex);
+  }, speed);
 });
-pauseTimeline.addEventListener('click', ()=>{ if (timelineTimer) clearInterval(timelineTimer); timelineTimer = null });
-timelineRange.addEventListener('input', (e)=> { timelineIndex = Number(e.target.value); setTimelineImage(timelineIndex) });
-function setTimelineImage(idx){
-  // remove all overlays then add selected
-  ndviOverlays.forEach(o => map.removeLayer(o));
-  const o = ndviOverlays[idx];
-  o.addTo(map);
-}
+pauseBtn.addEventListener('click', ()=> { if (timelineTimer) clearInterval(timelineTimer); timelineTimer = null });
+timelineRange.addEventListener('input', (e)=> {
+  timelineIndex = Number(e.target.value);
+  setTimelineOverlay(timelineIndex);
+});
 
-/* Start with first NDVI overlay off (user triggers before/after or timeline) */
-ndviOverlays.forEach(o=>map.removeLayer(o));
+/* before/after & toggle NDVI overlay */
+let ndviShown = false;
+beforeBtn.addEventListener('click', ()=> { setTimelineOverlay(0); ndviShown = true; });
+afterBtn.addEventListener('click', ()=> { setTimelineOverlay(ndviOverlays.length - 1); ndviShown = true; });
+toggleTimelineOverlay.addEventListener('click', ()=> {
+  ndviShown = !ndviShown;
+  if (!ndviShown) ndviOverlays.forEach(o => map.removeLayer(o));
+  else setTimelineOverlay(timelineIndex || 0);
+});
 
-/* compare slider logic (small floating window with draggable divider) */
-compareOpen.addEventListener('click', () => {
+/* NDVI opacity */
+ndviOpacity.addEventListener('input', (e)=> {
+  const v = Number(e.target.value);
+  ndviOverlays.forEach(o => o.setOpacity(v));
+});
+
+/* Compare open: use high-res images to avoid pixelation */
+compareOpen.addEventListener('click', ()=> {
   if (compareContainer.style.display === 'none' || !compareContainer.style.display) {
-    // set images to current before/after images (simple mapping to our ndviImages)
     compareBefore.src = ndviImages[0];
-    compareAfter.src = ndviImages[ndviImages.length-1];
+    compareAfter.src = ndviImages[ndviImages.length - 1];
     compareContainer.style.display = 'block';
-  } else compareContainer.style.display = 'none';
+    // set default divider halfway
+    compareTop.style.width = '50%';
+    divider.style.left = '50%';
+  } else {
+    compareContainer.style.display = 'none';
+  }
 });
 
+/* compare divider drag */
 let dragging = false;
-divider.addEventListener('mousedown', (e)=>{ dragging=true; e.preventDefault() });
-document.addEventListener('mouseup', ()=>{ dragging=false });
+divider.addEventListener('mousedown', (e)=>{ dragging = true; e.preventDefault(); });
+document.addEventListener('mouseup', ()=> dragging = false);
 document.addEventListener('mousemove', (e)=>{
   if (!dragging) return;
   const rect = compareContainer.getBoundingClientRect();
@@ -626,43 +568,67 @@ document.addEventListener('mousemove', (e)=>{
   divider.style.left = pct + '%';
 });
 
-/* set NDVI overlay opacity control */
-ndviOpacity.addEventListener('input', (e) => {
-  const v = Number(e.target.value);
-  ndviOverlays.forEach(o => o.setOpacity(v));
+/* clustering & heat */
+function rebuildClusterAndHeat(){
+  const markers = L.markerClusterGroup();
+  const heatPoints = [];
+  layerMap.forEach(layer => {
+    const inner = layer.getLayers ? layer.getLayers()[0] : layer;
+    if (!inner) return;
+    const bounds = inner.getBounds ? inner.getBounds() : null;
+    if (!bounds) return;
+    const c = bounds.getCenter();
+    const feat = inner.feature || inner;
+    const marker = L.marker([c.lat, c.lng]);
+    marker.bindPopup(`<div style="min-width:180px"><strong>${feat.properties.claim_id||feat.properties.name||'Claim'}</strong><div style="font-size:12px;color:var(--muted)">Status: ${feat.properties.status||'—'}</div></div>`);
+    markers.addLayer(marker);
+    heatPoints.push([c.lat, c.lng, feat.properties.deforestation_detected ? 0.9 : 0.4]);
+  });
+  if (clusterGroup) map.removeLayer(clusterGroup);
+  clusterGroup = markers;
+  if (heatmapLayer) map.removeLayer(heatmapLayer);
+  heatmapLayer = L.heatLayer(heatPoints, { radius: 25, blur: 20, maxZoom: 12 });
+}
+let clusterShown=false, heatShown=false;
+toggleClusterBtn.addEventListener('click', ()=> {
+  if (!clusterGroup) rebuildClusterAndHeat();
+  clusterShown = !clusterShown;
+  if (clusterShown) clusterGroup.addTo(map); else map.removeLayer(clusterGroup);
+  toggleClusterBtn.textContent = clusterShown ? 'Hide Clusters' : 'Show Clusters';
+});
+toggleHeatmapBtn.addEventListener('click', ()=> {
+  if (!heatmapLayer) rebuildClusterAndHeat();
+  heatShown = !heatShown;
+  if (heatShown) heatmapLayer.addTo(map); else map.removeLayer(heatmapLayer);
+  toggleHeatmapBtn.textContent = heatShown ? 'Hide Heatmap' : 'Show Heatmap';
 });
 
-/* popupopen event: add role-based action buttons */
-map.on('popupopen', (ev) => {
-  const popupEl = ev.popup.getElement ? ev.popup.getElement() : null;
+/* popup actions (role-based) */
+map.on('popupopen', (e)=>{
+  const popupEl = e.popup.getElement && e.popup.getElement();
   if (!popupEl) return;
   const actionArea = popupEl.querySelector('.action-area');
   if (!actionArea) return;
   actionArea.innerHTML = '';
   const claimId = actionArea.getAttribute('data-claim-id');
-
-  const reportBtn = document.createElement('button');
-  reportBtn.className = 'btn secondary'; reportBtn.textContent = 'Report Issue';
-  reportBtn.onclick = ()=> showModal(reportModal);
+  const reportBtn = document.createElement('button'); reportBtn.className='btn secondary'; reportBtn.textContent='Report'; reportBtn.onclick = ()=> showModal(reportModal);
   actionArea.appendChild(reportBtn);
-
   if (currentUser && currentUser.role === 'official') {
     const approve = document.createElement('button'); approve.className='btn'; approve.style.background='linear-gradient(135deg,#2ecc71,#27ae60)'; approve.textContent='Approve';
     const reject = document.createElement('button'); reject.className='btn'; reject.style.background='linear-gradient(135deg,#ef4444,#dc2626)'; reject.textContent='Reject';
-    approve.onclick = ()=> updateClaimStatus(claimId, 'Approved', ev.popup);
-    reject.onclick = ()=> updateClaimStatus(claimId, 'Rejected', ev.popup);
+    approve.onclick = ()=> updateClaimStatus(claimId, 'Approved', e.popup);
+    reject.onclick = ()=> updateClaimStatus(claimId, 'Rejected', e.popup);
     actionArea.appendChild(approve); actionArea.appendChild(reject);
   } else {
-    const hint = document.createElement('div'); hint.className='small'; hint.style.marginTop='6px'; hint.textContent='Login as Government Official to review claims.';
+    const hint = document.createElement('div'); hint.className='small'; hint.style.marginTop='6px'; hint.textContent='Log in as an official to review claims.';
     actionArea.appendChild(hint);
   }
 });
 
-/* updateClaimStatus: local style update + persistence using firestore or fallback POST */
+/* update claim status locally and attempt persistence (fallback POST); production: hook to your backend or Firestore */
 async function updateClaimStatus(claimId, newStatus, popup){
-  // find layer
-  let found = false;
-  layerMap.forEach((layer, id) => {
+  let found=false;
+  layerMap.forEach((layer,id)=>{
     if (id === claimId) {
       const inner = layer.getLayers ? layer.getLayers()[0] : layer;
       if (inner && inner.feature) {
@@ -672,161 +638,16 @@ async function updateClaimStatus(claimId, newStatus, popup){
       }
     }
   });
-  // persist
+  // attempt to persist (if you later add firebase, it'll be used)
   try {
-    if (useFirebase && firestore) {
-      await firestore.collection('claims').doc(claimId).set({ status: newStatus, updated_at: new Date().toISOString() }, { merge:true });
-      console.log('Persisted to Firestore:', claimId);
+    if (useFirebase) {
+      // implement Firestore persistence when firebaseConfig is provided
     } else {
-      // fallback - server endpoint required for production
-      await fetch('/api/claims/update', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ claimId, status:newStatus }) })
-        .then(r => { if (!r.ok) console.warn('Server returned', r.status) });
-      console.log('Posted to /api/claims/update fallback');
+      // fallback - optional server endpoint
+      fetch('/api/claims/update', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ claimId, status:newStatus }) })
+        .catch(()=>{/* ignore in demo */});
     }
-  } catch (err) {
-    console.warn('Persistence failed; local update only', err);
-  }
-  // update dashboard counts
-  const allFeatures = [];
-  layerMap.forEach(l => {
-    const inner = l.getLayers ? l.getLayers()[0] : l;
-    if (inner && inner.feature) allFeatures.push(inner.feature);
-  });
-  updateDashboardCounts(allFeatures);
-  if (found) {
-    alert('Claim ' + claimId + ' status set to ' + newStatus);
-    popup && popup._source && popup._source.closePopup && popup._source.closePopup();
-  } else {
-    alert('Claim not found locally. Use server-side updates for persistence.');
-  }
-}
-
-/* Search autocomplete and saved filters logic */
-function rebuildAutocomplete(){
-  // populate datalist with available claim ids, villages, districts, states
-  const values = new Set();
-  layerMap.forEach((layer,id)=>{
-    const inner = layer.getLayers ? layer.getLayers()[0] : layer;
-    if (!inner || !inner.feature) return;
-    const p = inner.feature.properties || {};
-    if (p.claim_id) values.add(p.claim_id);
-    if (p.village) values.add(p.village);
-    if (p.district) values.add(p.district);
-    if (p.state) values.add(p.state);
-  });
-  autoList.innerHTML = '';
-  Array.from(values).slice(0,200).forEach(v=>{
-    const opt = document.createElement('option'); opt.value = v; autoList.appendChild(opt);
-  });
-}
-
-function applySearchFilter(){
-  const q = (searchInput.value||'').trim().toLowerCase();
-  const status = statusFilter.value;
-  const matched = [];
-  // clear existing layers then add matching ones
-  layerMap.forEach((layer,id)=>{
-    // remove from map (we'll re-add if matched)
-    map.removeLayer(layer);
-  });
-  layerMap.forEach((layer,id)=>{
-    const inner = layer.getLayers ? layer.getLayers()[0] : layer;
-    if (!inner || !inner.feature) return;
-    const p = inner.feature.properties || {};
-    const combined = `${p.claim_id||''} ${p.village||p.village_name||''} ${p.district||''} ${p.state||''} ${p.status||''}`.toLowerCase();
-    const matchesQ = !q || combined.includes(q);
-    const matchesStatus = (status==='all') || (p.status||'').toLowerCase().includes(status);
-    if (matchesQ && matchesStatus) { layer.addTo(map); matched.push(inner.feature); }
-  });
-  updateDashboardCounts(matched);
-}
-
-/* Save filter sets (persist to localStorage) */
-function loadSavedFilters(){
-  const item = localStorage.getItem('vf_saved_filters');
-  const list = item ? JSON.parse(item) : [];
-  savedFilters.innerHTML = '<option value="">Load saved filter</option>';
-  list.forEach((f, idx) => {
-    const opt = document.createElement('option'); opt.value=idx; opt.textContent = f.name; savedFilters.appendChild(opt);
-  });
-}
-saveFilterBtn.addEventListener('click', ()=>{
-  const name = prompt('Name this filter (e.g., HighRiskPending):');
-  if (!name) return;
-  const filter = { name, q: searchInput.value||'', status: statusFilter.value };
-  const item = localStorage.getItem('vf_saved_filters');
-  const list = item ? JSON.parse(item) : [];
-  list.push(filter);
-  localStorage.setItem('vf_saved_filters', JSON.stringify(list));
-  loadSavedFilters();
-});
-savedFilters.addEventListener('change', ()=>{
-  const idx = savedFilters.value;
-  if (idx === '') return;
-  const list = JSON.parse(localStorage.getItem('vf_saved_filters')||'[]');
-  const f = list[idx];
-  if (!f) return;
-  searchInput.value = f.q; statusFilter.value = f.status; applySearchFilter();
-});
-
-/* wire search / filter events */
-searchInput.addEventListener('input', () => { applySearchFilter(); });
-statusFilter.addEventListener('change', () => { applySearchFilter(); });
-
-/* Export visible claims geojson */
-exportBtn.addEventListener('click', () => {
-  const feats = [];
-  layerMap.forEach((layer,id)=>{
-    const inner = layer.getLayers ? layer.getLayers()[0] : layer;
-    if (map.hasLayer(layer) && inner && inner.feature) feats.push(inner.feature);
-  });
-  const fc = { type:'FeatureCollection', features:feats };
-  const blob = new Blob([JSON.stringify(fc,null,2)], { type:'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = `visible_claims_${new Date().toISOString().split('T')[0]}.geojson`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-  alert('Exported visible claims.');
-});
-
-/* Load external geojson datasets (keeps your asset paths) */
-(async function loadStateFiles(){
-  const stateFiles = [
-    'assets/data/sample-claims.geojson',
-    'assets/data/mp-claims.geojson',
-    'assets/data/tripura-claims.geojson',
-    'assets/data/telangana-claims.geojson'
-  ];
-  const loaded = [];
-  for (const f of stateFiles){
-    try {
-      const r = await fetch(f, { cache:'no-store' });
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      const j = await r.json();
-      (j.features || []).forEach(feat => { addFeature(feat); loaded.push(feat); });
-      console.log('Loaded', f, (j.features||[]).length);
-    } catch (err) {
-      console.warn('Could not load', f, err.message);
-    }
-  }
-  // if none loaded, we already have fallback
-  if (loaded.length === 0) {
-    console.warn('No external files loaded — using fallback.');
-  }
-  // fit bounds to available features
-  const allBounds = [];
-  layerMap.forEach(layer => {
-    try {
-      const inner = layer.getLayers ? layer.getLayers()[0] : layer;
-      if (inner && inner.getBounds) allBounds.push(inner.getBounds());
-    } catch(e){}
-  });
-  if (allBounds.length) {
-    const union = allBounds.reduce((acc, b) => acc.extend(b), allBounds[0].clone());
-    map.fitBounds(union, { padding:[60,60] });
-  }
-  // build cluster/heat
-  rebuildClusterAndHeat();
-  // build autocomplete list
-  rebuildAutocomplete();
+  } catch(e){ console.warn(e) }
   // update counts
   const allFeatures = [];
   layerMap.forEach(l => {
@@ -834,143 +655,277 @@ exportBtn.addEventListener('click', () => {
     if (inner && inner.feature) allFeatures.push(inner.feature);
   });
   updateDashboardCounts(allFeatures);
+  if (found) { alert('Claim ' + claimId + ' updated to ' + newStatus); popup && popup._source && popup._source.closePopup && popup._source.closePopup(); }
+  else alert('Could not find claim locally (demo).');
+}
+
+/* search autocomplete & saved filters */
+function rebuildAutocomplete(){
+  const vals = new Set();
+  layerMap.forEach((layer,id)=>{
+    const inner = layer.getLayers ? layer.getLayers()[0] : layer;
+    if (!inner || !inner.feature) return;
+    const p = inner.feature.properties || {};
+    if (p.claim_id) vals.add(p.claim_id);
+    if (p.village) vals.add(p.village);
+    if (p.district) vals.add(p.district);
+    if (p.state) vals.add(p.state);
+  });
+  autoList.innerHTML = '';
+  Array.from(vals).slice(0,300).forEach(v => {
+    const opt = document.createElement('option'); opt.value = v; autoList.appendChild(opt);
+  });
+}
+
+function applySearchFilter(){
+  const q = (searchInput.value||'').trim().toLowerCase();
+  const status = statusFilter.value;
+  // clear layers then add matches
+  layerMap.forEach(layer => map.removeLayer(layer));
+  const matched = [];
+  layerMap.forEach((layer,id) => {
+    const inner = layer.getLayers ? layer.getLayers()[0] : layer;
+    if (!inner || !inner.feature) return;
+    const p = inner.feature.properties || {};
+    const combined = `${p.claim_id||''} ${p.village||p.village_name||''} ${p.district||''} ${p.state||''} ${p.status||''}`.toLowerCase();
+    const matchesQ = !q || combined.includes(q);
+    const matchesStatus = (status === 'all') || ((p.status||'').toLowerCase().includes(status));
+    if (matchesQ && matchesStatus) { layer.addTo(map); matched.push(inner.feature); }
+  });
+  updateDashboardCounts(matched);
+}
+
+/* saved filters using localStorage */
+function loadSavedFilters(){
+  const s = localStorage.getItem('vf_saved_filters');
+  const arr = s ? JSON.parse(s) : [];
+  savedFilters.innerHTML = '<option value="">Load saved filter</option>';
+  arr.forEach((f,i)=> { const opt = document.createElement('option'); opt.value=i; opt.textContent=f.name; savedFilters.appendChild(opt); });
+}
+saveFilterBtn.addEventListener('click', ()=> {
+  const name = prompt('Save current filter as (name):');
+  if (!name) return;
+  const obj = { name, q: searchInput.value||'', status: statusFilter.value };
+  const s = localStorage.getItem('vf_saved_filters');
+  const arr = s ? JSON.parse(s) : [];
+  arr.push(obj);
+  localStorage.setItem('vf_saved_filters', JSON.stringify(arr));
+  loadSavedFilters();
+});
+savedFilters.addEventListener('change', ()=> {
+  const idx = savedFilters.value;
+  if (idx === '') return;
+  const arr = JSON.parse(localStorage.getItem('vf_saved_filters')||'[]');
+  const f = arr[idx]; if (!f) return;
+  searchInput.value = f.q; statusFilter.value = f.status; applySearchFilter();
+});
+
+searchInput.addEventListener('input', ()=> applySearchFilter());
+statusFilter.addEventListener('change', ()=> applySearchFilter());
+
+/* export visible claims */
+document.getElementById('exportBtn').addEventListener('click', ()=> {
+  const feats = [];
+  layerMap.forEach(layer => {
+    if (map.hasLayer(layer)) {
+      const inner = layer.getLayers ? layer.getLayers()[0] : layer;
+      if (inner && inner.feature) feats.push(inner.feature);
+    }
+  });
+  const fc = { type:'FeatureCollection', features:feats };
+  const blob = new Blob([JSON.stringify(fc,null,2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download = `visible_claims_${new Date().toISOString().split('T')[0]}.geojson`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  alert('Exported visible claims.');
+});
+
+/* Loading state datasets from assets (unchanged paths) */
+(async function loadDatasets(){
+  const files = [
+    'assets/data/sample-claims.geojson',
+    'assets/data/mp-claims.geojson',
+    'assets/data/tripura-claims.geojson',
+    'assets/data/telangana-claims.geojson'
+  ];
+  let loadedCount = 0, totalFeatures = 0;
+  for (const f of files){
+    try {
+      const resp = await fetch(f, { cache:'no-store' });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const j = await resp.json();
+      (j.features || []).forEach(feat => {
+        addFeature(feat);
+        totalFeatures++;
+      });
+      loadedCount++;
+    } catch(e){
+      console.warn('Could not load', f, e.message);
+    }
+  }
+  if (totalFeatures === 0) {
+    // ensure fallback is present
+    updateDashboardCounts([fallbackFeature]);
+  } else {
+    // fit bounds
+    const allB = [];
+    layerMap.forEach(l => {
+      const inner = l.getLayers ? l.getLayers()[0] : l;
+      if (inner && inner.getBounds) allB.push(inner.getBounds());
+    });
+    if (allB.length) {
+      const union = allB.reduce((acc,b)=>acc.extend(b), allB[0].clone());
+      map.fitBounds(union, { padding:[60,60] });
+    }
+    // rebuild visuals and autocomplete
+    rebuildClusterAndHeat();
+    rebuildAutocomplete();
+    const allFeatures = [];
+    layerMap.forEach(l => { const inner = l.getLayers ? l.getLayers()[0] : l; if (inner && inner.feature) allFeatures.push(inner.feature); });
+    updateDashboardCounts(allFeatures);
+  }
   loadSavedFilters();
 })();
 
-/* update dashboard counts */
-function updateDashboardCounts(features){
-  const counts = { approved:0, pending:0, review:0, rejected:0 };
-  const states = new Set();
-  features.forEach(f => {
-    const s = (f.properties && (f.properties.status||'')).toLowerCase();
-    const st = (f.properties && f.properties.state) || '—';
-    states.add(st);
-    if (s.includes('approved')) counts.approved++;
-    else if (s.includes('pending')) counts.pending++;
-    else if (s.includes('review')) counts.review++;
-    else if (s.includes('reject')) counts.rejected++;
+/* rebuild cluster & heat (same function used earlier) */
+function rebuildClusterAndHeat(){
+  const markers = L.markerClusterGroup();
+  const heatPoints = [];
+  layerMap.forEach(layer => {
+    const inner = layer.getLayers ? layer.getLayers()[0] : layer;
+    if (!inner) return;
+    const bounds = inner.getBounds ? inner.getBounds() : null;
+    if (!bounds) return;
+    const c = bounds.getCenter();
+    const feat = inner.feature || inner;
+    const marker = L.marker([c.lat, c.lng]);
+    marker.bindPopup(`<div style="min-width:180px"><strong>${feat.properties.claim_id||feat.properties.name||'Claim'}</strong><div style="font-size:12px;color:var(--muted)">Status: ${feat.properties.status||'—'}</div></div>`);
+    markers.addLayer(marker);
+    heatPoints.push([c.lat, c.lng, feat.properties.deforestation_detected ? 0.9 : 0.4]);
   });
-  document.getElementById('approved-count').textContent = counts.approved;
-  document.getElementById('pending-count').textContent = counts.pending;
-  document.getElementById('review-count').textContent = counts.review;
-  document.getElementById('rejected-count').textContent = counts.rejected;
-  document.getElementById('last-update').textContent = 'Updated ' + new Date().toLocaleTimeString();
-  document.getElementById('coverageInfo').textContent = `Coverage: ${states.size} States | ${features.length} Active Claims`;
+  if (clusterGroup) map.removeLayer(clusterGroup);
+  clusterGroup = markers;
+  if (heatmapLayer) map.removeLayer(heatmapLayer);
+  heatmapLayer = L.heatLayer(heatPoints, { radius: 25, blur: 18, maxZoom: 12 });
 }
 
-/* Role-specific UI behavior: Citizen vs Official */
-function refreshRoleUI(){
+/* When popup opens, action buttons added above (handled by popupopen listener previously) */
+
+/* Login flow (demo) & role UI placement */
+function refreshUserUI(){
   if (!currentUser) {
-    citizenActions.style.display = 'none';
-    officerActions.style.display = 'none';
-    document.getElementById('citizenActions').style.display = 'none';
-    document.getElementById('officerActions').style.display = 'none';
+    userPanel.style.display = 'none';
+    roleActionsBox.style.display = 'none';
+    loginOpen.style.display = 'inline-flex';
     return;
   }
-  if (currentUser.role === 'citizen') {
-    document.getElementById('citizenActions').style.display = 'block';
-    document.getElementById('officerActions').style.display = 'none';
-  } else if (currentUser.role === 'official') {
-    document.getElementById('citizenActions').style.display = 'none';
-    document.getElementById('officerActions').style.display = 'block';
-  }
-}
-
-/* login flow (demo or firebase) */
-loginForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const role = document.getElementById('roleSelect').value;
-  const email = document.getElementById('username').value.trim();
-  const pwd = document.getElementById('password').value;
-  if (useFirebase && firebaseAuth) {
-    try {
-      await firebaseAuth.signInWithEmailAndPassword(email, pwd);
-      currentUser = { username: email, role };
-    } catch (err) {
-      console.warn('Firebase sign-in failed; using demo login', err);
-      currentUser = { username: email, role };
-    }
-  } else {
-    currentUser = { username: email, role };
-  }
-  afterLogin();
-  hideModal(loginModal);
-});
-loginDemo.addEventListener('click', () => {
-  const role = document.getElementById('roleSelect').value;
-  currentUser = { username: role + '.demo', role };
-  afterLogin(); hideModal(loginModal);
-});
-
-function afterLogin(){
-  userBadge.style.display = 'inline-flex';
-  userNameEl.textContent = (currentUser.username||'user').split('@')[0];
-  userRoleTag.textContent = currentUser.role === 'official' ? 'Government Official' : 'Citizen';
   loginOpen.style.display = 'none';
-  refreshRoleUI();
+  userPanel.style.display = 'flex';
+  userBadge.innerHTML = `<strong style="font-weight:700">${currentUser.username.split('@')[0]}</strong><div style="font-size:12px;color:var(--muted);margin-left:8px">${currentUser.role === 'official' ? 'Government Official' : 'Citizen'}</div>`;
+  // populate roleActionsBox
+  roleActionsBox.innerHTML = '';
+  if (currentUser.role === 'citizen') {
+    const raiseBtn = document.createElement('button'); raiseBtn.className = 'btn'; raiseBtn.textContent = 'Raise Claim'; raiseBtn.onclick = citizenRaise;
+    const trackBtn = document.createElement('button'); trackBtn.className='btn secondary'; trackBtn.textContent='Track Claim'; trackBtn.onclick = citizenTrack;
+    const reportsBtn = document.createElement('button'); reportsBtn.className='btn secondary'; reportsBtn.textContent='My Reports'; reportsBtn.onclick = () => alert('My reports (demo)');
+    roleActionsBox.appendChild(raiseBtn); roleActionsBox.appendChild(trackBtn); roleActionsBox.appendChild(reportsBtn);
+    roleActionsBox.style.display = 'flex';
+  } else {
+    const reviewBtn = document.createElement('button'); reviewBtn.className='btn'; reviewBtn.textContent='Review Queue'; reviewBtn.onclick = () => alert('Review queue (demo)');
+    const assignBtn = document.createElement('button'); assignBtn.className='btn secondary'; assignBtn.textContent='Assign Verification'; assignBtn.onclick = () => alert('Assign verification (demo)');
+    const auditBtn = document.createElement('button'); auditBtn.className='btn secondary'; auditBtn.textContent='Export Audit Log'; auditBtn.onclick = () => alert('Export audit log (demo)');
+    roleActionsBox.appendChild(reviewBtn); roleActionsBox.appendChild(assignBtn); roleActionsBox.appendChild(auditBtn);
+    roleActionsBox.style.display = 'flex';
+  }
 }
 
-/* logout by clicking badge */
-userBadge.addEventListener('click', () => {
-  if (useFirebase && firebaseAuth) firebaseAuth.signOut().catch(()=>{});
-  currentUser = null; userBadge.style.display = 'none'; loginOpen.style.display = 'inline-flex'; refreshRoleUI();
-});
-
-/* Citizen actions (raise, track, my reports) - demo UIs */
-raiseClaimBtn.addEventListener('click', () => {
+/* demo citizen raise & track */
+function citizenRaise(){
   const title = prompt('Brief title for claim'); if (!title) return;
   const village = prompt('Village'); if (!village) return;
-  // create a minimal claim object and add to map (demo only)
   const newId = 'CLAIM-' + Date.now().toString().slice(-6);
-  const demoFeature = { type:'Feature', properties:{ claim_id:newId, name:title, village, district:'Unknown', state:'Unknown', status:'Pending', claimant_families:1, area_hectares:0 }, geometry:{ type:'Point', coordinates:[85.82 + Math.random()*0.01, 20.30 + Math.random()*0.01] } };
-  // convert point to small polygon for style using buffer approx
-  const poly = turfPointToPolygon(demoFeature.geometry.coordinates[1], demoFeature.geometry.coordinates[0], 0.004);
-  demoFeature.geometry = { type:'Polygon', coordinates: [poly] };
-  addFeature(demoFeature); rebuildClusterAndHeat(); rebuildAutocomplete(); alert('Claim raised (demo). ID: ' + newId);
-});
-
-trackClaimBtn.addEventListener('click', () => {
-  const q = prompt('Enter your Claim ID to track');
-  if (!q) return;
-  // simple search
-  let found = false;
-  layerMap.forEach((layer,id)=>{
+  const lat = 20.2961 + (Math.random()-0.5)*0.02;
+  const lng = 85.8245 + (Math.random()-0.5)*0.02;
+  const poly = turfPointToPolygon(lat, lng, 0.004);
+  const feat = { type:'Feature', properties:{ claim_id:newId, name:title, village, district:'Unknown', state:'Unknown', status:'Pending', claimant_families:1, area_hectares:0 }, geometry:{ type:'Polygon', coordinates: [poly] } };
+  addFeature(feat);
+  rebuildClusterAndHeat(); rebuildAutocomplete();
+  alert('Claim raised (demo). ID: ' + newId);
+}
+function citizenTrack(){
+  const q = prompt('Enter Claim ID to track'); if (!q) return;
+  let found=false;
+  layerMap.forEach((layer,id)=> {
     if (id === q) {
-      found = true;
+      found=true;
       const inner = layer.getLayers ? layer.getLayers()[0] : layer;
-      if (inner) map.fitBounds(inner.getBounds(), { padding:[30,30] });
-      setTimeout(()=> inner && inner.openPopup && inner.openPopup(), 300);
+      if (inner && inner.getBounds) { map.fitBounds(inner.getBounds(), { padding:[30,30] }); setTimeout(()=> inner.openPopup && inner.openPopup(), 350); }
     }
   });
   if (!found) alert('Claim not found in current dataset.');
-});
+}
 
-myReportsBtn.addEventListener('click', ()=> alert('My Reports: demo view. For production, load user-specific reports from your backend.'));
-
-/* Officer actions - demo */
-reviewQueueBtn.addEventListener('click', ()=> alert('Open Review Queue (demo). In production: query claims where status==pending or deforestation_detected==true.'));
-assignBtn.addEventListener('click', ()=> alert('Assign Verification: demo action. In production: POST assignment to server.'));
-auditBtn.addEventListener('click', ()=> alert('Export audit log: demo. Implement server-side audit export for production.'));
-
-/* turf-like simple polygon generator (approx square around point) */
-function turfPointToPolygon(lat, lng, radiusDeg) {
-  // radiusDeg ~ 0.004 yields ~400m depending on lat
-  const r = radiusDeg || 0.002;
+/* tiny polygon helper for point->square */
+function turfPointToPolygon(lat, lng, r) {
+  const radius = r || 0.002;
   return [
-    [lng - r, lat - r],
-    [lng + r, lat - r],
-    [lng + r, lat + r],
-    [lng - r, lat + r],
-    [lng - r, lat - r]
+    [lng - radius, lat - radius],
+    [lng + radius, lat - radius],
+    [lng + radius, lat + radius],
+    [lng - radius, lat + radius],
+    [lng - radius, lat - radius]
   ];
 }
 
-/* initial UI state */
-refreshRoleUI();
-loadSavedFilters();
+/* login handlers (demo only) */
+loginForm.addEventListener('submit', (e)=> {
+  e.preventDefault();
+  const role = roleSelect.value;
+  const email = document.getElementById('username').value.trim() || (role + '.demo@example.com');
+  if (useFirebase) {
+    // add firebase auth logic here later
+  }
+  currentUser = { username: email, role };
+  hideModal(loginModal);
+  refreshUserUI();
+});
+loginDemo.addEventListener('click', ()=> {
+  const role = roleSelect.value;
+  currentUser = { username: role + '.demo@example.com', role };
+  hideModal(loginModal); refreshUserUI();
+});
 
-/* small console message */
-console.log('VisionForge FRA Atlas UI loaded with enhanced features: heatmap, clustering, timeline, compare slider, autocomplete & saved filters.');
+/* logout */
+logoutBtn.addEventListener('click', ()=> {
+  currentUser = null;
+  refreshUserUI();
+});
+
+/* popup open handler (same as earlier) */
+map.on('popupopen', (e)=>{
+  const popupEl = e.popup.getElement && e.popup.getElement();
+  if (!popupEl) return;
+  const actionArea = popupEl.querySelector('.action-area');
+  if (!actionArea) return;
+  actionArea.innerHTML = '';
+  const claimId = actionArea.getAttribute('data-claim-id');
+  const reportBtn = document.createElement('button'); reportBtn.className='btn secondary'; reportBtn.textContent='Report'; reportBtn.onclick = ()=> showModal(reportModal);
+  actionArea.appendChild(reportBtn);
+  if (currentUser && currentUser.role === 'official') {
+    const approve = document.createElement('button'); approve.className='btn'; approve.style.background='linear-gradient(135deg,#2ecc71,#27ae60)'; approve.textContent='Approve';
+    const reject = document.createElement('button'); reject.className='btn'; reject.style.background='linear-gradient(135deg,#ef4444,#dc2626)'; reject.textContent='Reject';
+    approve.onclick = ()=> updateClaimStatus(claimId, 'Approved', e.popup);
+    reject.onclick = ()=> updateClaimStatus(claimId, 'Rejected', e.popup);
+    actionArea.appendChild(approve); actionArea.appendChild(reject);
+  } else {
+    const hint = document.createElement('div'); hint.className='small'; hint.style.marginTop='6px'; hint.textContent='Log in as an official to review claims.';
+    actionArea.appendChild(hint);
+  }
+});
+
+/* initial UI state */
+refreshUserUI();
+
+console.log('VisionForge update applied: improved colors, login panel, timeline/opacity, compare panel, role actions moved, logout available.');
 </script>
 </body>
 </html>
