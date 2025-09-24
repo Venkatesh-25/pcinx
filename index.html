@@ -3,142 +3,147 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>FRA Atlas DSS - Decision Support System</title>
+<title>VisionForge — FRA Atlas DSS</title>
 
-<!-- Keep Leaflet CSS as before -->
+<!-- Required unchanged Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 
+<!-- MarkerCluster & heat plugins (client-side visualization only) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+
 <style>
-  :root {
-    --bg-r: 20; --bg-g: 22; --bg-b: 28;
-    --glass-a: 0.06;
-    --accent-r: 45; --accent-g: 80; --accent-b: 22;
-    --accent-hex: #2d5016;
-    --muted: #9aa3ab;
-    --card-radius: 14px;
-  }
+:root{
+  --bg-r: 20; --bg-g: 22; --bg-b: 28;
+  --glass-a: 0.06;
+  --accent: #2d5016;
+  --muted: #9aa3ab;
+  --card-radius: 14px;
+  --btn-text-dark: #0b1220;
+  --btn-text-light: #fff;
+}
 
-  body[data-theme="light"] {
-    --bg-r: 255; --bg-g: 255; --bg-b: 255;
-    --glass-a: 0.9;
-    --muted: #555;
-  }
+/* Light theme overrides */
+body[data-theme="light"]{
+  --bg-r: 245; --bg-g: 247; --bg-b: 250;
+  --glass-a: 0.9;
+  --muted: #556270;
+  --btn-text-dark: #0b1220;
+  --btn-text-light: #0b1220;
+  --accent: #25603f;
+}
 
-  *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%}
-  body {
-    font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    background: radial-gradient(900px 400px at 10% 10%, rgba(45,80,22,0.05), transparent),
-                rgba(var(--bg-r),var(--bg-g),var(--bg-b),1);
-    color: #e6eef8;
-    -webkit-font-smoothing:antialiased;
-    -moz-osx-font-smoothing:grayscale;
-    height:100vh;
-    overflow:hidden;
-  }
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Inter',system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+  background: radial-gradient(900px 400px at 10% 10%, rgba(45,80,22,0.03), transparent), rgba(var(--bg-r),var(--bg-g),var(--bg-b),1);
+  color: #e6eef8;
+  -webkit-font-smoothing:antialiased;
+  height:100vh;
+  overflow:hidden;
+}
 
-  .header {
-    display:flex;align-items:center;justify-content:space-between;
-    gap:12px;padding:16px;margin:14px;border-radius:12px;
-    background: linear-gradient(180deg, rgba(255,255,255,var(--glass-a)), rgba(255,255,255,calc(var(--glass-a) - 0.02)));
-    backdrop-filter: blur(10px) saturate(120%);
-    box-shadow: 0 8px 36px rgba(0,0,0,0.35);
-    border: 1px solid rgba(255,255,255,0.03);
-  }
+/* Header */
+.header{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px;margin:14px;border-radius:12px;
+  background: linear-gradient(180deg, rgba(255,255,255,var(--glass-a)), rgba(255,255,255,calc(var(--glass-a) - 0.02)));
+  backdrop-filter: blur(10px) saturate(120%);
+  box-shadow: 0 8px 36px rgba(0,0,0,0.28);
+  border:1px solid rgba(255,255,255,0.03);
+}
+.brand{display:flex;align-items:center;gap:12px}
+.logo-mark{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, rgba(45,80,22,0.12), rgba(255,255,255,0.02));border:1px solid rgba(0,0,0,0.06)}
+.logo-mark i{color:var(--accent);font-size:20px}
+.title h1{font-size:18px;color:var(--accent);margin-bottom:2px}
+.title p{font-size:12px;color:var(--muted)}
 
-  .brand { display:flex;align-items:center;gap:12px }
-  .logo-mark{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, rgba(var(--accent-r),var(--accent-g),var(--accent-b),0.12), rgba(255,255,255,0.02));border:1px solid rgba(0,0,0,0.06)}
-  .logo-mark i{color:var(--accent-hex);font-size:20px}
-  .title h1{font-size:18px;color:var(--accent-hex);margin-bottom:2px}
-  .title p{font-size:12px;color:var(--muted)}
+/* Header controls */
+.header-controls{display:flex;align-items:center;gap:10px}
+.btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.02);color:var(--btn-text-light);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.03);}
+.btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--btn-text-light)}
+.btn.ghost{background:transparent;border:1px dashed rgba(255,255,255,0.03);color:var(--btn-text-light)}
+.btn:focus{outline:2px solid rgba(0,0,0,0.06)}
 
-  .header-controls{display:flex;align-items:center;gap:10px}
+/* Layout */
+.main-container{display:flex;height:calc(100vh - 120px);margin:14px;gap:18px}
+#map{flex:1;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.02);position:relative}
+.dashboard{width:400px;padding:18px;border-radius:var(--card-radius);backdrop-filter:blur(10px);background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);box-shadow:0 20px 60px rgba(0,0,0,0.45);overflow:auto}
 
-  .btn { padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.02);color:#eef2f7;backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.03) }
-  .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06)}
-  .btn.ghost{background:transparent;border:1px dashed rgba(255,255,255,0.03)}
-  .btn:focus{outline:2px solid rgba(255,255,255,0.06)}
+/* Dashboard sections */
+.dashboard-section{margin-bottom:16px;padding:14px;border-radius:10px;background:linear-gradient(180deg, rgba(0,0,0,0.14), rgba(0,0,0,0.08));border:1px solid rgba(255,255,255,0.02)}
+.section-title{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.section-title h3{font-size:14px;color:var(--accent)}
+.section-title p{font-size:12px;color:var(--muted);margin-left:auto}
 
-  .main-container{display:flex;height:calc(100vh - 120px);margin:14px;gap:18px}
-  #map{flex:1;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.02)}
-  .dashboard{width:380px;padding:18px;border-radius:var(--card-radius);backdrop-filter:blur(10px);background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);box-shadow:0 20px 60px rgba(0,0,0,0.5);overflow:auto}
+/* Stats */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stat-card{padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(0,0,0,0.16), rgba(0,0,0,0.12));border:1px solid rgba(255,255,255,0.02);text-align:center}
+.stat-number{font-size:20px;font-weight:800;color:#fff}
+.stat-label{font-size:12px;color:var(--muted);margin-top:6px;text-transform:uppercase;letter-spacing:0.6px}
 
-  .dashboard-section{margin-bottom:16px;padding:14px;border-radius:10px;background:linear-gradient(180deg, rgba(0,0,0,0.14), rgba(0,0,0,0.08));border:1px solid rgba(255,255,255,0.02)}
-  .section-title{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-  .section-title h3{font-size:14px;color:var(--accent-hex)}
-  .section-title p{font-size:12px;color:var(--muted);margin-left:auto}
+/* controls & inputs */
+.search-row{display:flex;gap:8px;margin-bottom:10px}
+.search-row input{flex:1;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.05);background:transparent;color:#fff}
+.search-row select{padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.05);background:transparent;color:#fff}
 
-  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .stat-card{padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(0,0,0,0.16), rgba(0,0,0,0.12));border:1px solid rgba(255,255,255,0.02);text-align:center}
-  .stat-number{font-size:20px;font-weight:800;color:#fff}
-  .stat-label{font-size:12px;color:var(--muted);margin-top:6px;text-transform:uppercase;letter-spacing:0.6px}
+/* small */
+.small{font-size:12px;color:var(--muted)}
 
-  .control-btn{width:100%;padding:12px;border-radius:10px;border:none;font-weight:800;cursor:pointer;margin-top:8px}
-  .btn-before{background:linear-gradient(135deg,#2ecc71,#27ae60);color:#fff}
-  .btn-after{background:linear-gradient(135deg,#f43f5e,#c026d3);color:#fff}
-  .btn-reset{background:linear-gradient(135deg,#60a5fa,#3b82f6);color:#fff}
-  .btn-export{background:linear-gradient(135deg,#10b981,#06b6d4);color:#fff}
-  .btn-report{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff}
+/* Legend */
+.legend{position:absolute;bottom:22px;left:22px;padding:12px;border-radius:10px;z-index:1100;background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.28));border:1px solid rgba(255,255,255,0.04)}
+.legend h4{margin:0 0 10px 0;color:var(--accent)}
+.legend-item{display:flex;gap:10px;align-items:center;color:#e6eef8;margin-bottom:8px}
 
-  .alert{padding:12px;border-radius:10px;margin-bottom:14px;background:linear-gradient(90deg, rgba(244,67,54,0.07), rgba(255,255,255,0.02));border:1px solid rgba(244,67,54,0.12);color:#ffdede;display:flex;align-items:flex-start;gap:12px}
-  .legend{position:absolute;bottom:22px;left:22px;padding:12px;border-radius:10px;z-index:1100;background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.28));border:1px solid rgba(255,255,255,0.04)}
-  .legend h4{margin:0 0 10px 0;color:var(--accent-hex)}
-  .legend-item{display:flex;gap:10px;align-items:center;color:#e6eef8;margin-bottom:8px}
-  .legend-color{width:18px;height:18px;border-radius:4px;border:2px solid rgba(0,0,0,0.4)}
+/* popup style */
+.leaflet-popup-content-wrapper{border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.3)}
 
-  .modal{ display:none; position:fixed; z-index:1400; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.45); align-items:center; justify-content:center }
-  .modal.open{ display:flex }
-  .modal-card{ width:94%; max-width:620px; border-radius:14px; overflow:hidden; background: linear-gradient(180deg, #fff, #fafafa); color:#111; box-shadow:0 30px 70px rgba(0,0,0,0.5)}
-  .modal-header{ padding:16px 18px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(0,0,0,0.06)}
-  .modal-body{ padding:16px 18px; max-height:65vh; overflow:auto }
+/* modals */
+.modal{display:none;position:fixed;z-index:1400;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.45);align-items:center;justify-content:center}
+.modal.open{display:flex}
+.modal-card{width:94%;max-width:720px;border-radius:14px;overflow:hidden;background:linear-gradient(180deg,#fff,#fafafa);color:#111;box-shadow:0 30px 70px rgba(0,0,0,0.5)}
+.modal-header{padding:16px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(0,0,0,0.06)}
+.modal-body{padding:16px 18px;max-height:65vh;overflow:auto}
 
-  .form-group{ margin-bottom:12px }
-  .form-group label{ display:block; font-weight:700; font-size:13px; margin-bottom:6px }
-  .form-group input, .form-group select, .form-group textarea { width:100%; padding:10px 12px; border-radius:8px; border:1px solid rgba(0,0,0,0.08); font-size:14px }
+/* compare slider container */
+.compare-container{position:absolute;top:80px;right:40px;width:520px;height:320px;z-index:1400;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.06);background:rgba(0,0,0,0.4);backdrop-filter:blur(6px)}
+.compare-top{position:absolute;left:0;top:0;height:100%;width:50%;overflow:hidden}
+.compare-top img{width:100%;height:100%;object-fit:cover}
+.compare-bottom img{width:100%;height:100%;object-fit:cover}
+.compare-divider{position:absolute;left:50%;top:0;height:100%;width:4px;margin-left:-2px;background:linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.6));cursor:ew-resize;box-shadow:0 4px 12px rgba(0,0,0,0.4)}
 
-  .search-row{display:flex;gap:8px;margin-bottom:10px}
-  .search-row input{flex:1;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.05);background:transparent;color:#fff}
-  .small{font-size:12px;color:var(--muted)}
+/* timeline controls */
+.timeline-controls{display:flex;gap:8px;align-items:center;margin-top:8px}
+.range{flex:1}
 
-  .action-area .btn{ margin-right:8px }
-  @media(max-width:900px){ .dashboard{ display:none } }
-
+/* responsive */
+@media(max-width:900px){ .dashboard{ display:none } }
 </style>
 </head>
 <body data-theme="dark">
 
-<!-- small loading overlay -->
-<div id="loading" style="display:none;position:fixed;z-index:1600;left:0;top:0;width:100%;height:100%;align-items:center;justify-content:center;background:rgba(0,0,0,0.45)">
-  <div style="background:rgba(255,255,255,0.03);backdrop-filter:blur(6px);padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);color:#fff">
-    <div style="margin-bottom:8px;font-weight:700">Processing...</div>
-    <div style="height:6px;background:rgba(255,255,255,0.06);border-radius:6px;overflow:hidden">
-      <div style="width:48%;height:100%;background:linear-gradient(90deg,#2ecc71,#27ae60);animation:progress 2s linear infinite"></div>
-    </div>
-  </div>
-</div>
-
 <header class="header">
   <div class="brand">
-    <div class="logo-mark"><i class="fas fa-tree"></i></div>
+    <div class="logo-mark"><i class="fas fa-cube"></i></div>
     <div class="title">
-      <h1>FRA Atlas DSS</h1>
-      <p>AI-powered FRA Atlas & WebGIS Decision Support System</p>
+      <h1>VisionForge</h1>
+      <p>Intelligent FRA Atlas — Empowering Tribal Rights through Satellite & Community Evidence</p>
     </div>
   </div>
 
-  <div style="display:flex;gap:12px;align-items:center">
+  <div style="display:flex;align-items:center;gap:14px">
     <div style="display:flex;gap:10px;align-items:center;margin-right:12px">
-      <div class="small" style="color:var(--muted)"><i class="fas fa-satellite"></i> Sentinel-2 Connected</div>
-      <div class="small" style="color:var(--muted)"><i class="fas fa-database"></i> 4 States Loaded</div>
+      <div class="small"><i class="fas fa-satellite"></i> Sentinel-2 Connected</div>
+      <div class="small"><i class="fas fa-database"></i> 4 States Loaded</div>
     </div>
 
     <div class="header-controls">
-      <button id="themeToggle" class="btn secondary" title="Toggle dark / light mode"><i class="fas fa-adjust"></i> Theme</button>
-      <button id="aboutBtn" class="btn ghost"><i class="fas fa-info-circle"></i> About</button>
-      <button id="loginOpen" class="btn"><i class="fas fa-sign-in-alt"></i> Login</button>
-      <div id="userBadge" style="display:none" class="btn" title="Click to logout"><span id="userName">User</span> &nbsp; <span id="userRoleTag" style="font-weight:600;color:var(--muted);font-size:12px"></span></div>
+      <button id="themeToggle" class="btn secondary" title="Toggle theme">Theme</button>
+      <button id="aboutBtn" class="btn ghost">About</button>
+      <button id="loginOpen" class="btn">Login</button>
+      <div id="userBadge" class="btn" style="display:none;cursor:pointer"><span id="userName">user</span>&nbsp;<span id="userRoleTag" style="font-weight:700;color:var(--muted);font-size:12px"></span></div>
     </div>
   </div>
 </header>
@@ -147,16 +152,6 @@
   <div id="map"></div>
 
   <aside class="dashboard" aria-label="Control dashboard">
-    <div class="alert" role="status">
-      <div style="flex:1">
-        <strong>Deforestation Alert</strong>
-        <div class="small" style="margin-top:6px;color:var(--muted)">Forest loss detected in CFR-2024-OD-101 — please investigate.</div>
-      </div>
-      <div style="min-width:100px;text-align:right">
-        <button id="exportBtn" class="btn btn-export" style="width:100%">Generate Report</button>
-      </div>
-    </div>
-
     <div class="dashboard-section">
       <div class="section-title">
         <h3>FRA Claims Overview</h3>
@@ -164,8 +159,9 @@
       </div>
 
       <div class="search-row">
-        <input id="searchInput" placeholder="Search claim id / village / district / state" />
-        <select id="statusFilter" style="width:140px;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:#fff">
+        <input id="searchInput" placeholder="Search claim id / village / district / state" list="autocompleteList" />
+        <datalist id="autocompleteList"></datalist>
+        <select id="statusFilter">
           <option value="all">All statuses</option>
           <option value="approved">Approved</option>
           <option value="pending">Pending</option>
@@ -174,23 +170,16 @@
         </select>
       </div>
 
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <button id="saveFilterBtn" class="btn secondary" style="flex:1">Save Filter</button>
+        <select id="savedFilters" class="small" style="flex:1;padding:10px;border-radius:8px"></select>
+      </div>
+
       <div class="stat-grid">
-        <div class="stat-card">
-          <div class="stat-number" id="approved-count">1,247</div>
-          <div class="stat-label">Approved</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number" id="pending-count">156</div>
-          <div class="stat-label">Pending</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number" id="review-count">43</div>
-          <div class="stat-label">Under Review</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number" id="rejected-count">12</div>
-          <div class="stat-label">Rejected</div>
-        </div>
+        <div class="stat-card"><div class="stat-number" id="approved-count">1,247</div><div class="stat-label">Approved</div></div>
+        <div class="stat-card"><div class="stat-number" id="pending-count">156</div><div class="stat-label">Pending</div></div>
+        <div class="stat-card"><div class="stat-number" id="review-count">43</div><div class="stat-label">Under Review</div></div>
+        <div class="stat-card"><div class="stat-number" id="rejected-count">12</div><div class="stat-label">Rejected</div></div>
       </div>
 
       <div style="margin-top:12px;padding:10px;border-radius:10px;background:linear-gradient(180deg, rgba(0,0,0,0.06), rgba(0,0,0,0.02));font-size:13px;color:var(--muted)">
@@ -199,63 +188,71 @@
     </div>
 
     <div class="dashboard-section">
-      <div class="section-title">
-        <h3>Satellite Monitoring</h3>
-        <p>NDVI overlays & controls</p>
-      </div>
+      <div class="section-title"><h3>Satellite Monitoring</h3><p>NDVI overlays & timeline</p></div>
 
       <div style="display:flex;gap:8px">
-        <button id="beforeBtn" class="control-btn btn-before">January 2025 (Baseline)</button>
-        <button id="afterBtn" class="control-btn btn-after">September 2025 (Current)</button>
+        <button id="beforeBtn" class="control-btn btn" style="background:linear-gradient(135deg,#2ecc71,#27ae60);color:var(--btn-text-light)">January 2025 (Baseline)</button>
+        <button id="afterBtn" class="control-btn btn" style="background:linear-gradient(135deg,#ef4444,#c026d3);color:var(--btn-text-light)">September 2025 (Current)</button>
       </div>
 
       <div style="display:flex;gap:8px;margin-top:8px">
-        <button id="resetBtn" class="control-btn btn-reset">Reset View</button>
-        <button id="reportBtn" class="control-btn btn-report">Report Issue</button>
+        <button id="resetBtn" class="control-btn btn" style="background:linear-gradient(135deg,#60a5fa,#3b82f6);color:var(--btn-text-light)">Reset View</button>
+        <button id="compareOpen" class="control-btn btn secondary">Open Compare</button>
       </div>
 
-      <div style="margin-top:10px">
-        <label class="small">NDVI Opacity</label>
-        <input id="ndviOpacity" type="range" min="0" max="1" step="0.05" value="0.6" />
-      </div>
-
-    </div>
-
-    <div class="dashboard-section">
-      <div class="section-title">
-        <h3>System Analytics</h3>
-      </div>
-      <div style="color:var(--muted);font-size:13px;line-height:1.5">
-        <p><strong>Coverage:</strong> 4 States (Odisha, Madhya Pradesh, Tripura, Telangana)</p>
-        <p><strong>Last Update:</strong> <span id="lastUpdateText">2 hours ago</span></p>
-        <p><strong>NDVI Threshold:</strong> 0.3 (Deforestation alert)</p>
-        <p><strong>Spatial Resolution:</strong> 10m (Sentinel-2)</p>
-      </div>
-    </div>
-
-    <div class="dashboard-section">
-      <div class="section-title">
-        <h3>Community Impact</h3>
-      </div>
-      <div class="stat-grid">
-        <div class="stat-card">
-          <div class="stat-number">8,542</div>
-          <div class="stat-label">Families Protected</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number">24,156</div>
-          <div class="stat-label">Hectares Secured</div>
-        </div>
-      </div>
       <div style="margin-top:12px">
-        <button id="exportGeoBtn" class="btn secondary" style="width:100%">Export visible claims (GeoJSON)</button>
+        <div class="timeline-controls">
+          <button id="playTimeline" class="btn secondary">Play</button>
+          <button id="pauseTimeline" class="btn secondary">Pause</button>
+          <div style="flex:1"><input id="timelineRange" class="range" type="range" min="0" max="4" step="1" value="0" /></div>
+          <select id="timelineSpeed" class="small"><option value="1200">1x</option><option value="800">1.5x</option><option value="400">2x</option></select>
+        </div>
+        <div style="margin-top:8px">
+          <label class="small">NDVI Opacity</label>
+          <input id="ndviOpacity" type="range" min="0" max="1" step="0.05" value="0.6" />
+        </div>
       </div>
     </div>
 
+    <div class="dashboard-section">
+      <div class="section-title"><h3>Visual Tools</h3><p>Cluster / Heatmap</p></div>
+
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <button id="toggleCluster" class="btn">Toggle Clusters</button>
+        <button id="toggleHeatmap" class="btn">Toggle Heatmap</button>
+      </div>
+      <div style="margin-top:8px">
+        <button id="exportBtn" class="btn btn" style="width:100%;background:linear-gradient(135deg,#10b981,#06b6d4);color:var(--btn-text-light)">Generate Report</button>
+      </div>
+    </div>
+
+    <div class="dashboard-section">
+      <div class="section-title"><h3>Community & Roles</h3><p>Citizen & Officer actions</p></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div id="citizenActions" style="display:none">
+          <button id="raiseClaimBtn" class="btn secondary">Raise Claim</button>
+          <button id="trackClaimBtn" class="btn secondary">Track My Claims</button>
+          <button id="myReportsBtn" class="btn secondary">My Reports</button>
+        </div>
+        <div id="officerActions" style="display:none">
+          <button id="reviewQueueBtn" class="btn">Review Queue</button>
+          <button id="assignBtn" class="btn">Assign Verification</button>
+          <button id="auditBtn" class="btn">Export Audit Log</button>
+        </div>
+      </div>
+      <div style="margin-top:12px;color:var(--muted);font-size:13px">Saved filters and search autocomplete available for quick workflows.</div>
+    </div>
   </aside>
 </div>
 
-<!-- Map legend -->
+<!-- Compare small UI -->
+<div id="compareContainer" class="compare-container" style="display:none">
+  <div class="compare-bottom"><img id="compareBefore" src="" alt="before"/></div>
+  <div id="compareTop" class="compare-top"><img id="compareAfter" src="" alt="after"/></div>
+  <div id="divider" class="compare-divider"></div>
+</div>
+
+<!-- Legend -->
 <div class="legend">
   <h4>Map Legend</h4>
   <div class="legend-item"><div class="legend-color" style="background-color:#ff7800"></div><div>FRA Claim Boundary</div></div>
@@ -263,171 +260,105 @@
   <div class="legend-item"><div class="legend-color" style="background-color:#ff6b6b;opacity:0.8"></div><div>Forest Loss (Low NDVI)</div></div>
 </div>
 
-<!-- Report Modal -->
+<!-- Modals: report, login, about -->
 <div id="reportModal" class="modal" aria-hidden="true">
   <div class="modal-card">
-    <div class="modal-header">
-      <h3 style="margin:0">Report Environmental Issue</h3>
-      <button class="close" id="closeModal">&times;</button>
-    </div>
+    <div class="modal-header"><h3 style="margin:0">Report Environmental Issue</h3><button class="close" id="closeReport">&times;</button></div>
     <div class="modal-body">
       <form id="reportForm">
-        <div class="form-group">
-          <label for="issueType">Issue Type *</label>
-          <select id="issueType" required>
-            <option value="">Select issue type</option>
-            <option value="deforestation">Illegal Deforestation</option>
-            <option value="encroachment">Forest Encroachment</option>
-            <option value="mining">Unauthorized Mining</option>
-            <option value="dumping">Waste Dumping</option>
-            <option value="other">Other Environmental Violation</option>
-          </select>
+        <div class="form-group"><label>Issue Type *</label><select id="issueType"><option value="deforestation">Illegal Deforestation</option><option value="encroachment">Encroachment</option><option value="mining">Unauthorized Mining</option><option value="dumping">Waste Dumping</option></select></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-group"><label>Your Name</label><input id="reportName" required/></div>
+          <div class="form-group"><label>Phone</label><input id="reportPhone"/></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div class="form-group">
-            <label for="reporterName">Your Name *</label>
-            <input id="reporterName" required />
-          </div>
-          <div class="form-group">
-            <label for="reporterPhone">Phone</label>
-            <input id="reporterPhone" />
-          </div>
+          <div class="form-group"><label>Location / Village</label><input id="reportLocation" required/></div>
+          <div class="form-group"><label>District</label><input id="reportDistrict" required/></div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div class="form-group">
-            <label for="location">Location / Village *</label>
-            <input id="location" required />
-          </div>
-          <div class="form-group">
-            <label for="district">District *</label>
-            <input id="district" required />
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="description">Description *</label>
-          <textarea id="description" required></textarea>
-        </div>
-        <div class="form-group">
-          <label for="coordinates">GPS Coordinates (optional)</label>
-          <input id="coordinates" placeholder="lat, lng" />
-        </div>
-        <div style="display:flex;gap:8px">
-          <button type="submit" class="btn" style="flex:1;background:linear-gradient(135deg,#10b981,#06b6d4);color:#fff">Submit</button>
-          <button type="button" id="reportCancel" class="btn secondary" style="flex:1">Cancel</button>
-        </div>
+        <div class="form-group"><label>Description</label><textarea id="reportDesc" required></textarea></div>
+        <div style="display:flex;gap:8px"><button type="submit" class="btn" style="flex:1;background:linear-gradient(135deg,#10b981,#06b6d4);color:var(--btn-text-light)">Submit</button><button type="button" id="reportCancel" class="btn secondary" style="flex:1">Cancel</button></div>
       </form>
     </div>
   </div>
 </div>
 
-<!-- About Modal -->
-<div id="aboutModal" class="modal" aria-hidden="true">
-  <div class="modal-card">
-    <div class="modal-header">
-      <h3 style="margin:0">About FRA Atlas DSS</h3>
-      <button class="close" id="closeAbout">&times;</button>
-    </div>
-    <div class="modal-body">
-      <p style="font-size:14px;color:#111;line-height:1.6">
-        FRA Atlas DSS — multi-state monitoring with NDVI overlays, reporting and a review workflow. Use the login button to sign in as Citizen or Government Official (demo & Firebase supported). Persist claim updates to Firestore or your REST endpoint.
-      </p>
-    </div>
-  </div>
-</div>
-
-<!-- Login Modal (Firebase demo) -->
 <div id="loginModal" class="modal" aria-hidden="true">
   <div class="modal-card">
-    <div class="modal-header">
-      <h3 style="margin:0">Login</h3>
-      <button class="close" id="closeLogin">&times;</button>
-    </div>
+    <div class="modal-header"><h3 style="margin:0">Login</h3><button class="close" id="closeLogin">&times;</button></div>
     <div class="modal-body">
       <form id="loginForm">
-        <div class="form-group">
-          <label for="roleSelect">Login As</label>
-          <select id="roleSelect" required>
-            <option value="citizen">Citizen</option>
-            <option value="official">Government Official</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="username">Username (email)</label>
-          <input id="username" type="email" placeholder="demo@example.com" required />
-        </div>
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input id="password" type="password" placeholder="demo pass" required />
-        </div>
-        <div style="display:flex;gap:8px">
-          <button type="submit" class="btn" style="flex:1;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff">Sign in</button>
-          <button type="button" id="loginDemo" class="btn secondary" style="flex:1">Demo</button>
-        </div>
-        <p class="small" style="margin-top:10px">Demo credentials accepted for UI demo. For production, integrate with your backend auth.</p>
+        <div class="form-group"><label>Login As</label><select id="roleSelect"><option value="citizen">Citizen</option><option value="official">Government Official</option></select></div>
+        <div class="form-group"><label>Email</label><input id="username" type="email" required/></div>
+        <div class="form-group"><label>Password</label><input id="password" type="password" required/></div>
+        <div style="display:flex;gap:8px"><button type="submit" class="btn" style="flex:1;background:linear-gradient(135deg,#3b82f6,#2563eb);color:var(--btn-text-light)">Sign in</button>
+        <button type="button" id="loginDemo" class="btn secondary" style="flex:1">Demo</button></div>
+        <p class="small" style="margin-top:10px">Demo mode for UI only. For production use Firebase or your auth endpoint.</p>
       </form>
     </div>
   </div>
 </div>
 
-<!-- Keep leaflet script as original -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<div id="aboutModal" class="modal" aria-hidden="true">
+  <div class="modal-card">
+    <div class="modal-header"><h3 style="margin:0">About VisionForge</h3><button class="close" id="closeAbout">&times;</button></div>
+    <div class="modal-body">
+      <p style="color:#111">VisionForge is built to provide an AI-powered FRA Atlas combined with WebGIS-based Decision Support for integrated monitoring of FRA implementation. Supports multi-state datasets, NDVI analysis, citizen reporting and officer review workflows. For production, connect to secure backend for auth and claim persistence.</p>
+    </div>
+  </div>
+</div>
 
-<!-- Optional: Firebase (compat) for quick integration. If you don't want this, comment these out -->
+<!-- Keep Leaflet script unchanged + plugin scripts -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+
+<!-- Optional Firebase compat libs (only used if you paste firebaseConfig below) -->
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
 <script>
-/* ============================
-   Configuration area (REQUIRED)
-   ============================
-   1) If you want Firestore persistence, paste your firebaseConfig below.
-   2) If you want server REST persistence, keep firebaseConfig = null and implement POST /api/claims/update on server.
-*/
-
+/* =============================
+   CONFIGURATION: paste firebaseConfig or leave null
+   ============================= */
 const firebaseConfig = null;
 /*
 Example:
 const firebaseConfig = {
-  apiKey: "...",
-  authDomain: "...",
-  projectId: "...",
-  storageBucket: "...",
+  apiKey: "YOUR_KEY",
+  authDomain: "yourproject.firebaseapp.com",
+  projectId: "yourproject",
+  storageBucket: "yourproject.appspot.com",
   messagingSenderId: "...",
   appId: "..."
 };
 */
 
-// --- Firebase init (if config provided) ---
-let useFirebase = false;
-let firebaseApp = null;
-let firebaseAuth = null;
-let firestore = null;
+/* Initialize Firebase if present */
+let useFirebase = false, firebaseAuth = null, firestore = null;
 if (firebaseConfig) {
   try {
-    firebaseApp = firebase.initializeApp(firebaseConfig);
+    firebase.initializeApp(firebaseConfig);
     firebaseAuth = firebase.auth();
     firestore = firebase.firestore();
     useFirebase = true;
-    console.log("Firebase initialized.");
+    console.log('Firebase configured');
   } catch (e) {
-    console.warn("Firebase init failed:", e);
+    console.warn('Firebase init error', e);
     useFirebase = false;
   }
 }
 
-/* ============================
-   App state
-   ============================ */
-let currentUser = null; // { username, role }
-let loadedFeatures = []; // array of Feature objects
-let layerMap = new Map(); // claim_id -> layer
-let activeLayers = []; // layers currently added to claimsGroup display
+/* ===== App state ===== */
+let currentUser = null; // {username, role}
+const layerMap = new Map(); // claim_id -> layer
+let heatLayer = null, clusterLayer = null;
+let timelineTimer = null;
+const ndviImages = []; // timeline images dataURLs
+let timelineIndex = 0;
 
-/* ============================
-   UI wiring
-   ============================ */
-const loginOpenBtn = document.getElementById('loginOpen');
+/* ===== UI refs ===== */
+const loginOpen = document.getElementById('loginOpen');
 const loginModal = document.getElementById('loginModal');
 const closeLogin = document.getElementById('closeLogin');
 const loginForm = document.getElementById('loginForm');
@@ -442,162 +373,103 @@ const closeAbout = document.getElementById('closeAbout');
 
 const reportBtn = document.getElementById('reportBtn');
 const reportModal = document.getElementById('reportModal');
-const closeModal = document.getElementById('closeModal');
+const closeReport = document.getElementById('closeReport');
 const reportForm = document.getElementById('reportForm');
 const reportCancel = document.getElementById('reportCancel');
 
 const themeToggle = document.getElementById('themeToggle');
 
 const searchInput = document.getElementById('searchInput');
+const autoList = document.getElementById('autocompleteList');
 const statusFilter = document.getElementById('statusFilter');
-const exportGeoBtn = document.getElementById('exportGeoBtn');
+const savedFilters = document.getElementById('savedFilters');
+const saveFilterBtn = document.getElementById('saveFilterBtn');
 
-function showModal(id){ document.getElementById(id).classList.add('open'); document.getElementById(id).style.display = 'flex' }
-function hideModal(id){ document.getElementById(id).classList.remove('open'); document.getElementById(id).style.display = 'none' }
+const toggleClusterBtn = document.getElementById('toggleCluster');
+const toggleHeatmapBtn = document.getElementById('toggleHeatmap');
+const exportBtn = document.getElementById('exportBtn');
 
-loginOpenBtn.addEventListener('click', ()=> showModal('loginModal'));
-closeLogin.addEventListener('click', ()=> hideModal('loginModal'));
-aboutBtn.addEventListener('click', ()=> showModal('aboutModal'));
-closeAbout.addEventListener('click', ()=> hideModal('aboutModal'));
+const beforeBtn = document.getElementById('beforeBtn');
+const afterBtn = document.getElementById('afterBtn');
+const resetBtn = document.getElementById('resetBtn');
 
-reportBtn.addEventListener('click', ()=> showModal('reportModal'));
-closeModal.addEventListener('click', ()=> hideModal('reportModal'));
-reportCancel.addEventListener('click', ()=> hideModal('reportModal'));
+const ndviOpacity = document.getElementById('ndviOpacity');
+
+const compareOpen = document.getElementById('compareOpen');
+const compareContainer = document.getElementById('compareContainer');
+const compareBefore = document.getElementById('compareBefore');
+const compareAfter = document.getElementById('compareAfter');
+const compareTop = document.getElementById('compareTop');
+const divider = document.getElementById('divider');
+
+const playTimeline = document.getElementById('playTimeline');
+const pauseTimeline = document.getElementById('pauseTimeline');
+const timelineRange = document.getElementById('timelineRange');
+const timelineSpeed = document.getElementById('timelineSpeed');
+
+/* role buttons */
+const citizenActions = document.getElementById('citizenActions');
+const officerActions = document.getElementById('officerActions');
+const raiseClaimBtn = document.getElementById('raiseClaimBtn');
+const trackClaimBtn = document.getElementById('trackClaimBtn');
+const myReportsBtn = document.getElementById('myReportsBtn');
+
+const reviewQueueBtn = document.getElementById('reviewQueueBtn');
+const assignBtn = document.getElementById('assignBtn');
+const auditBtn = document.getElementById('auditBtn');
+
+/* Utility modals */
+function showModal(el){ el.classList.add('open'); el.style.display='flex' }
+function hideModal(el){ el.classList.remove('open'); el.style.display='none' }
+
+/* wire UI */
+loginOpen.addEventListener('click', ()=>showModal(loginModal));
+closeLogin.addEventListener('click', ()=>hideModal(loginModal));
+aboutBtn.addEventListener('click', ()=>showModal(aboutModal));
+closeAbout.addEventListener('click', ()=>hideModal(aboutModal));
+reportBtn && reportBtn.addEventListener('click', ()=>showModal(reportModal));
+closeReport && closeReport.addEventListener('click', ()=>hideModal(reportModal));
+reportCancel.addEventListener('click', ()=>hideModal(reportModal));
+reportForm.addEventListener('submit', e => { e.preventDefault(); hideModal(reportModal); alert('Report submitted. ID: RPT-' + Date.now().toString().slice(-6)); reportForm.reset(); });
 
 themeToggle.addEventListener('click', () => {
-  const body = document.body;
-  const cur = body.getAttribute('data-theme') || 'dark';
-  const next = cur === 'dark' ? 'light' : 'dark';
-  body.setAttribute('data-theme', next);
+  const b = document.body; const cur = b.getAttribute('data-theme') || 'dark'; const next = cur==='dark'?'light':'dark'; b.setAttribute('data-theme', next);
 });
 
-/* ===== Login flow ===== */
-loginForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const role = document.getElementById('roleSelect').value;
-  const email = document.getElementById('username').value.trim();
-  const pwd = document.getElementById('password').value;
-  if (useFirebase && firebaseAuth) {
-    try {
-      const userCred = await firebaseAuth.signInWithEmailAndPassword(email, pwd);
-      // In demo, store role in local session state; production should use server or custom claims
-      currentUser = { username: email, role };
-      afterLogin();
-      hideModal('loginModal');
-    } catch (err) {
-      // fallback to demo accept
-      console.warn('Firebase sign-in failed, using demo login:', err);
-      currentUser = { username: email, role };
-      afterLogin();
-      hideModal('loginModal');
-    }
-  } else {
-    // demo login (accept any credentials)
-    currentUser = { username: email, role };
-    afterLogin();
-    hideModal('loginModal');
-  }
-});
-
-loginDemo.addEventListener('click', () => {
-  const role = document.getElementById('roleSelect').value;
-  currentUser = { username: role + '.demo@example.com', role };
-  afterLogin();
-  hideModal('loginModal');
-});
-
-function afterLogin(){
-  if (!currentUser) return;
-  userBadge.style.display = 'inline-flex';
-  userNameEl.textContent = currentUser.username.split('@')[0];
-  userRoleTag.textContent = currentUser.role === 'official'? 'Government Official' : 'Citizen';
-  loginOpenBtn.style.display = 'none';
-}
-
-/* logout by clicking badge */
-userBadge.addEventListener('click', () => {
-  if (useFirebase && firebaseAuth) {
-    firebaseAuth.signOut().catch(()=>{});
-  }
-  currentUser = null;
-  userBadge.style.display = 'none';
-  loginOpenBtn.style.display = 'inline-flex';
-});
-
-/* ===== Report form ===== */
-reportForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  hideModal('reportModal');
-  alert('Report submitted. Report ID: REP-' + Date.now().toString().slice(-6));
-  reportForm.reset();
-});
-
-/* ============================
-   Map & claim loading (preserve paths)
-   ============================ */
+/* ===== Map setup (preserve original paths) ===== */
 const map = L.map('map', { center:[20.2961,85.8245], zoom:12, zoomControl:true });
 L.control.zoom({ position:'topright' }).addTo(map);
 
 const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution:'&copy; OpenStreetMap', maxZoom:18 }).addTo(map);
 const positron = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution:'&copy; CARTO & OpenStreetMap', maxZoom:19 });
 
-const baseMaps = { "OpenStreetMap": osm, "Positron (Light)": positron };
-const claimsGroup = L.layerGroup().addTo(map);
-L.control.layers(baseMaps, { "FRA Claims": claimsGroup }, { position:'topright', collapsed:true }).addTo(map);
+L.control.layers({ "OpenStreetMap": osm, "Positron (Light)": positron }, {}, { position:'topright', collapsed:true }).addTo(map);
 
-/* Built-in fallback claim (unchanged) */
-const claimBoundary = {
-  "type":"Feature",
-  "properties":{
-    "name":"CFR-2024-OD-101",
-    "village":"Khandagiri",
-    "district":"Khurda",
-    "area":"245 hectares",
-    "status":"Approved",
-    "claimants":"127 families",
-    "approval_date":"2024-03-15",
-    "claim_id":"CFR-2024-OD-101",
-    "state":"Odisha",
-    "deforestation_detected": true,
-    "area_hectares":245,
-    "claimant_families":127
-  },
-  "geometry":{
-    "type":"Polygon",
-    "coordinates":[[
-      [85.8100,20.3100],
-      [85.8300,20.3100],
-      [85.8300,20.2900],
-      [85.8100,20.2900],
-      [85.8100,20.3100]
-    ]]
-  }
+/* fallback feature (unchanged) */
+const fallbackFeature = {
+  "type":"Feature","properties":{"name":"CFR-2024-OD-101","village":"Khandagiri","district":"Khurda","area":"245 hectares","status":"Approved","claimants":"127 families","approval_date":"2024-03-15","claim_id":"CFR-2024-OD-101","state":"Odisha","deforestation_detected":true,"area_hectares":245,"claimant_families":127},
+  "geometry":{"type":"Polygon","coordinates":[[[85.8100,20.3100],[85.8300,20.3100],[85.8300,20.2900],[85.8100,20.2900],[85.8100,20.3100]]]}
 };
 
-/* claim style and popup builder */
+/* helper to style claim */
 function claimStyle(feature){
-  const props = feature.properties || {};
-  const s = (props.status || '').toLowerCase();
+  const props = feature.properties||{};
+  const s = (props.status||'').toLowerCase();
   let color = '#ff7800';
   if (s.includes('pending')) color = '#f1c40f';
-  else if (s.includes('reject') || s.includes('rejected')) color = '#c0392b';
+  else if (s.includes('reject')||s.includes('rejected')) color = '#c0392b';
   else if (s.includes('review')) color = '#8e44ad';
   else if (s.includes('approved')) color = '#27ae60';
-  const hasAlert = props.deforestation_detected;
-  return {
-    color: hasAlert ? '#e74c3c' : color,
-    weight: hasAlert ? 3.5 : 2.5,
-    fillColor: color,
-    fillOpacity: hasAlert ? 0.4 : 0.18,
-    dashArray: hasAlert ? '5,5' : null
-  };
+  const hasAlert = !!props.deforestation_detected;
+  return { color: hasAlert ? '#e74c3c' : color, weight: hasAlert?3.5:2.5, fillColor:color, fillOpacity:hasAlert?0.4:0.18, dashArray:hasAlert?'5,5':null };
 }
 
-function buildPopupContent(feature){
+/* popup builder */
+function buildPopup(feature){
   const p = feature.properties || {};
   const name = p.claim_id || p.name || 'Claim';
   const status = p.status || 'Unknown';
-  const area = (p.area_hectares ? p.area_hectares + ' ha' : (p.area || '—'));
+  const area = (p.area_hectares ? p.area_hectares + ' ha' : (p.area||'—'));
   const village = p.village_name || p.village || '—';
   const district = p.district || '—';
   const state = p.state || '—';
@@ -606,8 +478,8 @@ function buildPopupContent(feature){
   const claimId = p.claim_id || name;
 
   return `
-    <div style="min-width:250px;font-family:inherit;">
-      <h4 style="margin:0 0 8px 0;color:var(--accent-hex)">${name}</h4>
+    <div style="min-width:260px;font-family:inherit;">
+      <h4 style="margin:0 0 8px 0;color:var(--accent)">${name}</h4>
       <p style="margin:4px 0"><strong>State:</strong> ${state}</p>
       <p style="margin:4px 0"><strong>Village:</strong> ${village}</p>
       <p style="margin:4px 0"><strong>District:</strong> ${district}</p>
@@ -620,260 +492,352 @@ function buildPopupContent(feature){
   `;
 }
 
-/* Add feature to internal structures & map */
-function addFeatureToMap(feature){
+/* Add feature function (stores in map of layers for search/filter) */
+function addFeature(feature){
   const layer = L.geoJSON(feature, {
     style: claimStyle,
     onEachFeature: (f, l) => {
-      l.bindPopup(buildPopupContent(f), { maxWidth:320, className:'custom-popup' });
+      l.bindPopup(buildPopup(f), { maxWidth:350, className:'custom-popup' });
     }
   });
-  // store map from id -> layer (for filtering & updates)
   const id = feature.properties && (feature.properties.claim_id || feature.properties.name) || ('claim-'+Date.now());
   layerMap.set(id, layer);
-  // add to allFeatures & claimsGroup by default
-  loadedFeatures.push(feature);
-  activeLayers.push(layer);
-  claimsGroup.addLayer(layer);
+  layer.addTo(map);
 }
 
-/* Keep the built-in sample if nothing else */
-addFeatureToMap(claimBoundary);
+/* Start with fallback (and will load external ones next) */
+addFeature(fallbackFeature);
 
-/* NDVI overlays (canvas-based) */
-function createNDVIOverlay(type){
-  const canvas = document.createElement('canvas'); canvas.width=200; canvas.height=200;
-  const ctx = canvas.getContext('2d');
-  if (type === 'before'){
-    const gradient = ctx.createLinearGradient(0,0,200,200);
-    gradient.addColorStop(0, 'rgba(76,175,80,0.8)');
-    gradient.addColorStop(1, 'rgba(139,195,74,0.7)');
-    ctx.fillStyle = gradient; ctx.fillRect(0,0,200,200);
+/* NDVI timeline: create synthetic images for the demo (but code allows replacing with your actual tiles/images) */
+function createNDVIImage(type, seed){
+  const c = document.createElement('canvas'); c.width=600; c.height=400; const ctx = c.getContext('2d');
+  // base green
+  if (type==='healthy'){
+    const g = ctx.createLinearGradient(0,0,600,400); g.addColorStop(0,'rgba(76,175,80,0.9)'); g.addColorStop(1,'rgba(139,195,74,0.9)');
+    ctx.fillStyle = g; ctx.fillRect(0,0,600,400);
+    // light texture
+    ctx.fillStyle = 'rgba(255,255,255,0.03)'; for(let i=0;i<120;i++){ ctx.fillRect(Math.random()*600,Math.random()*400,Math.random()*6,Math.random()*6) }
   } else {
-    ctx.fillStyle = 'rgba(76,175,80,0.7)'; ctx.fillRect(0,0,200,200);
-    ctx.fillStyle = 'rgba(244,67,54,0.8)';
-    ctx.fillRect(60,80,80,40); ctx.fillRect(120,140,40,30); ctx.fillRect(30,150,50,25);
+    ctx.fillStyle = 'rgba(76,175,80,0.6)'; ctx.fillRect(0,0,600,400);
+    ctx.fillStyle = 'rgba(244,67,54,0.9)';
+    // seed-driven patches
+    for (let i=0;i<6;i++){ ctx.fillRect(30 + (i*80 + (seed*10)%60), 60 + ((i*40 + seed*15)%100), 60 + (seed%20), 30 + ((i*13)%40)) }
   }
-  return canvas.toDataURL();
+  return c.toDataURL();
 }
+/* Precompute timeline (0..4) mixing healthy -> degraded -> critical */
+for (let t=0;t<=4;t++){
+  if (t < 2) ndviImages.push(createNDVIImage('healthy', t));
+  else if (t === 2) ndviImages.push(createNDVIImage('mixed', t));
+  else ndviImages.push(createNDVIImage('degraded', t));
+}
+
+/* Create image overlays for timeline on map (for demo use imageOverlay) */
 const imageBounds = [[20.2900,85.8100],[20.3100,85.8300]];
-const beforeImageData = createNDVIOverlay('before');
-const afterImageData = createNDVIOverlay('after');
-let beforeOverlay = L.imageOverlay(beforeImageData, imageBounds, { opacity:0.6, interactive:false });
-let afterOverlay = L.imageOverlay(afterImageData, imageBounds, { opacity:0.6, interactive:false });
+const ndviOverlays = ndviImages.map(img => L.imageOverlay(img, imageBounds, { opacity: Number(ndviOpacity.value) }));
 
-/* Button handlers (preserve behaviors) */
-document.getElementById('beforeBtn').addEventListener('click', () => {
-  showLoading(); setTimeout(() => {
-    map.removeLayer(afterOverlay); beforeOverlay.addTo(map); hideLoading();
-    const popup = L.popup().setLatLng([20.3000,85.8200]).setContent('<div style="text-align:center;"><strong>January 2025</strong><br>Healthy Forest Cover<br>NDVI: 0.75 (High)</div>').openOn(map);
-    setTimeout(()=>map.closePopup(),3000);
-  }, 900);
-});
-document.getElementById('afterBtn').addEventListener('click', () => {
-  showLoading(); setTimeout(() => {
-    map.removeLayer(beforeOverlay); afterOverlay.addTo(map); hideLoading();
-    const popup = L.popup().setLatLng([20.2980,85.8150]).setContent('<div style="text-align:center;color:#c0392b;"><strong>September 2025</strong><br>Deforestation Detected<br>NDVI: 0.21 (Critical)</div>').openOn(map);
-    setTimeout(()=>map.closePopup(),3500);
-  }, 900);
-});
-document.getElementById('resetBtn').addEventListener('click', () => { map.removeLayer(beforeOverlay); map.removeLayer(afterOverlay); map.setView([20.2961,85.8245],12); });
+/* cluster + heat layers (created on demand) */
+let clusterGroup = null;
+let heatmapLayer = null;
 
-/* NDVI opacity slider */
-const ndviOpacity = document.getElementById('ndviOpacity');
+/* functions to create cluster & heat layers from loaded features */
+function rebuildClusterAndHeat(){
+  // gather center points for each feature (use centroid of bounds)
+  const points = [];
+  const markers = L.markerClusterGroup();
+  layerMap.forEach((layer, id) => {
+    const inner = layer.getLayers ? layer.getLayers()[0] : layer;
+    if (!inner) return;
+    const bounds = inner.getBounds ? inner.getBounds() : null;
+    if (bounds) {
+      const c = bounds.getCenter();
+      const marker = L.marker([c.lat, c.lng]);
+      // attach claim id to marker popup (quick)
+      const feat = (inner.feature || inner);
+      marker.bindPopup(`<div style="min-width:200px"><strong>${feat.properties.claim_id||feat.properties.name||'Claim'}</strong><div style="font-size:12px;color:var(--muted);">Status: ${feat.properties.status||'—'}</div></div>`);
+      markers.addLayer(marker);
+      points.push([c.lat, c.lng, 0.6 + (feat.properties.deforestation_detected ? 0.8 : 0.0)]);
+    }
+  });
+  // replace cluster
+  if (clusterGroup) map.removeLayer(clusterGroup);
+  clusterGroup = markers;
+  // don't add automatically; toggled by user
+
+  // heat
+  if (heatmapLayer) map.removeLayer(heatmapLayer);
+  heatmapLayer = L.heatLayer(points, { radius: 25, blur: 20, maxZoom: 12 });
+}
+
+/* Toggle cluster & heat */
+let clusterShown = false;
+let heatShown = false;
+toggleClusterBtn.addEventListener('click', () => {
+  if (!clusterGroup) rebuildClusterAndHeat();
+  clusterShown = !clusterShown;
+  if (clusterShown) clusterGroup.addTo(map); else map.removeLayer(clusterGroup);
+  toggleClusterBtn.textContent = clusterShown ? 'Hide Clusters' : 'Show Clusters';
+});
+toggleHeatmapBtn.addEventListener('click', () => {
+  if (!heatmapLayer) rebuildClusterAndHeat();
+  heatShown = !heatShown;
+  if (heatShown) heatmapLayer.addTo(map); else map.removeLayer(heatmapLayer);
+  toggleHeatmapBtn.textContent = heatShown ? 'Hide Heatmap' : 'Show Heatmap';
+});
+
+/* timeline controls */
+playTimeline.addEventListener('click', () => {
+  const speed = Number(timelineSpeed.value) || 1200;
+  if (timelineTimer) clearInterval(timelineTimer);
+  timelineTimer = setInterval(()=>{ timelineIndex = (timelineIndex+1) % ndviOverlays.length; setTimelineImage(timelineIndex); timelineRange.value = timelineIndex }, speed);
+});
+pauseTimeline.addEventListener('click', ()=>{ if (timelineTimer) clearInterval(timelineTimer); timelineTimer = null });
+timelineRange.addEventListener('input', (e)=> { timelineIndex = Number(e.target.value); setTimelineImage(timelineIndex) });
+function setTimelineImage(idx){
+  // remove all overlays then add selected
+  ndviOverlays.forEach(o => map.removeLayer(o));
+  const o = ndviOverlays[idx];
+  o.addTo(map);
+}
+
+/* Start with first NDVI overlay off (user triggers before/after or timeline) */
+ndviOverlays.forEach(o=>map.removeLayer(o));
+
+/* compare slider logic (small floating window with draggable divider) */
+compareOpen.addEventListener('click', () => {
+  if (compareContainer.style.display === 'none' || !compareContainer.style.display) {
+    // set images to current before/after images (simple mapping to our ndviImages)
+    compareBefore.src = ndviImages[0];
+    compareAfter.src = ndviImages[ndviImages.length-1];
+    compareContainer.style.display = 'block';
+  } else compareContainer.style.display = 'none';
+});
+
+let dragging = false;
+divider.addEventListener('mousedown', (e)=>{ dragging=true; e.preventDefault() });
+document.addEventListener('mouseup', ()=>{ dragging=false });
+document.addEventListener('mousemove', (e)=>{
+  if (!dragging) return;
+  const rect = compareContainer.getBoundingClientRect();
+  let x = e.clientX - rect.left;
+  if (x < 0) x = 0; if (x > rect.width) x = rect.width;
+  const pct = (x/rect.width)*100;
+  compareTop.style.width = pct + '%';
+  divider.style.left = pct + '%';
+});
+
+/* set NDVI overlay opacity control */
 ndviOpacity.addEventListener('input', (e) => {
   const v = Number(e.target.value);
-  if (beforeOverlay) beforeOverlay.setOpacity(v);
-  if (afterOverlay) afterOverlay.setOpacity(v);
+  ndviOverlays.forEach(o => o.setOpacity(v));
 });
 
-/* Export visible claims as GeoJSON */
-document.getElementById('exportGeoBtn').addEventListener('click', () => {
-  const visibleFeatures = [];
-  // check layers in claimsGroup
-  claimsGroup.eachLayer((g) => {
-    if (g.getLayers) {
-      g.getLayers().forEach(l => { if (l.feature) visibleFeatures.push(l.feature) });
-    } else if (g.feature) visibleFeatures.push(g.feature);
+/* popupopen event: add role-based action buttons */
+map.on('popupopen', (ev) => {
+  const popupEl = ev.popup.getElement ? ev.popup.getElement() : null;
+  if (!popupEl) return;
+  const actionArea = popupEl.querySelector('.action-area');
+  if (!actionArea) return;
+  actionArea.innerHTML = '';
+  const claimId = actionArea.getAttribute('data-claim-id');
+
+  const reportBtn = document.createElement('button');
+  reportBtn.className = 'btn secondary'; reportBtn.textContent = 'Report Issue';
+  reportBtn.onclick = ()=> showModal(reportModal);
+  actionArea.appendChild(reportBtn);
+
+  if (currentUser && currentUser.role === 'official') {
+    const approve = document.createElement('button'); approve.className='btn'; approve.style.background='linear-gradient(135deg,#2ecc71,#27ae60)'; approve.textContent='Approve';
+    const reject = document.createElement('button'); reject.className='btn'; reject.style.background='linear-gradient(135deg,#ef4444,#dc2626)'; reject.textContent='Reject';
+    approve.onclick = ()=> updateClaimStatus(claimId, 'Approved', ev.popup);
+    reject.onclick = ()=> updateClaimStatus(claimId, 'Rejected', ev.popup);
+    actionArea.appendChild(approve); actionArea.appendChild(reject);
+  } else {
+    const hint = document.createElement('div'); hint.className='small'; hint.style.marginTop='6px'; hint.textContent='Login as Government Official to review claims.';
+    actionArea.appendChild(hint);
+  }
+});
+
+/* updateClaimStatus: local style update + persistence using firestore or fallback POST */
+async function updateClaimStatus(claimId, newStatus, popup){
+  // find layer
+  let found = false;
+  layerMap.forEach((layer, id) => {
+    if (id === claimId) {
+      const inner = layer.getLayers ? layer.getLayers()[0] : layer;
+      if (inner && inner.feature) {
+        inner.feature.properties.status = newStatus;
+        layer.setStyle && layer.setStyle(claimStyle(inner.feature));
+        found = true;
+      }
+    }
   });
-  const fc = { type:'FeatureCollection', features: visibleFeatures };
-  const blob = new Blob([JSON.stringify(fc, null, 2)], { type:'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = `visible_claims_${new Date().toISOString().split('T')[0]}.geojson`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-});
-
-/* Export report as original (kept) */
-document.getElementById('exportBtn').addEventListener('click', () => {
-  const reportData = generateReportData();
-  const content = `FRA ATLAS REPORT - Generated: ${new Date().toLocaleString()}
-States: Odisha, Madhya Pradesh, Tripura, Telangana
-Total Claims: ${reportData.totalClaims}
-Approved: ${reportData.approved}
-Pending: ${reportData.pending}
-Under Review: ${reportData.review}
-Rejected: ${reportData.rejected}
-Deforestation Alerts: ${reportData.deforestationAlerts}
-`;
-  const blob = new Blob([content], { type:'text/plain' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = `fra_report_${new Date().toISOString().split('T')[0]}.txt`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-  alert('Report generated and downloaded.');
-});
-
-function generateReportData(){
-  const counts = document.querySelectorAll('.stat-number');
-  return {
-    totalClaims: parseInt(counts[0].textContent||'0') + parseInt(counts[1].textContent||'0') + parseInt(counts[2].textContent||'0') + parseInt(counts[3].textContent||'0'),
-    approved: parseInt(counts[0].textContent||'0'),
-    pending: parseInt(counts[1].textContent||'0'),
-    review: parseInt(counts[2].textContent||'0'),
-    rejected: parseInt(counts[3].textContent||'0'),
-    deforestationAlerts: Math.floor(Math.random()*8)+2,
-    highRiskAreas: Math.floor(Math.random()*5)+1,
-    ndviViolations: Math.floor(Math.random()*10)+3
-  };
+  // persist
+  try {
+    if (useFirebase && firestore) {
+      await firestore.collection('claims').doc(claimId).set({ status: newStatus, updated_at: new Date().toISOString() }, { merge:true });
+      console.log('Persisted to Firestore:', claimId);
+    } else {
+      // fallback - server endpoint required for production
+      await fetch('/api/claims/update', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ claimId, status:newStatus }) })
+        .then(r => { if (!r.ok) console.warn('Server returned', r.status) });
+      console.log('Posted to /api/claims/update fallback');
+    }
+  } catch (err) {
+    console.warn('Persistence failed; local update only', err);
+  }
+  // update dashboard counts
+  const allFeatures = [];
+  layerMap.forEach(l => {
+    const inner = l.getLayers ? l.getLayers()[0] : l;
+    if (inner && inner.feature) allFeatures.push(inner.feature);
+  });
+  updateDashboardCounts(allFeatures);
+  if (found) {
+    alert('Claim ' + claimId + ' status set to ' + newStatus);
+    popup && popup._source && popup._source.closePopup && popup._source.closePopup();
+  } else {
+    alert('Claim not found locally. Use server-side updates for persistence.');
+  }
 }
 
-/* Load external GeoJSONs (preserve your asset paths) */
-(async function loadAllStateDatasets(){
+/* Search autocomplete and saved filters logic */
+function rebuildAutocomplete(){
+  // populate datalist with available claim ids, villages, districts, states
+  const values = new Set();
+  layerMap.forEach((layer,id)=>{
+    const inner = layer.getLayers ? layer.getLayers()[0] : layer;
+    if (!inner || !inner.feature) return;
+    const p = inner.feature.properties || {};
+    if (p.claim_id) values.add(p.claim_id);
+    if (p.village) values.add(p.village);
+    if (p.district) values.add(p.district);
+    if (p.state) values.add(p.state);
+  });
+  autoList.innerHTML = '';
+  Array.from(values).slice(0,200).forEach(v=>{
+    const opt = document.createElement('option'); opt.value = v; autoList.appendChild(opt);
+  });
+}
+
+function applySearchFilter(){
+  const q = (searchInput.value||'').trim().toLowerCase();
+  const status = statusFilter.value;
+  const matched = [];
+  // clear existing layers then add matching ones
+  layerMap.forEach((layer,id)=>{
+    // remove from map (we'll re-add if matched)
+    map.removeLayer(layer);
+  });
+  layerMap.forEach((layer,id)=>{
+    const inner = layer.getLayers ? layer.getLayers()[0] : layer;
+    if (!inner || !inner.feature) return;
+    const p = inner.feature.properties || {};
+    const combined = `${p.claim_id||''} ${p.village||p.village_name||''} ${p.district||''} ${p.state||''} ${p.status||''}`.toLowerCase();
+    const matchesQ = !q || combined.includes(q);
+    const matchesStatus = (status==='all') || (p.status||'').toLowerCase().includes(status);
+    if (matchesQ && matchesStatus) { layer.addTo(map); matched.push(inner.feature); }
+  });
+  updateDashboardCounts(matched);
+}
+
+/* Save filter sets (persist to localStorage) */
+function loadSavedFilters(){
+  const item = localStorage.getItem('vf_saved_filters');
+  const list = item ? JSON.parse(item) : [];
+  savedFilters.innerHTML = '<option value="">Load saved filter</option>';
+  list.forEach((f, idx) => {
+    const opt = document.createElement('option'); opt.value=idx; opt.textContent = f.name; savedFilters.appendChild(opt);
+  });
+}
+saveFilterBtn.addEventListener('click', ()=>{
+  const name = prompt('Name this filter (e.g., HighRiskPending):');
+  if (!name) return;
+  const filter = { name, q: searchInput.value||'', status: statusFilter.value };
+  const item = localStorage.getItem('vf_saved_filters');
+  const list = item ? JSON.parse(item) : [];
+  list.push(filter);
+  localStorage.setItem('vf_saved_filters', JSON.stringify(list));
+  loadSavedFilters();
+});
+savedFilters.addEventListener('change', ()=>{
+  const idx = savedFilters.value;
+  if (idx === '') return;
+  const list = JSON.parse(localStorage.getItem('vf_saved_filters')||'[]');
+  const f = list[idx];
+  if (!f) return;
+  searchInput.value = f.q; statusFilter.value = f.status; applySearchFilter();
+});
+
+/* wire search / filter events */
+searchInput.addEventListener('input', () => { applySearchFilter(); });
+statusFilter.addEventListener('change', () => { applySearchFilter(); });
+
+/* Export visible claims geojson */
+exportBtn.addEventListener('click', () => {
+  const feats = [];
+  layerMap.forEach((layer,id)=>{
+    const inner = layer.getLayers ? layer.getLayers()[0] : layer;
+    if (map.hasLayer(layer) && inner && inner.feature) feats.push(inner.feature);
+  });
+  const fc = { type:'FeatureCollection', features:feats };
+  const blob = new Blob([JSON.stringify(fc,null,2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = `visible_claims_${new Date().toISOString().split('T')[0]}.geojson`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  alert('Exported visible claims.');
+});
+
+/* Load external geojson datasets (keeps your asset paths) */
+(async function loadStateFiles(){
   const stateFiles = [
     'assets/data/sample-claims.geojson',
     'assets/data/mp-claims.geojson',
     'assets/data/tripura-claims.geojson',
     'assets/data/telangana-claims.geojson'
   ];
-  const features = [];
-  let successCount = 0;
+  const loaded = [];
   for (const f of stateFiles){
     try {
-      const resp = await fetch(f, { cache:'no-store' });
-      if (!resp.ok) throw new Error('HTTP ' + resp.status);
-      const data = await resp.json();
-      features.push(...(data.features||[]));
-      successCount++;
-      console.log('Loaded', f, (data.features||[]).length, 'claims');
+      const r = await fetch(f, { cache:'no-store' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const j = await r.json();
+      (j.features || []).forEach(feat => { addFeature(feat); loaded.push(feat); });
+      console.log('Loaded', f, (j.features||[]).length);
     } catch (err) {
       console.warn('Could not load', f, err.message);
     }
   }
-
-  if (features.length > 0){
-    // clear existing claimsGroup & layerMap & loadedFeatures
-    claimsGroup.clearLayers(); layerMap.clear(); loadedFeatures = []; activeLayers = [];
-    // create layers for each feature
-    features.forEach(feat => {
-      addFeatureToMap(feat);
-    });
-    // fit bounds
+  // if none loaded, we already have fallback
+  if (loaded.length === 0) {
+    console.warn('No external files loaded — using fallback.');
+  }
+  // fit bounds to available features
+  const allBounds = [];
+  layerMap.forEach(layer => {
     try {
-      const allBoundsLayers = [];
-      claimsGroup.eachLayer(g => {
-        if (g.getLayers) g.getLayers().forEach(l => l.getBounds && allBoundsLayers.push(l.getBounds()));
-        else if (g.getBounds) allBoundsLayers.push(g.getBounds());
-      });
-      if (allBoundsLayers.length) {
-        const union = allBoundsLayers.reduce((acc, b) => acc.extend(b), (allBoundsLayers[0].clone()));
-        map.fitBounds(union, { padding:[60,60] });
-      } else map.setView([20.5937,78.9629],6);
-    } catch (e) { map.setView([20.5937,78.9629],6) }
-
-    updateDashboardCounts(features);
-    console.log(`Loaded ${successCount}/${stateFiles.length} datasets (${features.length} features)`);
-  } else {
-    // keep built-in fallback already added
-    console.warn('No external geojsons loaded; using fallback sample.');
-    updateDashboardCounts([claimBoundary]);
-    try { map.fitBounds(L.geoJSON(claimBoundary).getBounds(), { padding:[20,20] }) } catch(e){}
+      const inner = layer.getLayers ? layer.getLayers()[0] : layer;
+      if (inner && inner.getBounds) allBounds.push(inner.getBounds());
+    } catch(e){}
+  });
+  if (allBounds.length) {
+    const union = allBounds.reduce((acc, b) => acc.extend(b), allBounds[0].clone());
+    map.fitBounds(union, { padding:[60,60] });
   }
-})();
-
-/* When popup opens, add role-based buttons inside popup's .action-area */
-map.on('popupopen', (e) => {
-  const popupEl = e.popup.getElement && e.popup.getElement();
-  if (!popupEl) return;
-  const actionArea = popupEl.querySelector('.action-area');
-  if (!actionArea) return;
-  const claimId = actionArea.getAttribute('data-claim-id');
-
-  // clear previous
-  actionArea.innerHTML = '';
-
-  // Report button for everyone
-  const reportBtn = document.createElement('button');
-  reportBtn.className = 'btn secondary';
-  reportBtn.textContent = 'Report Issue';
-  reportBtn.onclick = () => showModal('reportModal');
-  actionArea.appendChild(reportBtn);
-
-  // If official, show approve/reject
-  if (currentUser && currentUser.role === 'official'){
-    const approve = document.createElement('button');
-    approve.className = 'btn';
-    approve.style.background = 'linear-gradient(135deg,#2ecc71,#27ae60)'; approve.textContent = 'Approve';
-    approve.onclick = () => updateClaimStatusByPopup(e.popup, claimId, 'Approved');
-    const reject = document.createElement('button');
-    reject.className = 'btn';
-    reject.style.background = 'linear-gradient(135deg,#ef4444,#dc2626)'; reject.textContent = 'Reject';
-    reject.onclick = () => updateClaimStatusByPopup(e.popup, claimId, 'Rejected');
-    actionArea.appendChild(approve); actionArea.appendChild(reject);
-  } else {
-    const hint = document.createElement('div');
-    hint.className = 'small'; hint.style.marginTop = '6px'; hint.textContent = 'Login as Government Official to review and update claims.';
-    actionArea.appendChild(hint);
-  }
-});
-
-/* updateClaimStatusByPopup: persists update to Firestore if configured else fallback fetch */
-async function updateClaimStatusByPopup(popup, claimId, newStatus){
-  // find layer and update style and properties
-  let found = false;
-  // iterate layerMap
-  for (const [id, layer] of layerMap.entries()){
-    if (id === claimId || id === (claimId+'') ){
-      // update feature
-      const feature = (layer.getLayers && layer.getLayers()[0] && layer.getLayers()[0].feature) || layer.feature;
-      if (feature){
-        feature.properties = feature.properties || {};
-        feature.properties.status = newStatus;
-        // update layer style
-        (layer.setStyle) && layer.setStyle(claimStyle(feature));
-        found = true;
-        // persist
-        try {
-          if (useFirebase && firestore){
-            // write to collection "claims" document id = claimId
-            await firestore.collection('claims').doc(claimId).set({ status: newStatus, updated_at: new Date().toISOString() }, { merge:true });
-            console.log('Persisted update to Firestore for', claimId);
-          } else {
-            // fallback: POST to /api/claims/update
-            await fetch('/api/claims/update', {
-              method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ claimId, status: newStatus })
-            }).then(r=>{ if (!r.ok) console.warn('Server update returned', r.status) });
-            console.log('Posted update to /api/claims/update fallback for', claimId);
-          }
-        } catch (err) {
-          console.warn('Persistence failed (still updated locally):', err);
-        }
-        break;
-      }
-    }
-  }
-
-  // update dashboard counts by recomputing
+  // build cluster/heat
+  rebuildClusterAndHeat();
+  // build autocomplete list
+  rebuildAutocomplete();
+  // update counts
   const allFeatures = [];
   layerMap.forEach(l => {
-    const feat = (l.getLayers && l.getLayers()[0] && l.getLayers()[0].feature) || l.feature;
-    if (feat) allFeatures.push(feat);
+    const inner = l.getLayers ? l.getLayers()[0] : l;
+    if (inner && inner.feature) allFeatures.push(inner.feature);
   });
   updateDashboardCounts(allFeatures);
+  loadSavedFilters();
+})();
 
-  if (found) {
-    alert('Claim ' + claimId + ' status set to ' + newStatus + '.');
-    popup._source && popup._source.closePopup && popup._source.closePopup();
-  } else alert('Could not find claim on map to update. For production, update via your server API.');
-}
-
-/* Dashboard counts computed from features */
+/* update dashboard counts */
 function updateDashboardCounts(features){
   const counts = { approved:0, pending:0, review:0, rejected:0 };
   const states = new Set();
@@ -894,49 +858,119 @@ function updateDashboardCounts(features){
   document.getElementById('coverageInfo').textContent = `Coverage: ${states.size} States | ${features.length} Active Claims`;
 }
 
-/* Search & filter functionality */
-function applySearchAndFilter(){
-  const q = (searchInput.value || '').trim().toLowerCase();
-  const filter = statusFilter.value; // all | approved | pending | review | rejected
-  // clear existing displayed layers
-  claimsGroup.clearLayers();
-  activeLayers = [];
-  const matchedFeatures = [];
-  layerMap.forEach((layer, id) => {
-    const feat = (layer.getLayers && layer.getLayers()[0] && layer.getLayers()[0].feature) || layer.feature;
-    if (!feat) return;
-    const p = feat.properties || {};
-    const combined = `${p.claim_id||''} ${p.village||p.village_name||''} ${p.district||''} ${p.state||''} ${p.status||''}`.toLowerCase();
-    const matchesQuery = !q || combined.includes(q);
-    const matchesFilter = (filter === 'all') || ( (p.status||'').toLowerCase().includes(filter) );
-    if (matchesQuery && matchesFilter){
-      claimsGroup.addLayer(layer);
-      activeLayers.push(layer);
-      matchedFeatures.push(feat);
-    }
-  });
-  // update counts based on matchedFeatures
-  updateDashboardCounts(matchedFeatures);
+/* Role-specific UI behavior: Citizen vs Official */
+function refreshRoleUI(){
+  if (!currentUser) {
+    citizenActions.style.display = 'none';
+    officerActions.style.display = 'none';
+    document.getElementById('citizenActions').style.display = 'none';
+    document.getElementById('officerActions').style.display = 'none';
+    return;
+  }
+  if (currentUser.role === 'citizen') {
+    document.getElementById('citizenActions').style.display = 'block';
+    document.getElementById('officerActions').style.display = 'none';
+  } else if (currentUser.role === 'official') {
+    document.getElementById('citizenActions').style.display = 'none';
+    document.getElementById('officerActions').style.display = 'block';
+  }
 }
 
-/* Wire search events */
-searchInput.addEventListener('input', () => applySearchAndFilter());
-statusFilter.addEventListener('change', () => applySearchAndFilter());
+/* login flow (demo or firebase) */
+loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const role = document.getElementById('roleSelect').value;
+  const email = document.getElementById('username').value.trim();
+  const pwd = document.getElementById('password').value;
+  if (useFirebase && firebaseAuth) {
+    try {
+      await firebaseAuth.signInWithEmailAndPassword(email, pwd);
+      currentUser = { username: email, role };
+    } catch (err) {
+      console.warn('Firebase sign-in failed; using demo login', err);
+      currentUser = { username: email, role };
+    }
+  } else {
+    currentUser = { username: email, role };
+  }
+  afterLogin();
+  hideModal(loginModal);
+});
+loginDemo.addEventListener('click', () => {
+  const role = document.getElementById('roleSelect').value;
+  currentUser = { username: role + '.demo', role };
+  afterLogin(); hideModal(loginModal);
+});
 
-/* popup dynamic actions already handled via popupopen event earlier */
+function afterLogin(){
+  userBadge.style.display = 'inline-flex';
+  userNameEl.textContent = (currentUser.username||'user').split('@')[0];
+  userRoleTag.textContent = currentUser.role === 'official' ? 'Government Official' : 'Citizen';
+  loginOpen.style.display = 'none';
+  refreshRoleUI();
+}
 
-/* small helpers */
-function showLoading(){ document.getElementById('loading').style.display = 'flex' }
-function hideLoading(){ document.getElementById('loading').style.display = 'none' }
+/* logout by clicking badge */
+userBadge.addEventListener('click', () => {
+  if (useFirebase && firebaseAuth) firebaseAuth.signOut().catch(()=>{});
+  currentUser = null; userBadge.style.display = 'none'; loginOpen.style.display = 'inline-flex'; refreshRoleUI();
+});
 
-/* initial guidance popup */
-setTimeout(()=> {
-  try {
-    claimsGroup.eachLayer(l => { if (l.getLayers) { const inner = l.getLayers()[0]; if (inner && inner.openPopup) inner.openPopup() } else if (l.openPopup) l.openPopup() });
-  } catch(e){}
-}, 1500);
+/* Citizen actions (raise, track, my reports) - demo UIs */
+raiseClaimBtn.addEventListener('click', () => {
+  const title = prompt('Brief title for claim'); if (!title) return;
+  const village = prompt('Village'); if (!village) return;
+  // create a minimal claim object and add to map (demo only)
+  const newId = 'CLAIM-' + Date.now().toString().slice(-6);
+  const demoFeature = { type:'Feature', properties:{ claim_id:newId, name:title, village, district:'Unknown', state:'Unknown', status:'Pending', claimant_families:1, area_hectares:0 }, geometry:{ type:'Point', coordinates:[85.82 + Math.random()*0.01, 20.30 + Math.random()*0.01] } };
+  // convert point to small polygon for style using buffer approx
+  const poly = turfPointToPolygon(demoFeature.geometry.coordinates[1], demoFeature.geometry.coordinates[0], 0.004);
+  demoFeature.geometry = { type:'Polygon', coordinates: [poly] };
+  addFeature(demoFeature); rebuildClusterAndHeat(); rebuildAutocomplete(); alert('Claim raised (demo). ID: ' + newId);
+});
 
-console.log('FRA Atlas DSS (enhanced) loaded.');
+trackClaimBtn.addEventListener('click', () => {
+  const q = prompt('Enter your Claim ID to track');
+  if (!q) return;
+  // simple search
+  let found = false;
+  layerMap.forEach((layer,id)=>{
+    if (id === q) {
+      found = true;
+      const inner = layer.getLayers ? layer.getLayers()[0] : layer;
+      if (inner) map.fitBounds(inner.getBounds(), { padding:[30,30] });
+      setTimeout(()=> inner && inner.openPopup && inner.openPopup(), 300);
+    }
+  });
+  if (!found) alert('Claim not found in current dataset.');
+});
+
+myReportsBtn.addEventListener('click', ()=> alert('My Reports: demo view. For production, load user-specific reports from your backend.'));
+
+/* Officer actions - demo */
+reviewQueueBtn.addEventListener('click', ()=> alert('Open Review Queue (demo). In production: query claims where status==pending or deforestation_detected==true.'));
+assignBtn.addEventListener('click', ()=> alert('Assign Verification: demo action. In production: POST assignment to server.'));
+auditBtn.addEventListener('click', ()=> alert('Export audit log: demo. Implement server-side audit export for production.'));
+
+/* turf-like simple polygon generator (approx square around point) */
+function turfPointToPolygon(lat, lng, radiusDeg) {
+  // radiusDeg ~ 0.004 yields ~400m depending on lat
+  const r = radiusDeg || 0.002;
+  return [
+    [lng - r, lat - r],
+    [lng + r, lat - r],
+    [lng + r, lat + r],
+    [lng - r, lat + r],
+    [lng - r, lat - r]
+  ];
+}
+
+/* initial UI state */
+refreshRoleUI();
+loadSavedFilters();
+
+/* small console message */
+console.log('VisionForge FRA Atlas UI loaded with enhanced features: heatmap, clustering, timeline, compare slider, autocomplete & saved filters.');
 </script>
 </body>
 </html>
