@@ -1,8 +1,3 @@
-"""
-FRA Atlas DSS - Main Application Entry Point
-Production-ready Flask application for Smart India Hackathon 2025
-"""
-
 import os
 from app import create_app, db
 from app.models import FRAClaim, MonitoringData, Alert
@@ -14,7 +9,7 @@ app = create_app(config[config_name])
 
 @app.shell_context_processor
 def make_shell_context():
-    """Make database models available in Flask shell"""
+    
     return {
         'db': db,
         'FRAClaim': FRAClaim,
@@ -24,19 +19,19 @@ def make_shell_context():
 
 @app.cli.command()
 def init_db():
-    """Initialize database with tables and PostGIS extensions"""
+    
     from init_db import init_database
     init_database()
 
 @app.cli.command()
 def load_sample_data():
-    """Load sample FRA claims data"""
+    
     from init_db import load_sample_data
     load_sample_data()
 
 @app.cli.command()
 def create_test_data():
-    """Create test data for development"""
+    
     from datetime import datetime, date, timedelta
     import uuid
     import random
@@ -96,7 +91,7 @@ def create_test_data():
                 )
                 db.session.add(monitoring)
                 
-                # Create alerts for low NDVI
+                
                 if ndvi_val < 0.3 and random.random() < 0.5:
                     alert = Alert(
                         id=uuid.uuid4(),
@@ -112,7 +107,7 @@ def create_test_data():
         print("✅ Test data created successfully!")
 
 if __name__ == '__main__':
-    # Development server
+    
     app.run(
         host='0.0.0.0',
         port=int(os.environ.get('PORT', 5000)),
