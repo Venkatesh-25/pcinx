@@ -12,7 +12,30 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+/* === Custom Fixes Added === */
+function updateFiltersForRole(role){
+  const filter=document.getElementById('statusFilter');
+  if(!filter) return;
+  filter.innerHTML='';
+  if(role==='official'){
+    ['approved','pending','review'].forEach(s=>{
+      const opt=document.createElement('option');
+      opt.value=s; opt.textContent=s.charAt(0).toUpperCase()+s.slice(1);
+      filter.appendChild(opt);
+    });
+  } else {
+    ['mine','pending','all'].forEach(s=>{
+      const opt=document.createElement('option');
+      opt.value=s; opt.textContent=(s==='mine'?'My Requests':s.charAt(0).toUpperCase()+s.slice(1));
+      filter.appendChild(opt);
+    });
+  }
+}
+function normalizeStatus(s){ return (s||'').toString().toLowerCase(); }
+/* ========================== */
+
+</script>
 
 <style>
   :root{
@@ -137,6 +160,21 @@
 
   .btn[disabled]{opacity:0.6;cursor:not-allowed}
   a{color:var(--accent-1);text-decoration:none}
+
+  /* === Custom Fixes Added === */
+  body[data-theme="dark"] select, body[data-theme="dark"] option {
+    background:#1f2937;
+    color:#f9fafb;
+  }
+  #loginDemo {
+    border:1px solid #ddd;
+    color:#111;
+    background:#f9fafb;
+  }
+  body[data-theme="light"] .btn { color:#111; }
+  body[data-theme="dark"] .btn { color:#fff; }
+  /* ========================== */
+
 </style>
 </head>
 <body data-theme="dark">
