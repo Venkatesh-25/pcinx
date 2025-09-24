@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>VisionForge — FRA Atlas DSS</title>
 
+<!-- Keep your same external links (unchanged) -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
@@ -15,31 +16,36 @@
 
 <style>
   :root{
-    --bg-r: 20; --bg-g: 22; --bg-b: 28;
-    --glass-a: 0.06;
-    --primary-1: #0f766e; /* teal-ish primary */
-    --primary-2: #10b981; /* green accent */
+    --bg-r: 18; --bg-g: 20; --bg-b: 28;
+    --card-radius: 12px;
+    --accent-1: #0f766e;   /* VisionForge primary */
+    --accent-2: #10b981;
     --muted: #9aa3ab;
-    --card-radius: 14px;
+    --glass-dark: rgba(255,255,255,0.02);
+    --glass-light: rgba(255,255,255,0.94);
+    --input-bg-dark: rgba(255,255,255,0.03);
+    --input-text-dark: #e6eef8;
+    --input-bg-light: #ffffff;
+    --input-text-light: #0b1220;
     --btn-text-light: #ffffff;
-    --btn-text-dark: #0b1220;
   }
 
   body[data-theme="light"]{
     --bg-r: 245; --bg-g: 247; --bg-b: 250;
-    --glass-a: 0.92;
     --muted: #4b5563;
-    --primary-1: #0f766e;
-    --btn-text-light: #0b1220;
-    --btn-text-dark: #0b1220;
+    --input-bg-dark: #ffffff;
+    --input-text-dark: #0b1220;
+    --glass-dark: rgba(0,0,0,0.02);
   }
 
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%}
   body{
     font-family:'Inter',system-ui,-apple-system,"Segoe UI",Roboto,Arial;
-    background: radial-gradient(900px 400px at 10% 10%, rgba(15,118,110,0.03), transparent), rgba(var(--bg-r),var(--bg-g),var(--bg-b),1);
-    color: #e6eef8;
+    background:
+      radial-gradient(900px 400px at 10% 10%, rgba(16,185,129,0.03), transparent),
+      rgb(var(--bg-r),var(--bg-g),var(--bg-b));
+    color:var(--input-text-dark);
     -webkit-font-smoothing:antialiased;
     height:100vh;
     overflow:hidden;
@@ -47,27 +53,33 @@
 
   /* header */
   .header{
-    display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px;margin:14px;border-radius:12px;
-    background: linear-gradient(180deg, rgba(255,255,255,var(--glass-a)), rgba(255,255,255,calc(var(--glass-a)-0.02)));
-    backdrop-filter: blur(10px) saturate(120%);
-    box-shadow: 0 8px 36px rgba(0,0,0,0.28);
+    display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;margin:14px;border-radius:12px;
+    background: linear-gradient(180deg, var(--glass-dark), rgba(255,255,255,0.02));
+    backdrop-filter: blur(8px) saturate(120%);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.35);
     border:1px solid rgba(255,255,255,0.03);
   }
   .brand{display:flex;align-items:center;gap:12px}
-  .logo-mark{width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, rgba(15,118,110,0.12), rgba(255,255,255,0.02));border:1px solid rgba(0,0,0,0.06)}
-  .logo-mark i{color:var(--primary-1);font-size:22px}
+  .logo-mark{width:54px;height:54px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, rgba(16,185,129,0.08), rgba(255,255,255,0.02));border:1px solid rgba(0,0,0,0.06)}
+  .logo-mark i{color:var(--accent-1);font-size:20px}
   .title h1{
     font-size:18px;
     margin-bottom:2px;
-    background: linear-gradient(90deg, var(--primary-1), var(--primary-2));
+    background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
     -webkit-background-clip: text; background-clip: text; color: transparent;
     font-weight:800;
   }
-  .title p{font-size:12px;color:var(--muted);margin:0}
+  .title p{font-size:12px;color:var(--muted);margin:0;max-width:360px}
 
   .header-controls{display:flex;align-items:center;gap:10px}
-  .btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.02);color:var(--btn-text-light);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.03)}
-  .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06)}
+  .btn{
+    padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;gap:8px;
+    background:linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+    color:var(--btn-text-light);
+    backdrop-filter: blur(4px);
+    border:1px solid rgba(255,255,255,0.03);
+  }
+  .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--input-text-dark)}
   .btn.ghost{background:transparent;border:1px dashed rgba(255,255,255,0.03)}
   .btn:focus{outline:2px solid rgba(0,0,0,0.06)}
   .auth-controls{display:flex;gap:8px;align-items:center}
@@ -75,27 +87,36 @@
   /* layout */
   .main-container{display:flex;height:calc(100vh - 120px);margin:14px;gap:18px}
   #map{flex:1;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.02);position:relative}
-  .dashboard{width:400px;padding:18px;border-radius:var(--card-radius);backdrop-filter:blur(10px);background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);box-shadow:0 20px 60px rgba(0,0,0,0.45);overflow:auto}
+  .dashboard{width:400px;padding:18px;border-radius:var(--card-radius);backdrop-filter:blur(8px);background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));border:1px solid rgba(255,255,255,0.02);box-shadow:0 20px 60px rgba(0,0,0,0.45);overflow:auto}
 
-  .dashboard-section{margin-bottom:16px;padding:14px;border-radius:10px;background:linear-gradient(180deg, rgba(0,0,0,0.14), rgba(0,0,0,0.08));border:1px solid rgba(255,255,255,0.02)}
+  .dashboard-section{margin-bottom:16px;padding:14px;border-radius:10px;background:linear-gradient(180deg, rgba(0,0,0,0.14), rgba(0,0,0,0.05));border:1px solid rgba(255,255,255,0.02)}
   .section-title{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-  .section-title h3{font-size:14px;color:var(--primary-1)}
+  .section-title h3{font-size:14px;color:var(--accent-1)}
   .section-title p{font-size:12px;color:var(--muted);margin-left:auto}
 
   .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .stat-card{padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(0,0,0,0.16), rgba(0,0,0,0.12));border:1px solid rgba(255,255,255,0.02);text-align:center}
-  .stat-number{font-size:20px;font-weight:800;color:#fff}
+  .stat-card{padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);text-align:center}
+  .stat-number{font-size:20px;font-weight:800;color:var(--input-text-dark)}
   .stat-label{font-size:12px;color:var(--muted);margin-top:6px;text-transform:uppercase;letter-spacing:0.6px}
 
+  /* inputs / selects - theme aware */
+  input[type="text"], input[type="email"], input[type="password"], textarea, select, .form-control, input[list], .range {
+    background: var(--input-bg-dark);
+    color: var(--input-text-dark);
+    border: 1px solid rgba(0,0,0,0.08);
+    padding:10px 12px;border-radius:8px;font-size:14px;
+  }
+  body[data-theme="light"] input[type="text"], body[data-theme="light"] textarea, body[data-theme="light"] select, body[data-theme="light"] .form-control { background: var(--input-bg-light); color: var(--input-text-light); border:1px solid rgba(0,0,0,0.08) }
+
   .search-row{display:flex;gap:8px;margin-bottom:10px}
-  .search-row input{flex:1;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.05);background:transparent;color:#fff}
-  .search-row select{padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.05);background:transparent;color:#fff}
+  .search-row input{flex:1}
+  .search-row select{padding:10px;border-radius:8px}
 
   .small{font-size:12px;color:var(--muted)}
 
   .legend{position:absolute;bottom:22px;left:22px;padding:12px;border-radius:10px;z-index:1100;background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.28));border:1px solid rgba(255,255,255,0.04)}
-  .legend h4{margin:0 0 10px 0;color:var(--primary-1)}
-  .legend-item{display:flex;gap:10px;align-items:center;color:#e6eef8;margin-bottom:8px}
+  .legend h4{margin:0 0 10px 0;color:var(--accent-1)}
+  .legend-item{display:flex;gap:10px;align-items:center;color:var(--input-text-dark);margin-bottom:8px}
 
   .leaflet-popup-content-wrapper{border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.3)}
 
@@ -110,19 +131,23 @@
   .timeline-controls{display:flex;gap:8px;align-items:center;margin-top:8px}
   .range{flex:1}
 
-  /* role actions box (moved to top) */
+  /* role actions */
   .role-actions{display:flex;gap:8px;margin-bottom:12px;align-items:center}
   .role-actions .btn{flex:1}
 
+  /* modal */
   .modal{display:none;position:fixed;z-index:1600;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.45);align-items:center;justify-content:center}
   .modal.open{display:flex}
-  .modal-card{width:94%;max-width:640px;border-radius:14px;overflow:hidden;background:linear-gradient(180deg,#fff,#fafafa);color:#111;box-shadow:0 30px 70px rgba(0,0,0,0.5)}
+  .modal-card{width:94%;max-width:720px;border-radius:14px;overflow:hidden;background:linear-gradient(180deg,#fff,#fafafa);color:#111;box-shadow:0 30px 70px rgba(0,0,0,0.5)}
   .modal-header{padding:16px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(0,0,0,0.06)}
-  .modal-body{padding:16px 18px;max-height:70vh;overflow:auto}
+  .modal-body{padding:16px 18px;max-height:75vh;overflow:auto}
   .form-group{margin-bottom:12px}
   .form-control{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(0,0,0,0.08)}
   @media(max-width:900px){ .dashboard{ display:none } }
 
+  /* smaller adjustments */
+  .btn[disabled]{opacity:0.6;cursor:not-allowed}
+  a{color:var(--accent-1);text-decoration:none}
 </style>
 </head>
 <body data-theme="dark">
@@ -132,7 +157,7 @@
     <div class="logo-mark"><i class="fas fa-cube"></i></div>
     <div class="title">
       <h1>VisionForge</h1>
-      <p>Intelligent FRA Atlas — Empowering Tribal Rights through Satellite + Community Evidence</p>
+      <p>AI-powered FRA Atlas & WebGIS — Satellite + Community evidence for fair forest rights.</p>
     </div>
   </div>
 
@@ -146,7 +171,6 @@
       <button id="themeToggle" class="btn secondary">Theme</button>
       <button id="aboutBtn" class="btn ghost">About</button>
       <button id="loginOpen" class="btn">Login</button>
-      <!-- after login, hide login and show user+logout -->
       <div id="userPanel" style="display:none;align-items:center;gap:8px;">
         <div id="userBadge" class="btn" style="pointer-events:none"></div>
         <button id="logoutBtn" class="btn secondary">Logout</button>
@@ -165,10 +189,8 @@
         <p id="coverageInfo">Coverage: 4 States</p>
       </div>
 
-      <!-- role actions moved here (prominent) -->
-      <div class="role-actions" id="roleActionsBox" style="display:none">
-        <!-- filled by JS based on role -->
-      </div>
+      <!-- role actions -->
+      <div class="role-actions" id="roleActionsBox" style="display:none"></div>
 
       <div class="search-row">
         <input id="searchInput" placeholder="Search claim id / village / district / state" list="autocompleteList" />
@@ -184,7 +206,7 @@
 
       <div style="display:flex;gap:8px;margin-bottom:8px">
         <button id="saveFilterBtn" class="btn secondary" style="flex:1">Save Filter</button>
-        <select id="savedFilters" class="small" style="flex:1;padding:10px;border-radius:8px"></select>
+        <select id="savedFilters" class="form-control" style="flex:1;padding:10px;border-radius:8px"></select>
       </div>
 
       <div class="stat-grid">
@@ -210,10 +232,17 @@
 
       <div style="margin-top:12px">
         <div class="timeline-controls">
-          <button id="playTimeline" class="btn secondary">Play</button>
-          <button id="pauseTimeline" class="btn secondary">Pause</button>
+          <!-- Single Play/Pause toggle -->
+          <button id="playPauseBtn" class="btn" style="background:linear-gradient(135deg,#10b981,#06b6d4);color:var(--btn-text-light)">Play</button>
+
           <input id="timelineRange" class="range" type="range" min="0" max="4" step="1" value="0" />
-          <select id="timelineSpeed" class="small"><option value="1200">1x</option><option value="800">1.5x</option><option value="400">2x</option></select>
+
+          <!-- Styled and visible timeline speed -->
+          <select id="timelineSpeed" class="form-control" style="width:92px;">
+            <option value="1200">1x</option>
+            <option value="800">1.5x</option>
+            <option value="400">2x</option>
+          </select>
         </div>
         <div style="margin-top:8px">
           <label class="small">NDVI Opacity</label>
@@ -246,12 +275,12 @@
 <!-- Legend -->
 <div class="legend">
   <h4>Map Legend</h4>
-  <div class="legend-item"><div class="legend-color" style="background-color:#ff7800"></div><div>FRA Claim Boundary</div></div>
-  <div class="legend-item"><div class="legend-color" style="background-color:#4CAF50;opacity:0.8"></div><div>Healthy Vegetation (High NDVI)</div></div>
-  <div class="legend-item"><div class="legend-color" style="background-color:#ff6b6b;opacity:0.8"></div><div>Forest Loss (Low NDVI)</div></div>
+  <div class="legend-item"><div class="legend-color" style="width:18px;height:18px;background-color:#ff7800;border-radius:4px;border:2px solid rgba(0,0,0,0.15)"></div><div>FRA Claim Boundary</div></div>
+  <div class="legend-item"><div class="legend-color" style="width:18px;height:18px;background-color:#4CAF50;opacity:0.8;border-radius:4px;border:2px solid rgba(0,0,0,0.15)"></div><div>Healthy Vegetation (High NDVI)</div></div>
+  <div class="legend-item"><div class="legend-color" style="width:18px;height:18px;background-color:#ff6b6b;opacity:0.8;border-radius:4px;border:2px solid rgba(0,0,0,0.15)"></div><div>Forest Loss (Low NDVI)</div></div>
 </div>
 
-<!-- Modals -->
+<!-- Report Modal -->
 <div id="reportModal" class="modal" aria-hidden="true">
   <div class="modal-card">
     <div class="modal-header"><h3 style="margin:0">Report Environmental Issue</h3><button class="close" id="closeReport">&times;</button></div>
@@ -273,55 +302,77 @@
   </div>
 </div>
 
+<!-- Polished Login modal -->
 <div id="loginModal" class="modal" aria-hidden="true">
-  <div class="modal-card" style="max-width:520px">
+  <div class="modal-card" style="max-width:820px">
     <div class="modal-header"><h3 style="margin:0">Sign in to VisionForge</h3><button class="close" id="closeLogin">&times;</button></div>
-    <div class="modal-body">
-      <form id="loginForm" style="display:grid;gap:10px">
-        <div class="form-group"><label>Login As</label><select id="roleSelect" class="form-control"><option value="citizen">Citizen</option><option value="official">Government Official</option></select></div>
-        <div class="form-group"><label>Email</label><input id="username" class="form-control" type="email" placeholder="you@example.com" required/></div>
-        <div class="form-group"><label>Password</label><input id="password" class="form-control" type="password" placeholder="password" required/></div>
-        <div style="display:flex;gap:8px"><button type="submit" class="btn" style="flex:1;background:linear-gradient(135deg,#3b82f6,#2563eb);color:var(--btn-text-light)">Sign in</button><button type="button" id="loginDemo" class="btn secondary" style="flex:1">Demo</button></div>
-        <p class="small" style="margin-top:6px">Demo: sign in with any credentials. Firebase is optional (you said you'll add it later).</p>
-      </form>
+    <div class="modal-body" style="padding:0">
+      <div style="display:grid;grid-template-columns:1fr 1fr;min-height:320px">
+        <div style="padding:22px;background:linear-gradient(180deg, rgba(16,185,129,0.06), rgba(15,118,110,0.02));display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <h3 style="color:var(--accent-1);margin:0 0 8px 0">Welcome</h3>
+          <p style="max-width:260px;color:var(--muted);text-align:center">Secure access for Citizens and Government Officials. Use Demo mode for prototyping; add backend or Firebase later.</p>
+          <div style="margin-top:16px;display:flex;gap:8px">
+            <div style="background:linear-gradient(135deg,var(--accent-1),var(--accent-2));padding:8px;border-radius:8px;color:#fff;font-weight:700">Secure</div>
+            <div style="background:linear-gradient(135deg,#2563eb,#7c3aed);padding:8px;border-radius:8px;color:#fff;font-weight:700">Auditable</div>
+          </div>
+        </div>
+
+        <div style="padding:18px;background: #fff;">
+          <form id="loginForm" style="display:grid;gap:10px;color:#111">
+            <div class="form-group"><label>Login As</label><select id="roleSelect" class="form-control"><option value="citizen">Citizen</option><option value="official">Government Official</option></select></div>
+            <div class="form-group"><label>Email</label><input id="username" class="form-control" type="email" placeholder="you@example.com" required/></div>
+            <div class="form-group"><label>Password</label><input id="password" class="form-control" type="password" placeholder="password" required/></div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button type="submit" class="btn" style="flex:1;background:linear-gradient(135deg,#3b82f6,#2563eb);color:var(--btn-text-light)">Sign in</button>
+              <button type="button" id="loginDemo" class="btn secondary" style="flex:1">Demo</button>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+              <label style="font-size:13px;color:var(--muted)"><input id="rememberMe" type="checkbox" style="margin-right:8px"> Remember me</label>
+              <a href="#" style="font-size:13px">Need help?</a>
+            </div>
+            <p class="small" style="margin-top:6px">Demo: sign in with any credentials. Firebase is optional — fill firebaseConfig later.</p>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
+<!-- About modal -->
 <div id="aboutModal" class="modal" aria-hidden="true">
   <div class="modal-card">
     <div class="modal-header"><h3 style="margin:0">About VisionForge</h3><button class="close" id="closeAbout">&times;</button></div>
     <div class="modal-body">
-      <p style="color:#111">VisionForge — an AI & WebGIS decision support prototype for FRA monitoring. Multi-state claim loading, NDVI visualization, citizen reporting, and officer review workflows are included. Replace demo persistence with your backend when ready.</p>
+      <p style="color:#111">VisionForge — an AI & WebGIS decision support prototype for FRA monitoring across Madhya Pradesh, Tripura, Odisha, and Telangana. Multi-state claim loading, NDVI visualization, reporting, and officer-review flows are included. Integrate your backend when ready.</p>
     </div>
   </div>
 </div>
 
-<!-- Leaflet & plugins -->
+<!-- Leaflet & plugins (same links preserved) -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
 
 <script>
 /* ===========================
-   Keep firebaseConfig = null for now (you'll add it later)
+   Firebase placeholder - leave null for now
    =========================== */
 const firebaseConfig = null;
 let useFirebase = false;
 if (firebaseConfig) {
-  try { firebase.initializeApp(firebaseConfig); useFirebase = true; } catch(e){ console.warn('Firebase init failed',e); }
+  try { /* initialize firebase here if provided */ useFirebase = true; } catch(e){ console.warn('Firebase init failed', e); }
 }
 
-/* App state */
+/* Application state */
 let currentUser = null; // {username, role}
-const layerMap = new Map(); // id -> layer
+const layerMap = new Map(); // id -> L.geoJSON layer
 let clusterGroup = null, heatmapLayer = null;
 let timelineTimer = null;
 let timelineIndex = 0;
-const ndviImages = []; // high-res images for timeline/compare
+const ndviImages = []; // generated images
 const ndviOverlays = [];
 
-/* DOM refs */
+/* DOM refs (cached) */
 const loginOpen = document.getElementById('loginOpen');
 const loginModal = document.getElementById('loginModal');
 const closeLogin = document.getElementById('closeLogin');
@@ -336,7 +387,6 @@ const aboutBtn = document.getElementById('aboutBtn');
 const aboutModal = document.getElementById('aboutModal');
 const closeAbout = document.getElementById('closeAbout');
 
-const reportBtn = document.getElementById('reportBtn');
 const reportModal = document.getElementById('reportModal');
 const closeReport = document.getElementById('closeReport');
 const reportForm = document.getElementById('reportForm');
@@ -353,8 +403,7 @@ const savedFilters = document.getElementById('savedFilters');
 const beforeBtn = document.getElementById('beforeBtn');
 const afterBtn = document.getElementById('afterBtn');
 const toggleTimelineOverlay = document.getElementById('toggleTimelineOverlay');
-const playBtn = document.getElementById('playTimeline');
-const pauseBtn = document.getElementById('pauseTimeline');
+const playPauseBtn = document.getElementById('playPauseBtn');
 const timelineRange = document.getElementById('timelineRange');
 const timelineSpeed = document.getElementById('timelineSpeed');
 const ndviOpacity = document.getElementById('ndviOpacity');
@@ -370,43 +419,37 @@ const compareTop = document.getElementById('compareTop');
 const divider = document.getElementById('divider');
 
 const roleActionsBox = document.getElementById('roleActionsBox');
+const exportBtn = document.getElementById('exportBtn');
 
-/* helper to show/hide modals */
-function showModal(node){ node.classList.add('open'); node.style.display='flex' }
-function hideModal(node){ node.classList.remove('open'); node.style.display='none' }
+/* show/hide helpers */
+function showModal(node){ node.classList.add('open'); node.style.display='flex'; node.setAttribute('aria-hidden','false'); }
+function hideModal(node){ node.classList.remove('open'); node.style.display='none'; node.setAttribute('aria-hidden','true'); }
 
 /* header wiring */
 loginOpen.addEventListener('click', ()=> showModal(loginModal));
 closeLogin.addEventListener('click', ()=> hideModal(loginModal));
 aboutBtn.addEventListener('click', ()=> showModal(aboutModal));
 closeAbout.addEventListener('click', ()=> hideModal(aboutModal));
-
-reportBtn && reportBtn.addEventListener('click', ()=> showModal(reportModal));
 closeReport && closeReport.addEventListener('click', ()=> hideModal(reportModal));
 reportCancel && reportCancel.addEventListener('click', ()=> hideModal(reportModal));
-
-themeToggle.addEventListener('click', ()=>{
-  const b = document.body;
-  const cur = b.getAttribute('data-theme') || 'dark';
-  b.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
+themeToggle.addEventListener('click', ()=> {
+  const b = document.body; const cur = b.getAttribute('data-theme') || 'dark'; b.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
 });
 
-/* map setup */
+/* Map initialization (unchanged links) */
 const map = L.map('map', { center:[20.2961,85.8245], zoom:12, zoomControl:true });
 L.control.zoom({ position:'topright' }).addTo(map);
-
 const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution:'&copy; OpenStreetMap', maxZoom:18 }).addTo(map);
 const positron = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution:'&copy; CARTO & OpenStreetMap', maxZoom:19 });
-
 L.control.layers({ "OpenStreetMap": osm, "Positron (Light)": positron }, {}, { position:'topright', collapsed:true }).addTo(map);
 
-/* fallback sample feature (unchanged) */
+/* fallback sample feature (unchanged properties; emoji removed) */
 const fallbackFeature = {
   "type":"Feature","properties":{"name":"CFR-2024-OD-101","village":"Khandagiri","district":"Khurda","area":"245 hectares","status":"Approved","claimants":"127 families","approval_date":"2024-03-15","claim_id":"CFR-2024-OD-101","state":"Odisha","deforestation_detected":true,"area_hectares":245,"claimant_families":127},
   "geometry":{"type":"Polygon","coordinates":[[[85.8100,20.3100],[85.8300,20.3100],[85.8300,20.2900],[85.8100,20.2900],[85.8100,20.3100]]]}
 };
 
-/* style + popup */
+/* styling and popup builder (no emojis) */
 function claimStyle(feature){
   const props = feature.properties||{};
   const s = (props.status||'').toLowerCase();
@@ -431,7 +474,7 @@ function buildPopup(feature){
   const claimId = p.claim_id || name;
   return `
     <div style="min-width:260px;font-family:inherit;">
-      <h4 style="margin:0 0 8px 0;color:var(--primary-1)">${name}</h4>
+      <h4 style="margin:0 0 8px 0;color:var(--accent-1)">${name}</h4>
       <p style="margin:4px 0"><strong>State:</strong> ${state}</p>
       <p style="margin:4px 0"><strong>Village:</strong> ${village}</p>
       <p style="margin:4px 0"><strong>District:</strong> ${district}</p>
@@ -444,7 +487,7 @@ function buildPopup(feature){
   `;
 }
 
-/* add feature & store layer */
+/* add feature & track layer */
 function addFeature(feature){
   const layer = L.geoJSON(feature, {
     style: claimStyle,
@@ -454,77 +497,83 @@ function addFeature(feature){
   layerMap.set(id, layer);
   layer.addTo(map);
 }
-
-/* add fallback & later load external files */
 addFeature(fallbackFeature);
 
-/* High-resolution NDVI images for timeline & compare (improved resolution) */
+/* create higher-res NDVI images (avoids pixelated blocks) */
 function createHighResNDVI(type, seed){
-  // 1600x1000 for smooth compare
   const W = 1600, H = 1000;
   const c = document.createElement('canvas'); c.width = W; c.height = H;
   const ctx = c.getContext('2d');
   if (type === 'healthy') {
     const g = ctx.createLinearGradient(0,0,W,H); g.addColorStop(0,'rgba(34,197,94,1)'); g.addColorStop(1,'rgba(16,185,129,1)');
     ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
-    ctx.globalAlpha = 0.04;
+    ctx.globalAlpha = 0.03;
     ctx.fillStyle = '#000';
-    for (let i=0;i<500;i++){ ctx.fillRect(Math.random()*W, Math.random()*H, Math.random()*4, Math.random()*4) }
+    for (let i=0;i<400;i++){ ctx.fillRect(Math.random()*W, Math.random()*H, Math.random()*3, Math.random()*3) }
     ctx.globalAlpha = 1;
   } else if (type === 'mixed') {
     ctx.fillStyle = 'rgba(34,197,94,0.9)'; ctx.fillRect(0,0,W,H);
     ctx.fillStyle = 'rgba(244,67,54,0.85)';
-    for (let i=0;i<12;i++){ ctx.fillRect(80 + (i*120 + (seed*17)%80), 80 + ((i*45 + seed*7)%200), 80 + (seed%40), 50 + ((i*23)%60)) }
+    for (let i=0;i<14;i++){ ctx.fillRect(60 + (i*110 + (seed*17)%80), 60 + ((i*45 + seed*7)%220), 70 + (seed%40), 40 + ((i*23)%60)) }
   } else {
     ctx.fillStyle = 'rgba(76,175,80,0.6)'; ctx.fillRect(0,0,W,H);
     ctx.fillStyle = 'rgba(244,67,54,0.95)';
-    for (let i=0;i<24;i++){ ctx.fillRect(40 + (i*60 + (seed*31)%120), 40 + ((i*30 + seed*19)%260), 90, 60) }
+    for (let i=0;i<26;i++){ ctx.fillRect(30 + (i*55 + (seed*31)%120), 30 + ((i*30 + seed*19)%280), 100, 70) }
   }
   return c.toDataURL('image/png', 0.9);
 }
 
-/* Build timeline images: 0..4 (mix healthy -> critical) */
+/* build timeline images (0..4) */
 for (let t=0;t<=4;t++){
   if (t <= 1) ndviImages.push(createHighResNDVI('healthy', t));
   else if (t === 2) ndviImages.push(createHighResNDVI('mixed', t));
   else ndviImages.push(createHighResNDVI('degraded', t));
 }
 
-/* Create image overlays (stored but not added) */
+/* create image overlays (store, don't add) */
 const imageBounds = [[20.2900,85.8100],[20.3100,85.8300]];
 ndviImages.forEach(img => {
   const o = L.imageOverlay(img, imageBounds, { opacity: Number(ndviOpacity.value) });
   ndviOverlays.push(o);
 });
 
-/* timeline display helper */
+/* helper to set timeline overlay */
 function setTimelineOverlay(idx){
-  // remove all first
-  ndviOverlays.forEach(o => { if (map.hasLayer(o)) map.removeLayer(o) });
+  ndviOverlays.forEach(o => { if (map.hasLayer(o)) map.removeLayer(o); });
   if (ndviOverlays[idx]) ndviOverlays[idx].addTo(map);
   timelineRange.max = Math.max(0, ndviOverlays.length - 1);
   timelineRange.value = idx;
 }
 
-/* initial: overlays off */
+/* initial overlays are off */
 ndviOverlays.forEach(o => { if (map.hasLayer(o)) map.removeLayer(o); });
 
-/* timeline controls working */
-playBtn.addEventListener('click', ()=> {
+/* single play/pause button logic */
+let playing = false;
+function startTimeline(){
   const speed = Number(timelineSpeed.value) || 1200;
   if (timelineTimer) clearInterval(timelineTimer);
   timelineTimer = setInterval(()=>{
     timelineIndex = (timelineIndex + 1) % ndviOverlays.length;
     setTimelineOverlay(timelineIndex);
   }, speed);
-});
-pauseBtn.addEventListener('click', ()=> { if (timelineTimer) clearInterval(timelineTimer); timelineTimer = null });
-timelineRange.addEventListener('input', (e)=> {
-  timelineIndex = Number(e.target.value);
-  setTimelineOverlay(timelineIndex);
-});
+  playing = true;
+  playPauseBtn.textContent = 'Pause';
+  playPauseBtn.style.background = 'linear-gradient(135deg,#ef4444,#dc2626)';
+}
+function stopTimeline(){
+  if (timelineTimer) clearInterval(timelineTimer);
+  timelineTimer = null;
+  playing = false;
+  playPauseBtn.textContent = 'Play';
+  playPauseBtn.style.background = 'linear-gradient(135deg,#10b981,#06b6d4)';
+}
+playPauseBtn.addEventListener('click', ()=> { if (playing) stopTimeline(); else startTimeline(); });
 
-/* before/after & toggle NDVI overlay */
+timelineRange.addEventListener('input', (e)=> { timelineIndex = Number(e.target.value); setTimelineOverlay(timelineIndex); });
+timelineSpeed.addEventListener('change', ()=> { if (playing) { startTimeline(); } });
+
+/* before/after/toggle controls */
 let ndviShown = false;
 beforeBtn.addEventListener('click', ()=> { setTimelineOverlay(0); ndviShown = true; });
 afterBtn.addEventListener('click', ()=> { setTimelineOverlay(ndviOverlays.length - 1); ndviShown = true; });
@@ -540,35 +589,33 @@ ndviOpacity.addEventListener('input', (e)=> {
   ndviOverlays.forEach(o => o.setOpacity(v));
 });
 
-/* Compare open: use high-res images to avoid pixelation */
+/* Compare open/close and divider drag */
 compareOpen.addEventListener('click', ()=> {
-  if (compareContainer.style.display === 'none' || !compareContainer.style.display) {
+  if (!compareContainer.style.display || compareContainer.style.display === 'none') {
     compareBefore.src = ndviImages[0];
     compareAfter.src = ndviImages[ndviImages.length - 1];
     compareContainer.style.display = 'block';
-    // set default divider halfway
     compareTop.style.width = '50%';
     divider.style.left = '50%';
   } else {
     compareContainer.style.display = 'none';
   }
 });
-
-/* compare divider drag */
 let dragging = false;
-divider.addEventListener('mousedown', (e)=>{ dragging = true; e.preventDefault(); });
+divider.addEventListener('mousedown', (e)=> { dragging = true; e.preventDefault(); });
 document.addEventListener('mouseup', ()=> dragging = false);
 document.addEventListener('mousemove', (e)=>{
   if (!dragging) return;
   const rect = compareContainer.getBoundingClientRect();
   let x = e.clientX - rect.left;
-  if (x < 0) x = 0; if (x > rect.width) x = rect.width;
+  if (x < 0) x = 0;
+  if (x > rect.width) x = rect.width;
   const pct = (x/rect.width)*100;
   compareTop.style.width = pct + '%';
   divider.style.left = pct + '%';
 });
 
-/* clustering & heat */
+/* cluster & heat rebuild */
 function rebuildClusterAndHeat(){
   const markers = L.markerClusterGroup();
   const heatPoints = [];
@@ -603,7 +650,7 @@ toggleHeatmapBtn.addEventListener('click', ()=> {
   toggleHeatmapBtn.textContent = heatShown ? 'Hide Heatmap' : 'Show Heatmap';
 });
 
-/* popup actions (role-based) */
+/* popup open actions (role-based) - no emojis */
 map.on('popupopen', (e)=>{
   const popupEl = e.popup.getElement && e.popup.getElement();
   if (!popupEl) return;
@@ -625,7 +672,7 @@ map.on('popupopen', (e)=>{
   }
 });
 
-/* update claim status locally and attempt persistence (fallback POST); production: hook to your backend or Firestore */
+/* update claim status locally and try to persist (demo) */
 async function updateClaimStatus(claimId, newStatus, popup){
   let found=false;
   layerMap.forEach((layer,id)=>{
@@ -638,12 +685,10 @@ async function updateClaimStatus(claimId, newStatus, popup){
       }
     }
   });
-  // attempt to persist (if you later add firebase, it'll be used)
   try {
     if (useFirebase) {
-      // implement Firestore persistence when firebaseConfig is provided
+      // persist to Firestore when configured
     } else {
-      // fallback - optional server endpoint
       fetch('/api/claims/update', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ claimId, status:newStatus }) })
         .catch(()=>{/* ignore in demo */});
     }
@@ -680,7 +725,7 @@ function rebuildAutocomplete(){
 function applySearchFilter(){
   const q = (searchInput.value||'').trim().toLowerCase();
   const status = statusFilter.value;
-  // clear layers then add matches
+  // remove all layers then add matches
   layerMap.forEach(layer => map.removeLayer(layer));
   const matched = [];
   layerMap.forEach((layer,id) => {
@@ -695,7 +740,7 @@ function applySearchFilter(){
   updateDashboardCounts(matched);
 }
 
-/* saved filters using localStorage */
+/* saved filters localStorage */
 function loadSavedFilters(){
   const s = localStorage.getItem('vf_saved_filters');
   const arr = s ? JSON.parse(s) : [];
@@ -723,8 +768,8 @@ savedFilters.addEventListener('change', ()=> {
 searchInput.addEventListener('input', ()=> applySearchFilter());
 statusFilter.addEventListener('change', ()=> applySearchFilter());
 
-/* export visible claims */
-document.getElementById('exportBtn').addEventListener('click', ()=> {
+/* export visible claims to GeoJSON */
+exportBtn.addEventListener('click', ()=> {
   const feats = [];
   layerMap.forEach(layer => {
     if (map.hasLayer(layer)) {
@@ -735,11 +780,11 @@ document.getElementById('exportBtn').addEventListener('click', ()=> {
   const fc = { type:'FeatureCollection', features:feats };
   const blob = new Blob([JSON.stringify(fc,null,2)], { type:'application/json' });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href=url; a.download = `visible_claims_${new Date().toISOString().split('T')[0]}.geojson`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  const a = document.createElement('a'); a.href=url; a.download = `visible_claims_${new Date().toISOString().split('T')[0]}.geojson`; document.body.appendChild(a); a.click(); a.remove(); window.URL.revokeObjectURL(url);
   alert('Exported visible claims.');
 });
 
-/* Loading state datasets from assets (unchanged paths) */
+/* Loading state datasets (paths unchanged) */
 (async function loadDatasets(){
   const files = [
     'assets/data/sample-claims.geojson',
@@ -750,7 +795,7 @@ document.getElementById('exportBtn').addEventListener('click', ()=> {
   let loadedCount = 0, totalFeatures = 0;
   for (const f of files){
     try {
-      const resp = await fetch(f, { cache:'no-store' });
+      const resp = await fetch(f, { cache: 'no-store' });
       if (!resp.ok) throw new Error('HTTP ' + resp.status);
       const j = await resp.json();
       (j.features || []).forEach(feat => {
@@ -758,15 +803,13 @@ document.getElementById('exportBtn').addEventListener('click', ()=> {
         totalFeatures++;
       });
       loadedCount++;
-    } catch(e){
-      console.warn('Could not load', f, e.message);
+    } catch (err) {
+      console.warn('Could not load', f, err.message);
     }
   }
   if (totalFeatures === 0) {
-    // ensure fallback is present
     updateDashboardCounts([fallbackFeature]);
   } else {
-    // fit bounds
     const allB = [];
     layerMap.forEach(l => {
       const inner = l.getLayers ? l.getLayers()[0] : l;
@@ -776,7 +819,6 @@ document.getElementById('exportBtn').addEventListener('click', ()=> {
       const union = allB.reduce((acc,b)=>acc.extend(b), allB[0].clone());
       map.fitBounds(union, { padding:[60,60] });
     }
-    // rebuild visuals and autocomplete
     rebuildClusterAndHeat();
     rebuildAutocomplete();
     const allFeatures = [];
@@ -786,31 +828,30 @@ document.getElementById('exportBtn').addEventListener('click', ()=> {
   loadSavedFilters();
 })();
 
-/* rebuild cluster & heat (same function used earlier) */
-function rebuildClusterAndHeat(){
-  const markers = L.markerClusterGroup();
-  const heatPoints = [];
-  layerMap.forEach(layer => {
-    const inner = layer.getLayers ? layer.getLayers()[0] : layer;
-    if (!inner) return;
-    const bounds = inner.getBounds ? inner.getBounds() : null;
-    if (!bounds) return;
-    const c = bounds.getCenter();
-    const feat = inner.feature || inner;
-    const marker = L.marker([c.lat, c.lng]);
-    marker.bindPopup(`<div style="min-width:180px"><strong>${feat.properties.claim_id||feat.properties.name||'Claim'}</strong><div style="font-size:12px;color:var(--muted)">Status: ${feat.properties.status||'—'}</div></div>`);
-    markers.addLayer(marker);
-    heatPoints.push([c.lat, c.lng, feat.properties.deforestation_detected ? 0.9 : 0.4]);
+/* rebuildClusterAndHeat duplicate removed — function above used */
+
+/* update dashboard counts */
+function updateDashboardCounts(features){
+  const counts = { approved: 0, pending: 0, review: 0, rejected: 0 };
+  const states = new Set();
+  features.forEach(f => {
+    const status = (f.properties && (f.properties.status || '')).toLowerCase();
+    const st = (f.properties && f.properties.state) || '—';
+    states.add(st);
+    if (status.includes('approved')) counts.approved++;
+    else if (status.includes('pending')) counts.pending++;
+    else if (status.includes('review')) counts.review++;
+    else if (status.includes('reject')) counts.rejected++;
   });
-  if (clusterGroup) map.removeLayer(clusterGroup);
-  clusterGroup = markers;
-  if (heatmapLayer) map.removeLayer(heatmapLayer);
-  heatmapLayer = L.heatLayer(heatPoints, { radius: 25, blur: 18, maxZoom: 12 });
+  document.getElementById('approved-count').textContent = counts.approved;
+  document.getElementById('pending-count').textContent = counts.pending;
+  document.getElementById('review-count').textContent = counts.review;
+  document.getElementById('rejected-count').textContent = counts.rejected;
+  document.getElementById('last-update').textContent = 'Updated ' + new Date().toLocaleTimeString();
+  document.getElementById('coverageInfo').textContent = `Coverage: ${states.size} States | ${features.length} Active Claims`;
 }
 
-/* When popup opens, action buttons added above (handled by popupopen listener previously) */
-
-/* Login flow (demo) & role UI placement */
+/* Role UI & login demo flow */
 function refreshUserUI(){
   if (!currentUser) {
     userPanel.style.display = 'none';
@@ -821,7 +862,6 @@ function refreshUserUI(){
   loginOpen.style.display = 'none';
   userPanel.style.display = 'flex';
   userBadge.innerHTML = `<strong style="font-weight:700">${currentUser.username.split('@')[0]}</strong><div style="font-size:12px;color:var(--muted);margin-left:8px">${currentUser.role === 'official' ? 'Government Official' : 'Citizen'}</div>`;
-  // populate roleActionsBox
   roleActionsBox.innerHTML = '';
   if (currentUser.role === 'citizen') {
     const raiseBtn = document.createElement('button'); raiseBtn.className = 'btn'; raiseBtn.textContent = 'Raise Claim'; raiseBtn.onclick = citizenRaise;
@@ -838,7 +878,7 @@ function refreshUserUI(){
   }
 }
 
-/* demo citizen raise & track */
+/* demo citizen functions */
 function citizenRaise(){
   const title = prompt('Brief title for claim'); if (!title) return;
   const village = prompt('Village'); if (!village) return;
@@ -864,7 +904,7 @@ function citizenTrack(){
   if (!found) alert('Claim not found in current dataset.');
 }
 
-/* tiny polygon helper for point->square */
+/* small polygon helper */
 function turfPointToPolygon(lat, lng, r) {
   const radius = r || 0.002;
   return [
@@ -881,9 +921,6 @@ loginForm.addEventListener('submit', (e)=> {
   e.preventDefault();
   const role = roleSelect.value;
   const email = document.getElementById('username').value.trim() || (role + '.demo@example.com');
-  if (useFirebase) {
-    // add firebase auth logic here later
-  }
   currentUser = { username: email, role };
   hideModal(loginModal);
   refreshUserUI();
@@ -900,32 +937,11 @@ logoutBtn.addEventListener('click', ()=> {
   refreshUserUI();
 });
 
-/* popup open handler (same as earlier) */
-map.on('popupopen', (e)=>{
-  const popupEl = e.popup.getElement && e.popup.getElement();
-  if (!popupEl) return;
-  const actionArea = popupEl.querySelector('.action-area');
-  if (!actionArea) return;
-  actionArea.innerHTML = '';
-  const claimId = actionArea.getAttribute('data-claim-id');
-  const reportBtn = document.createElement('button'); reportBtn.className='btn secondary'; reportBtn.textContent='Report'; reportBtn.onclick = ()=> showModal(reportModal);
-  actionArea.appendChild(reportBtn);
-  if (currentUser && currentUser.role === 'official') {
-    const approve = document.createElement('button'); approve.className='btn'; approve.style.background='linear-gradient(135deg,#2ecc71,#27ae60)'; approve.textContent='Approve';
-    const reject = document.createElement('button'); reject.className='btn'; reject.style.background='linear-gradient(135deg,#ef4444,#dc2626)'; reject.textContent='Reject';
-    approve.onclick = ()=> updateClaimStatus(claimId, 'Approved', e.popup);
-    reject.onclick = ()=> updateClaimStatus(claimId, 'Rejected', e.popup);
-    actionArea.appendChild(approve); actionArea.appendChild(reject);
-  } else {
-    const hint = document.createElement('div'); hint.className='small'; hint.style.marginTop='6px'; hint.textContent='Log in as an official to review claims.';
-    actionArea.appendChild(hint);
-  }
-});
-
+/* when popups open, add role-specific action buttons (already set by popupopen listener) */
 /* initial UI state */
 refreshUserUI();
 
-console.log('VisionForge update applied: improved colors, login panel, timeline/opacity, compare panel, role actions moved, logout available.');
+console.log("VisionForge: full update applied — login, contrast, NDVI timeline, compare, play/pause toggle, clusters, heatmap, export, filters. Firebase placeholder left as null.");
 </script>
 </body>
 </html>
