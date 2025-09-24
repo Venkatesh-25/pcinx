@@ -5,28 +5,28 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>VisionForge — FRA Atlas DSS</title>
 
-<!-- Keep your same external links (unchanged) -->
+<!-- Keep external links unchanged -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 
-<!-- marker cluster & heat -->
+<!-- Marker cluster & heat -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+
+<!-- Chart.js for officer charts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <style>
   :root{
     --bg-r: 18; --bg-g: 20; --bg-b: 28;
     --card-radius: 12px;
-    --accent-1: #0f766e;   /* VisionForge primary */
+    --accent-1: #0f766e;
     --accent-2: #10b981;
     --muted: #9aa3ab;
     --glass-dark: rgba(255,255,255,0.02);
-    --glass-light: rgba(255,255,255,0.94);
     --input-bg-dark: rgba(255,255,255,0.03);
     --input-text-dark: #e6eef8;
-    --input-bg-light: #ffffff;
-    --input-text-light: #0b1220;
     --btn-text-light: #ffffff;
   }
 
@@ -51,10 +51,10 @@
     overflow:hidden;
   }
 
-  /* header */
+  /* Header */
   .header{
     display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;margin:14px;border-radius:12px;
-    background: linear-gradient(180deg, var(--glass-dark), rgba(255,255,255,0.02));
+    background: linear-gradient(180deg, var(--glass-dark), rgba(255,255,255,0.01));
     backdrop-filter: blur(8px) saturate(120%);
     box-shadow: 0 8px 30px rgba(0,0,0,0.35);
     border:1px solid rgba(255,255,255,0.03);
@@ -63,11 +63,8 @@
   .logo-mark{width:54px;height:54px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, rgba(16,185,129,0.08), rgba(255,255,255,0.02));border:1px solid rgba(0,0,0,0.06)}
   .logo-mark i{color:var(--accent-1);font-size:20px}
   .title h1{
-    font-size:18px;
-    margin-bottom:2px;
-    background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
-    -webkit-background-clip: text; background-clip: text; color: transparent;
-    font-weight:800;
+    font-size:18px;margin-bottom:2px;background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+    -webkit-background-clip: text; background-clip: text; color: transparent;font-weight:800;
   }
   .title p{font-size:12px;color:var(--muted);margin:0;max-width:360px}
 
@@ -75,16 +72,13 @@
   .btn{
     padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;gap:8px;
     background:linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
-    color:var(--btn-text-light);
-    backdrop-filter: blur(4px);
-    border:1px solid rgba(255,255,255,0.03);
+    color:var(--btn-text-light);backdrop-filter: blur(4px);border:1px solid rgba(255,255,255,0.03);
   }
   .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--input-text-dark)}
   .btn.ghost{background:transparent;border:1px dashed rgba(255,255,255,0.03)}
-  .btn:focus{outline:2px solid rgba(0,0,0,0.06)}
   .auth-controls{display:flex;gap:8px;align-items:center}
 
-  /* layout */
+  /* Layout */
   .main-container{display:flex;height:calc(100vh - 120px);margin:14px;gap:18px}
   #map{flex:1;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.02);position:relative}
   .dashboard{width:400px;padding:18px;border-radius:var(--card-radius);backdrop-filter:blur(8px);background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));border:1px solid rgba(255,255,255,0.02);box-shadow:0 20px 60px rgba(0,0,0,0.45);overflow:auto}
@@ -99,14 +93,14 @@
   .stat-number{font-size:20px;font-weight:800;color:var(--input-text-dark)}
   .stat-label{font-size:12px;color:var(--muted);margin-top:6px;text-transform:uppercase;letter-spacing:0.6px}
 
-  /* inputs / selects - theme aware */
+  /* inputs */
   input[type="text"], input[type="email"], input[type="password"], textarea, select, .form-control, input[list], .range {
     background: var(--input-bg-dark);
     color: var(--input-text-dark);
     border: 1px solid rgba(0,0,0,0.08);
     padding:10px 12px;border-radius:8px;font-size:14px;
   }
-  body[data-theme="light"] input[type="text"], body[data-theme="light"] textarea, body[data-theme="light"] select, body[data-theme="light"] .form-control { background: var(--input-bg-light); color: var(--input-text-light); border:1px solid rgba(0,0,0,0.08) }
+  body[data-theme="light"] input[type="text"], body[data-theme="light"] textarea, body[data-theme="light"] select, body[data-theme="light"] .form-control { background: #fff; color: #0b1220; border:1px solid rgba(0,0,0,0.08) }
 
   .search-row{display:flex;gap:8px;margin-bottom:10px}
   .search-row input{flex:1}
@@ -145,7 +139,19 @@
   .form-control{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(0,0,0,0.08)}
   @media(max-width:900px){ .dashboard{ display:none } }
 
-  /* smaller adjustments */
+  /* Officer modal extras */
+  #officerModal .modal-card { max-width:1100px; width:95%; }
+  #officerModal .kpi-row { display:flex; gap:12px; margin-bottom:12px; }
+  #officerModal .kpi { flex:1; padding:12px; border-radius:10px; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.02); text-align:center }
+  #officerModal .kpi h4 { margin:0 0 6px 0; color:var(--accent-1) }
+  #officerModal .charts { display:flex; gap:16px; margin-bottom:12px; }
+  #officerModal .charts .chart { flex:1; min-height:240px; background:transparent; padding:8px; border-radius:8px; }
+  #officerModal .table-wrap { max-height:340px; overflow:auto; border-radius:8px; border:1px solid rgba(0,0,0,0.06); background:var(--input-bg-dark); padding:8px; }
+  #officerModal table { width:100%; border-collapse:collapse; font-size:13px; }
+  #officerModal th, #officerModal td { padding:8px 6px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; color:var(--input-text-dark) }
+  #officerModal .toolbar { display:flex; gap:8px; margin-bottom:8px; align-items:center }
+  #officerModal .small-muted { font-size:13px; color:var(--muted) }
+
   .btn[disabled]{opacity:0.6;cursor:not-allowed}
   a{color:var(--accent-1);text-decoration:none}
 </style>
@@ -234,10 +240,7 @@
         <div class="timeline-controls">
           <!-- Single Play/Pause toggle -->
           <button id="playPauseBtn" class="btn" style="background:linear-gradient(135deg,#10b981,#06b6d4);color:var(--btn-text-light)">Play</button>
-
           <input id="timelineRange" class="range" type="range" min="0" max="4" step="1" value="0" />
-
-          <!-- Styled and visible timeline speed -->
           <select id="timelineSpeed" class="form-control" style="width:92px;">
             <option value="1200">1x</option>
             <option value="800">1.5x</option>
@@ -265,7 +268,7 @@
   </aside>
 </div>
 
-<!-- Compare floating panel -->
+<!-- Compare panel -->
 <div id="compareContainer" class="compare-container" style="display:none">
   <div class="compare-bottom"><img id="compareBefore" src="" alt="before"/></div>
   <div id="compareTop" class="compare-top"><img id="compareAfter" src="" alt="after"/></div>
@@ -302,7 +305,7 @@
   </div>
 </div>
 
-<!-- Polished Login modal -->
+<!-- Login modal -->
 <div id="loginModal" class="modal" aria-hidden="true">
   <div class="modal-card" style="max-width:820px">
     <div class="modal-header"><h3 style="margin:0">Sign in to VisionForge</h3><button class="close" id="closeLogin">&times;</button></div>
@@ -343,12 +346,97 @@
   <div class="modal-card">
     <div class="modal-header"><h3 style="margin:0">About VisionForge</h3><button class="close" id="closeAbout">&times;</button></div>
     <div class="modal-body">
-      <p style="color:#111">VisionForge — an AI & WebGIS decision support prototype for FRA monitoring across Madhya Pradesh, Tripura, Odisha, and Telangana. Multi-state claim loading, NDVI visualization, reporting, and officer-review flows are included. Integrate your backend when ready.</p>
+      <p style="color:#111">VisionForge — an AI & WebGIS decision support prototype for FRA monitoring across Madhya Pradesh, Tripura, Odisha, and Telangana. Multi-state claim loading, NDVI visualization, reporting, and officer-review flows are included. Replace demo persistence with your backend when ready.</p>
     </div>
   </div>
 </div>
 
-<!-- Leaflet & plugins (same links preserved) -->
+<!-- Officer Dashboard modal (Review Queue, Archive, DSS) -->
+<div id="officerModal" class="modal" aria-hidden="true">
+  <div class="modal-card" style="padding:14px;">
+    <div class="modal-header">
+      <h3 style="margin:0">Officer Dashboard — Review Queue</h3>
+      <button class="close" id="closeOfficer">&times;</button>
+    </div>
+    <div class="modal-body" style="padding:12px;">
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px">
+        <div style="flex:1">
+          <div class="kpi-row">
+            <div class="kpi"><h4>Total Claims</h4><div id="kpiTotal" style="font-size:20px;font-weight:800">0</div></div>
+            <div class="kpi"><h4>Deforestation Alerts</h4><div id="kpiAlerts" style="font-size:20px;font-weight:800;color:#e04c4c">0</div></div>
+            <div class="kpi"><h4>Total Families</h4><div id="kpiFamilies" style="font-size:20px;font-weight:800">0</div></div>
+            <div class="kpi"><h4>Total Area (ha)</h4><div id="kpiArea" style="font-size:20px;font-weight:800">0</div></div>
+          </div>
+        </div>
+        <div style="width:220px;display:flex;flex-direction:column;gap:8px">
+          <button id="exportCSV" class="btn" style="background:linear-gradient(135deg,#10b981,#06b6d4);color:var(--btn-text-light)">Export CSV</button>
+          <button id="focusAlerts" class="btn secondary">Focus Alerts</button>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;margin-bottom:12px">
+        <button id="tabOverview" class="btn secondary">Overview</button>
+        <button id="tabArchive" class="btn secondary">Digitized Archive</button>
+        <button id="tabDSS" class="btn secondary">DSS Recommendations</button>
+      </div>
+
+      <div id="tabContentOverview">
+        <div class="charts">
+          <div class="chart" style="min-width:260px">
+            <canvas id="statusPie"></canvas>
+          </div>
+          <div class="chart">
+            <canvas id="stateBar"></canvas>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <input id="officerSearch" placeholder="Search claim id / village / district / state" class="form-control" style="flex:1" />
+          <select id="officerStatusFilter" class="form-control" style="width:160px">
+            <option value="all">All statuses</option>
+            <option value="approved">Approved</option>
+            <option value="pending">Pending</option>
+            <option value="review">Under Review</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+
+        <div class="table-wrap">
+          <table id="claimsTable">
+            <thead><tr><th>ID</th><th>State</th><th>District</th><th>Village</th><th>Status</th><th>Area(ha)</th><th>Families</th><th>Alert</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="tabContentArchive" style="display:none">
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <input id="archiveSearch" placeholder="Search archive (names, patta no, village)" class="form-control" style="flex:1" />
+          <button id="exportArchiveCSV" class="btn">Export</button>
+        </div>
+        <div id="archiveList" style="max-height:360px;overflow:auto;border:1px solid rgba(0,0,0,0.06);padding:8px;background:var(--input-bg-dark)"></div>
+      </div>
+
+      <div id="tabContentDSS" style="display:none">
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+          <select id="dssSchemeSelect" class="form-control" style="width:300px">
+            <option value="all">All schemes</option>
+            <option value="pmkisan">PM-KISAN</option>
+            <option value="jaljeevan">Jal Jeevan Mission</option>
+            <option value="mgnrega">MGNREGA</option>
+            <option value="dajgua">DAJGUA</option>
+          </select>
+          <button id="runDss" class="btn">Run DSS</button>
+        </div>
+        <div id="dssResults" style="max-height:420px;overflow:auto;border:1px solid rgba(0,0,0,0.06);padding:8px;background:var(--input-bg-dark)"></div>
+      </div>
+
+      <div style="margin-top:10px;text-align:right"><button id="closeOfficerFooter" class="btn secondary">Close</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- JS libraries -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
@@ -360,19 +448,19 @@
 const firebaseConfig = null;
 let useFirebase = false;
 if (firebaseConfig) {
-  try { /* initialize firebase here if provided */ useFirebase = true; } catch(e){ console.warn('Firebase init failed', e); }
+  try { /* init firebase here */ useFirebase = true; } catch(e){ console.warn('Firebase init failed', e); }
 }
 
-/* Application state */
+/* App state */
 let currentUser = null; // {username, role}
 const layerMap = new Map(); // id -> L.geoJSON layer
 let clusterGroup = null, heatmapLayer = null;
 let timelineTimer = null;
 let timelineIndex = 0;
-const ndviImages = []; // generated images
+const ndviImages = [];
 const ndviOverlays = [];
 
-/* DOM refs (cached) */
+/* DOM refs */
 const loginOpen = document.getElementById('loginOpen');
 const loginModal = document.getElementById('loginModal');
 const closeLogin = document.getElementById('closeLogin');
@@ -382,16 +470,13 @@ const roleSelect = document.getElementById('roleSelect');
 const userPanel = document.getElementById('userPanel');
 const userBadge = document.getElementById('userBadge');
 const logoutBtn = document.getElementById('logoutBtn');
-
 const aboutBtn = document.getElementById('aboutBtn');
 const aboutModal = document.getElementById('aboutModal');
 const closeAbout = document.getElementById('closeAbout');
-
 const reportModal = document.getElementById('reportModal');
 const closeReport = document.getElementById('closeReport');
 const reportForm = document.getElementById('reportForm');
 const reportCancel = document.getElementById('reportCancel');
-
 const themeToggle = document.getElementById('themeToggle');
 
 const searchInput = document.getElementById('searchInput');
@@ -421,11 +506,19 @@ const divider = document.getElementById('divider');
 const roleActionsBox = document.getElementById('roleActionsBox');
 const exportBtn = document.getElementById('exportBtn');
 
-/* show/hide helpers */
+/* Officer refs */
+const officerModal = document.getElementById('officerModal');
+const closeOfficer = document.getElementById('closeOfficer');
+const closeOfficerFooter = document.getElementById('closeOfficerFooter');
+const tabOverview = document.getElementById('tabOverview');
+const tabArchive = document.getElementById('tabArchive');
+const tabDSS = document.getElementById('tabDSS');
+
+/* helper functions for modals */
 function showModal(node){ node.classList.add('open'); node.style.display='flex'; node.setAttribute('aria-hidden','false'); }
 function hideModal(node){ node.classList.remove('open'); node.style.display='none'; node.setAttribute('aria-hidden','true'); }
 
-/* header wiring */
+/* Header wiring */
 loginOpen.addEventListener('click', ()=> showModal(loginModal));
 closeLogin.addEventListener('click', ()=> hideModal(loginModal));
 aboutBtn.addEventListener('click', ()=> showModal(aboutModal));
@@ -433,23 +526,65 @@ closeAbout.addEventListener('click', ()=> hideModal(aboutModal));
 closeReport && closeReport.addEventListener('click', ()=> hideModal(reportModal));
 reportCancel && reportCancel.addEventListener('click', ()=> hideModal(reportModal));
 themeToggle.addEventListener('click', ()=> {
-  const b = document.body; const cur = b.getAttribute('data-theme') || 'dark'; b.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
+  const b = document.body;
+  const cur = b.getAttribute('data-theme') || 'dark';
+  b.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
 });
 
-/* Map initialization (unchanged links) */
+/* Map setup */
 const map = L.map('map', { center:[20.2961,85.8245], zoom:12, zoomControl:true });
 L.control.zoom({ position:'topright' }).addTo(map);
+
 const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution:'&copy; OpenStreetMap', maxZoom:18 }).addTo(map);
 const positron = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution:'&copy; CARTO & OpenStreetMap', maxZoom:19 });
 L.control.layers({ "OpenStreetMap": osm, "Positron (Light)": positron }, {}, { position:'topright', collapsed:true }).addTo(map);
 
-/* fallback sample feature (unchanged properties; emoji removed) */
-const fallbackFeature = {
-  "type":"Feature","properties":{"name":"CFR-2024-OD-101","village":"Khandagiri","district":"Khurda","area":"245 hectares","status":"Approved","claimants":"127 families","approval_date":"2024-03-15","claim_id":"CFR-2024-OD-101","state":"Odisha","deforestation_detected":true,"area_hectares":245,"claimant_families":127},
-  "geometry":{"type":"Polygon","coordinates":[[[85.8100,20.3100],[85.8300,20.3100],[85.8300,20.2900],[85.8100,20.2900],[85.8100,20.3100]]]}
-};
+/* -----------------------
+   Feature normalization
+   ----------------------- */
+function normalizeFeature(feat){
+  const p = feat.properties || {};
+  return {
+    type: 'Feature',
+    geometry: feat.geometry,
+    properties: {
+      claim_id: p.claim_id || p.name || p.claimId || p.CLAIM_ID || ('claim-' + Date.now()),
+      holder_name: p.holder_name || p.claimant_name || p.claimant || p.name || '—',
+      patta_number: p.patta_number || p.patta || p.patta_no || null,
+      state: p.state || p.State || 'Unknown',
+      district: p.district || p.District || p.block || 'Unknown',
+      village: p.village_name || p.village || p.Village || 'Unknown',
+      status: (p.status || p.STATUS || 'Pending'),
+      area_hectares: Number(p.area_hectares || p.area || p.AREA || 0),
+      claimant_families: Number(p.claimant_families || p.claimants || p.families || 0),
+      deforestation_detected: !!p.deforestation_detected,
+      doc_text: p.doc_text || p.ocr_text || '',
+      ner: p.ner || {},
+      assets: p.assets || {},
+      ndvi: p.ndvi || null
+    }
+  };
+}
 
-/* styling and popup builder (no emojis) */
+/* Add feature to map + layerMap */
+function addFeature(feature){
+  const layer = L.geoJSON(feature, {
+    style: claimStyle,
+    onEachFeature: (f,l) => { l.bindPopup(buildPopup(f), { maxWidth:350, className:'custom-popup' }); }
+  });
+  const id = feature.properties && (feature.properties.claim_id || feature.properties.name) || ('claim-'+Date.now());
+  layerMap.set(id, layer);
+  layer.addTo(map);
+}
+
+/* sample fallback feature (normalized) */
+const fallbackFeature = normalizeFeature({
+  "type":"Feature","properties":{"name":"CFR-2024-OD-101","village":"Khandagiri","district":"Khurda","area_hectares":245,"status":"Approved","claimant_families":127,"claim_id":"CFR-2024-OD-101","state":"Odisha","deforestation_detected":true,"doc_text":"","assets":{}},
+  "geometry":{"type":"Polygon","coordinates":[[[85.8100,20.3100],[85.8300,20.3100],[85.8300,20.2900],[85.8100,20.2900],[85.8100,20.3100]]]}
+});
+addFeature(fallbackFeature);
+
+/* Popup & style */
 function claimStyle(feature){
   const props = feature.properties||{};
   const s = (props.status||'').toLowerCase();
@@ -487,19 +622,9 @@ function buildPopup(feature){
   `;
 }
 
-/* add feature & track layer */
-function addFeature(feature){
-  const layer = L.geoJSON(feature, {
-    style: claimStyle,
-    onEachFeature: (f,l) => { l.bindPopup(buildPopup(f), { maxWidth:350, className:'custom-popup' }); }
-  });
-  const id = feature.properties && (feature.properties.claim_id || feature.properties.name) || ('claim-'+Date.now());
-  layerMap.set(id, layer);
-  layer.addTo(map);
-}
-addFeature(fallbackFeature);
-
-/* create higher-res NDVI images (avoids pixelated blocks) */
+/* -----------------------
+   NDVI demo images and overlays
+   ----------------------- */
 function createHighResNDVI(type, seed){
   const W = 1600, H = 1000;
   const c = document.createElement('canvas'); c.width = W; c.height = H;
@@ -522,74 +647,42 @@ function createHighResNDVI(type, seed){
   }
   return c.toDataURL('image/png', 0.9);
 }
-
-/* build timeline images (0..4) */
 for (let t=0;t<=4;t++){
   if (t <= 1) ndviImages.push(createHighResNDVI('healthy', t));
   else if (t === 2) ndviImages.push(createHighResNDVI('mixed', t));
   else ndviImages.push(createHighResNDVI('degraded', t));
 }
-
-/* create image overlays (store, don't add) */
 const imageBounds = [[20.2900,85.8100],[20.3100,85.8300]];
 ndviImages.forEach(img => {
   const o = L.imageOverlay(img, imageBounds, { opacity: Number(ndviOpacity.value) });
   ndviOverlays.push(o);
 });
 
-/* helper to set timeline overlay */
+/* timeline helper */
 function setTimelineOverlay(idx){
   ndviOverlays.forEach(o => { if (map.hasLayer(o)) map.removeLayer(o); });
   if (ndviOverlays[idx]) ndviOverlays[idx].addTo(map);
   timelineRange.max = Math.max(0, ndviOverlays.length - 1);
   timelineRange.value = idx;
 }
-
-/* initial overlays are off */
 ndviOverlays.forEach(o => { if (map.hasLayer(o)) map.removeLayer(o); });
 
-/* single play/pause button logic */
+/* play/pause toggle */
 let playing = false;
-function startTimeline(){
-  const speed = Number(timelineSpeed.value) || 1200;
-  if (timelineTimer) clearInterval(timelineTimer);
-  timelineTimer = setInterval(()=>{
-    timelineIndex = (timelineIndex + 1) % ndviOverlays.length;
-    setTimelineOverlay(timelineIndex);
-  }, speed);
-  playing = true;
-  playPauseBtn.textContent = 'Pause';
-  playPauseBtn.style.background = 'linear-gradient(135deg,#ef4444,#dc2626)';
-}
-function stopTimeline(){
-  if (timelineTimer) clearInterval(timelineTimer);
-  timelineTimer = null;
-  playing = false;
-  playPauseBtn.textContent = 'Play';
-  playPauseBtn.style.background = 'linear-gradient(135deg,#10b981,#06b6d4)';
-}
+function startTimeline(){ const speed = Number(timelineSpeed.value) || 1200; if (timelineTimer) clearInterval(timelineTimer); timelineTimer = setInterval(()=>{ timelineIndex = (timelineIndex + 1) % ndviOverlays.length; setTimelineOverlay(timelineIndex); }, speed); playing = true; playPauseBtn.textContent = 'Pause'; playPauseBtn.style.background = 'linear-gradient(135deg,#ef4444,#dc2626)'; }
+function stopTimeline(){ if (timelineTimer) clearInterval(timelineTimer); timelineTimer = null; playing = false; playPauseBtn.textContent = 'Play'; playPauseBtn.style.background = 'linear-gradient(135deg,#10b981,#06b6d4)'; }
 playPauseBtn.addEventListener('click', ()=> { if (playing) stopTimeline(); else startTimeline(); });
-
 timelineRange.addEventListener('input', (e)=> { timelineIndex = Number(e.target.value); setTimelineOverlay(timelineIndex); });
 timelineSpeed.addEventListener('change', ()=> { if (playing) { startTimeline(); } });
-
-/* before/after/toggle controls */
-let ndviShown = false;
-beforeBtn.addEventListener('click', ()=> { setTimelineOverlay(0); ndviShown = true; });
-afterBtn.addEventListener('click', ()=> { setTimelineOverlay(ndviOverlays.length - 1); ndviShown = true; });
+beforeBtn.addEventListener('click', ()=> { setTimelineOverlay(0); });
+afterBtn.addEventListener('click', ()=> { setTimelineOverlay(ndviOverlays.length - 1); });
 toggleTimelineOverlay.addEventListener('click', ()=> {
-  ndviShown = !ndviShown;
-  if (!ndviShown) ndviOverlays.forEach(o => map.removeLayer(o));
-  else setTimelineOverlay(timelineIndex || 0);
+  const anyShown = ndviOverlays.some(o => map.hasLayer(o));
+  if (anyShown) ndviOverlays.forEach(o => map.removeLayer(o)); else setTimelineOverlay(timelineIndex || 0);
 });
+ndviOpacity.addEventListener('input', (e)=> { const v = Number(e.target.value); ndviOverlays.forEach(o => o.setOpacity(v)); });
 
-/* NDVI opacity */
-ndviOpacity.addEventListener('input', (e)=> {
-  const v = Number(e.target.value);
-  ndviOverlays.forEach(o => o.setOpacity(v));
-});
-
-/* Compare open/close and divider drag */
+/* compare open/drag */
 compareOpen.addEventListener('click', ()=> {
   if (!compareContainer.style.display || compareContainer.style.display === 'none') {
     compareBefore.src = ndviImages[0];
@@ -608,14 +701,15 @@ document.addEventListener('mousemove', (e)=>{
   if (!dragging) return;
   const rect = compareContainer.getBoundingClientRect();
   let x = e.clientX - rect.left;
-  if (x < 0) x = 0;
-  if (x > rect.width) x = rect.width;
+  if (x < 0) x = 0; if (x > rect.width) x = rect.width;
   const pct = (x/rect.width)*100;
   compareTop.style.width = pct + '%';
   divider.style.left = pct + '%';
 });
 
-/* cluster & heat rebuild */
+/* -----------------------
+   clustering & heat
+   ----------------------- */
 function rebuildClusterAndHeat(){
   const markers = L.markerClusterGroup();
   const heatPoints = [];
@@ -650,7 +744,9 @@ toggleHeatmapBtn.addEventListener('click', ()=> {
   toggleHeatmapBtn.textContent = heatShown ? 'Hide Heatmap' : 'Show Heatmap';
 });
 
-/* popup open actions (role-based) - no emojis */
+/* -----------------------
+   Popup actions (role-based)
+   ----------------------- */
 map.on('popupopen', (e)=>{
   const popupEl = e.popup.getElement && e.popup.getElement();
   if (!popupEl) return;
@@ -672,7 +768,7 @@ map.on('popupopen', (e)=>{
   }
 });
 
-/* update claim status locally and try to persist (demo) */
+/* update claim status locally and attempt persist (demo) */
 async function updateClaimStatus(claimId, newStatus, popup){
   let found=false;
   layerMap.forEach((layer,id)=>{
@@ -687,13 +783,12 @@ async function updateClaimStatus(claimId, newStatus, popup){
   });
   try {
     if (useFirebase) {
-      // persist to Firestore when configured
+      // implement persistence when firebaseConfig is provided
     } else {
       fetch('/api/claims/update', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ claimId, status:newStatus }) })
         .catch(()=>{/* ignore in demo */});
     }
   } catch(e){ console.warn(e) }
-  // update counts
   const allFeatures = [];
   layerMap.forEach(l => {
     const inner = l.getLayers ? l.getLayers()[0] : l;
@@ -704,7 +799,9 @@ async function updateClaimStatus(claimId, newStatus, popup){
   else alert('Could not find claim locally (demo).');
 }
 
-/* search autocomplete & saved filters */
+/* -----------------------
+   Search, filters, saved filters
+   ----------------------- */
 function rebuildAutocomplete(){
   const vals = new Set();
   layerMap.forEach((layer,id)=>{
@@ -725,7 +822,6 @@ function rebuildAutocomplete(){
 function applySearchFilter(){
   const q = (searchInput.value||'').trim().toLowerCase();
   const status = statusFilter.value;
-  // remove all layers then add matches
   layerMap.forEach(layer => map.removeLayer(layer));
   const matched = [];
   layerMap.forEach((layer,id) => {
@@ -740,7 +836,6 @@ function applySearchFilter(){
   updateDashboardCounts(matched);
 }
 
-/* saved filters localStorage */
 function loadSavedFilters(){
   const s = localStorage.getItem('vf_saved_filters');
   const arr = s ? JSON.parse(s) : [];
@@ -764,11 +859,10 @@ savedFilters.addEventListener('change', ()=> {
   const f = arr[idx]; if (!f) return;
   searchInput.value = f.q; statusFilter.value = f.status; applySearchFilter();
 });
-
 searchInput.addEventListener('input', ()=> applySearchFilter());
 statusFilter.addEventListener('change', ()=> applySearchFilter());
 
-/* export visible claims to GeoJSON */
+/* export visible claims */
 exportBtn.addEventListener('click', ()=> {
   const feats = [];
   layerMap.forEach(layer => {
@@ -784,7 +878,9 @@ exportBtn.addEventListener('click', ()=> {
   alert('Exported visible claims.');
 });
 
-/* Loading state datasets (paths unchanged) */
+/* -----------------------
+   Load GeoJSON datasets (unchanged paths)
+   ----------------------- */
 (async function loadDatasets(){
   const files = [
     'assets/data/sample-claims.geojson',
@@ -799,7 +895,7 @@ exportBtn.addEventListener('click', ()=> {
       if (!resp.ok) throw new Error('HTTP ' + resp.status);
       const j = await resp.json();
       (j.features || []).forEach(feat => {
-        addFeature(feat);
+        addFeature(normalizeFeature(feat));
         totalFeatures++;
       });
       loadedCount++;
@@ -826,32 +922,319 @@ exportBtn.addEventListener('click', ()=> {
     updateDashboardCounts(allFeatures);
   }
   loadSavedFilters();
+  // build officer dashboard initial data if open later
+  setTimeout(()=> { buildOfficerDashboard(); populateArchiveList(); }, 600);
 })();
 
-/* rebuildClusterAndHeat duplicate removed — function above used */
-
-/* update dashboard counts */
-function updateDashboardCounts(features){
-  const counts = { approved: 0, pending: 0, review: 0, rejected: 0 };
-  const states = new Set();
-  features.forEach(f => {
-    const status = (f.properties && (f.properties.status || '')).toLowerCase();
-    const st = (f.properties && f.properties.state) || '—';
-    states.add(st);
-    if (status.includes('approved')) counts.approved++;
-    else if (status.includes('pending')) counts.pending++;
-    else if (status.includes('review')) counts.review++;
-    else if (status.includes('reject')) counts.rejected++;
+/* -----------------------
+   Dashboard (Officer) code
+   ----------------------- */
+let statusChart=null, stateChart=null;
+function buildOfficerDashboard() {
+  const features = [];
+  layerMap.forEach(layer => {
+    const inner = (layer.getLayers ? layer.getLayers()[0] : layer);
+    if (!inner) return;
+    const feat = inner.feature ? inner.feature : inner;
+    if (feat) features.push(feat);
   });
-  document.getElementById('approved-count').textContent = counts.approved;
-  document.getElementById('pending-count').textContent = counts.pending;
-  document.getElementById('review-count').textContent = counts.review;
-  document.getElementById('rejected-count').textContent = counts.rejected;
-  document.getElementById('last-update').textContent = 'Updated ' + new Date().toLocaleTimeString();
-  document.getElementById('coverageInfo').textContent = `Coverage: ${states.size} States | ${features.length} Active Claims`;
+
+  let totalClaims = features.length;
+  let alerts = 0, families = 0, area = 0;
+  const statusCounts = {};
+  const stateCounts = {};
+  features.forEach(f => {
+    const p = f.properties || {};
+    const s = (p.status || 'Unknown').toString();
+    const st = (p.state || 'Unknown').toString();
+    statusCounts[s] = (statusCounts[s] || 0) + 1;
+    stateCounts[st] = (stateCounts[st] || 0) + 1;
+    if (p.deforestation_detected) alerts++;
+    families += Number(p.claimant_families||p.claimants||0);
+    area += Number(p.area_hectares||0) || 0;
+  });
+
+  document.getElementById('kpiTotal').textContent = totalClaims;
+  document.getElementById('kpiAlerts').textContent = alerts;
+  document.getElementById('kpiFamilies').textContent = families;
+  document.getElementById('kpiArea').textContent = Math.round(area);
+
+  // status pie
+  const statusLabels = Object.keys(statusCounts);
+  const statusData = statusLabels.map(l => statusCounts[l]);
+  const pieCtx = document.getElementById('statusPie').getContext('2d');
+  if (statusChart) statusChart.destroy();
+  statusChart = new Chart(pieCtx, {
+    type:'pie',
+    data:{ labels: statusLabels, datasets:[{ data: statusData, backgroundColor:['#27ae60','#f1c40f','#8e44ad','#c0392b','#7f8c8d'] }] },
+    options:{ plugins:{ legend:{ position:'bottom' } } }
+  });
+
+  // state bar
+  const stateEntries = Object.entries(stateCounts).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const stateLabels = stateEntries.map(e=>e[0]);
+  const stateData = stateEntries.map(e=>e[1]);
+  const barCtx = document.getElementById('stateBar').getContext('2d');
+  if (stateChart) stateChart.destroy();
+  stateChart = new Chart(barCtx, {
+    type:'bar',
+    data:{ labels: stateLabels, datasets:[{ label:'Claims', data: stateData }] },
+    options:{ indexAxis:'y', plugins:{ legend:{ display:false } }, scales:{ x:{ beginAtZero:true } } }
+  });
+
+  // populate table
+  const tbody = document.querySelector('#claimsTable tbody');
+  tbody.innerHTML = '';
+  const rows = features.map(f => {
+    const p = f.properties || {};
+    return {
+      id: p.claim_id || p.name || '—',
+      state: p.state||'—',
+      district: p.district||'—',
+      village: p.village_name||p.village||'—',
+      status: p.status||'—',
+      area: p.area_hectares || p.area || 0,
+      families: p.claimant_families || p.claimants || 0,
+      alert: p.deforestation_detected ? 'Yes' : 'No'
+    };
+  });
+  rows.sort((a,b)=> (b.alert==='Yes') - (a.alert==='Yes'));
+  rows.forEach(r=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><a href="#" class="claim-link" data-id="${r.id}">${r.id}</a></td>
+                    <td>${r.state}</td>
+                    <td>${r.district}</td>
+                    <td>${r.village}</td>
+                    <td>${r.status}</td>
+                    <td>${r.area}</td>
+                    <td>${r.families}</td>
+                    <td style="color:${r.alert==='Yes' ? '#c0392b':'#27ae60'}">${r.alert}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  tbody.querySelectorAll('.claim-link').forEach(a=>{
+    a.addEventListener('click', (ev)=>{
+      ev.preventDefault();
+      const id = a.getAttribute('data-id');
+      let found=false;
+      layerMap.forEach((layer,key)=>{
+        if (key === id) {
+          found=true;
+          const inner = layer.getLayers ? layer.getLayers()[0] : layer;
+          if (inner && inner.getBounds) {
+            map.fitBounds(inner.getBounds(), { padding:[40,40] });
+            setTimeout(()=> inner.openPopup && inner.openPopup(), 300);
+          }
+        }
+      });
+      if (!found) alert('Claim not found in current dataset.');
+    });
+  });
+
+  document.getElementById('officerSearch').oninput = filterOfficerTable;
+  document.getElementById('officerStatusFilter').onchange = filterOfficerTable;
+
+  document.getElementById('exportCSV').onclick = ()=> {
+    const csvRows = [['claim_id','state','district','village','status','area_ha','families','alert']];
+    rows.forEach(r => csvRows.push([r.id, r.state, r.district, r.village, r.status, r.area, r.families, r.alert]));
+    const csv = csvRows.map(r => r.map(cell => `"${String(cell).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type:'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download = `officer_claims_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  };
+
+  document.getElementById('focusAlerts').onclick = ()=> {
+    const alertBounds = [];
+    layerMap.forEach(layer => {
+      const inner = layer.getLayers ? layer.getLayers()[0] : layer;
+      if (!inner || !inner.feature) return;
+      if (inner.feature.properties && inner.feature.properties.deforestation_detected) {
+        if (inner.getBounds) alertBounds.push(inner.getBounds());
+      }
+    });
+    if (!alertBounds.length) { alert('No alert layers currently visible'); return; }
+    const union = alertBounds.reduce((acc,b)=>acc.extend(b), alertBounds[0].clone());
+    map.fitBounds(union, { padding:[50,50] });
+  };
 }
 
-/* Role UI & login demo flow */
+function filterOfficerTable(){
+  const q = (document.getElementById('officerSearch').value||'').toLowerCase();
+  const status = document.getElementById('officerStatusFilter').value;
+  const tbody = document.querySelector('#claimsTable tbody');
+  Array.from(tbody.children).forEach(tr=>{
+    const combined = tr.textContent.toLowerCase();
+    const matchesQ = !q || combined.includes(q);
+    const matchesStatus = (status === 'all') || combined.includes(status);
+    tr.style.display = (matchesQ && matchesStatus) ? '' : 'none';
+  });
+}
+
+/* -----------------------
+   Archive (simple NER/OCR demo)
+   ----------------------- */
+function simpleNER(text){
+  const out = { village:null, patta:null, person:null, coords:null, dates:[] };
+  try {
+    const pattaMatch = text.match(/patta[:\s]*([A-Z0-9-]+)/i);
+    if (pattaMatch) out.patta = pattaMatch[1];
+    const villageMatch = text.match(/village[:\s]*([A-Za-z\s]+)/i);
+    if (villageMatch) out.village = villageMatch[1].trim();
+    const personMatch = text.match(/(Mr\.|Ms\.|Shri|Smt\.|Mrs\.)\s*([A-Z][a-z]+\s?[A-Z]?[a-z]*)/i);
+    if (personMatch) out.person = personMatch[2];
+    const coordMatch = text.match(/(-?\d+\.\d+)[,\s]+(-?\d+\.\d+)/);
+    if (coordMatch) out.coords = [Number(coordMatch[1]), Number(coordMatch[2])];
+    const dateMatches = text.match(/\b(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})\b/g);
+    if (dateMatches) out.dates = dateMatches;
+  } catch(e){}
+  return out;
+}
+function populateArchiveList(){
+  const node = document.getElementById('archiveList');
+  node.innerHTML = '';
+  const rows = [];
+  layerMap.forEach(layer=>{
+    const inner = layer.getLayers ? layer.getLayers()[0] : layer;
+    if (!inner || !inner.feature) return;
+    const p = inner.feature.properties;
+    const doc = { id:p.claim_id, holder:p.holder_name, patta:p.patta_number, village:p.village, text:p.doc_text || '' };
+    rows.push(doc);
+  });
+  rows.sort((a,b)=> (a.id||'').localeCompare(b.id||''));
+  rows.forEach(r=>{
+    const el = document.createElement('div');
+    el.style.padding='8px'; el.style.borderBottom='1px solid rgba(0,0,0,0.06)';
+    const preview = (r.text||'No OCR text available').slice(0,300).replace(/\n/g,' ');
+    el.innerHTML = `<strong>${r.id}</strong> — ${r.holder} — ${r.village} <div style="margin-top:6px;font-size:13px;color:var(--muted)">${preview}</div>
+      <div style="margin-top:6px"><button class="btn secondary" data-id="${r.id}">View</button></div>`;
+    node.appendChild(el);
+    el.querySelector('button').addEventListener('click', ()=> {
+      const parsed = simpleNER(r.text || '');
+      const lines = [
+        'Document preview for ' + r.id,
+        '',
+        'Holder: ' + r.holder,
+        'Village: ' + r.village,
+        'Patta: ' + (r.patta||'—'),
+        '',
+        'Extracted entities:',
+        JSON.stringify(parsed, null, 2),
+        '',
+        'Full OCR text (first 2000 chars):',
+        (r.text||'No OCR text available').slice(0,2000)
+      ];
+      alert(lines.join('\n'));
+    });
+  });
+  document.getElementById('archiveSearch').oninput = function(){
+    const q = (this.value||'').toLowerCase();
+    Array.from(node.children).forEach(div => {
+      const txt = div.textContent.toLowerCase();
+      div.style.display = (!q || txt.includes(q)) ? '' : 'none';
+    });
+  };
+  document.getElementById('exportArchiveCSV').onclick = function(){
+    const csvRows = [['claim_id','holder','patta','village','ocr_text']];
+    rows.forEach(r => csvRows.push([r.id, r.holder, r.patta||'', r.village||'', (r.text||'').replace(/\n/g,' ') ]));
+    const csv = csvRows.map(r => r.map(cell => `"${String(cell).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type:'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download = `archive_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  };
+}
+
+/* -----------------------
+   DSS - rule-based demo
+   ----------------------- */
+function computeDSSScoreForFeature(feat, scheme){
+  const p = feat.properties || {};
+  let score = 0;
+  if (scheme==='pmkisan') {
+    if ((p.assets && p.assets.land_use === 'agriculture') || (p.claimant_families>0)) score += 40;
+    if (!p.deforestation_detected) score += 20;
+    if (p.area_hectares >= 1) score += 10;
+    score += Math.min(30, (p.claimant_families||0) * 3);
+  } else if (scheme==='jaljeevan') {
+    const wb = (p.assets && p.assets.water_bodies) || 0;
+    if (wb===0) score += 60;
+    if (p.ndvi && p.ndvi < 0.25) score += 20;
+    score += Math.min(20, (1 - (p.gw_index||0)) * 20);
+  } else if (scheme==='mgnrega') {
+    if (p.area_hectares > 50) score += 20;
+    if (p.deforestation_detected) score += 30;
+    score += Math.min(50, (p.claimant_families||0) * 2);
+  } else if (scheme==='dajgua') {
+    if ((p.tribal && p.tribal === true) || (p.community && p.community === 'tribal')) score += 60;
+    if (!p.other_scheme_coverage) score += 20;
+    score += Math.min(20, (p.claimant_families||0));
+  } else {
+    // generic scoring
+    score = Math.min(100, Math.floor(Math.random()*40) + (p.claimant_families||0) * 2);
+  }
+  return Math.round(Math.min(100, score));
+}
+function runDSS(scheme){
+  const results=[];
+  layerMap.forEach(layer=>{
+    const inner = layer.getLayers ? layer.getLayers()[0] : layer;
+    if (!inner || !inner.feature) return;
+    const score = computeDSSScoreForFeature(inner.feature, scheme);
+    results.push({ claim_id: inner.feature.properties.claim_id, village: inner.feature.properties.village, state: inner.feature.properties.state, score, status: inner.feature.properties.status });
+  });
+  results.sort((a,b)=>b.score - a.score);
+  return results;
+}
+
+/* wire DSS UI */
+document.getElementById('runDss').addEventListener('click', ()=> {
+  const scheme = document.getElementById('dssSchemeSelect').value;
+  const results = runDSS(scheme === 'all' ? '' : scheme);
+  const container = document.getElementById('dssResults');
+  container.innerHTML = '';
+  results.slice(0,200).forEach(r => {
+    const el = document.createElement('div');
+    el.style.padding='10px'; el.style.borderBottom='1px solid rgba(0,0,0,0.06)';
+    el.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><div><strong>${r.claim_id}</strong> — ${r.village}, ${r.state}</div><div style="font-weight:800">${r.score}</div></div>
+                    <div style="margin-top:6px;color:var(--muted);font-size:13px">Status: ${r.status} — Recommendation score for ${document.getElementById('dssSchemeSelect').value || 'generic'}.</div>
+                    <div style="margin-top:8px"><button class="btn secondary" data-id="${r.claim_id}">Assign verification</button> <button class="btn" data-id2="${r.claim_id}" style="background:linear-gradient(135deg,#10b981,#06b6d4);color:var(--btn-text-light)">Export</button></div>`;
+    container.appendChild(el);
+  });
+});
+
+/* -----------------------
+   Officer modal tabs + wiring
+   ----------------------- */
+function showOfficer(){ officerModal.classList.add('open'); officerModal.style.display='flex'; officerModal.setAttribute('aria-hidden','false'); }
+function hideOfficer(){ officerModal.classList.remove('open'); officerModal.style.display='none'; officerModal.setAttribute('aria-hidden','true'); }
+
+closeOfficer.addEventListener('click', ()=> hideOfficer());
+closeOfficerFooter.addEventListener('click', ()=> hideOfficer());
+
+function showTab(name){
+  document.getElementById('tabContentOverview').style.display = name==='Overview' ? '' : 'none';
+  document.getElementById('tabContentArchive').style.display = name==='Archive' ? '' : 'none';
+  document.getElementById('tabContentDSS').style.display = name==='DSS' ? '' : 'none';
+}
+tabOverview.addEventListener('click', ()=> { showTab('Overview'); buildOfficerDashboard(); });
+tabArchive.addEventListener('click', ()=> { showTab('Archive'); populateArchiveList(); });
+tabDSS.addEventListener('click', ()=> { showTab('DSS'); });
+
+/* Wire Review Queue button once roleActionsBox is populated */
+function wireReviewButton(){
+  const btns = roleActionsBox.querySelectorAll('button');
+  btns.forEach(b => {
+    if (b.textContent && b.textContent.trim() === 'Review Queue') {
+      b.onclick = (e)=> { e.preventDefault(); buildOfficerDashboard(); showOfficer(); };
+    }
+  });
+}
+const obs = new MutationObserver(wireReviewButton);
+obs.observe(roleActionsBox, { childList:true, subtree:true });
+setTimeout(wireReviewButton, 400);
+
+/* -----------------------
+   Login, role UI, citizen actions
+   ----------------------- */
 function refreshUserUI(){
   if (!currentUser) {
     userPanel.style.display = 'none';
@@ -870,7 +1253,7 @@ function refreshUserUI(){
     roleActionsBox.appendChild(raiseBtn); roleActionsBox.appendChild(trackBtn); roleActionsBox.appendChild(reportsBtn);
     roleActionsBox.style.display = 'flex';
   } else {
-    const reviewBtn = document.createElement('button'); reviewBtn.className='btn'; reviewBtn.textContent='Review Queue'; reviewBtn.onclick = () => alert('Review queue (demo)');
+    const reviewBtn = document.createElement('button'); reviewBtn.className='btn'; reviewBtn.textContent='Review Queue'; reviewBtn.onclick = () => { buildOfficerDashboard(); showOfficer(); };
     const assignBtn = document.createElement('button'); assignBtn.className='btn secondary'; assignBtn.textContent='Assign Verification'; assignBtn.onclick = () => alert('Assign verification (demo)');
     const auditBtn = document.createElement('button'); auditBtn.className='btn secondary'; auditBtn.textContent='Export Audit Log'; auditBtn.onclick = () => alert('Export audit log (demo)');
     roleActionsBox.appendChild(reviewBtn); roleActionsBox.appendChild(assignBtn); roleActionsBox.appendChild(auditBtn);
@@ -878,7 +1261,7 @@ function refreshUserUI(){
   }
 }
 
-/* demo citizen functions */
+/* Citizen demo actions */
 function citizenRaise(){
   const title = prompt('Brief title for claim'); if (!title) return;
   const village = prompt('Village'); if (!village) return;
@@ -887,7 +1270,7 @@ function citizenRaise(){
   const lng = 85.8245 + (Math.random()-0.5)*0.02;
   const poly = turfPointToPolygon(lat, lng, 0.004);
   const feat = { type:'Feature', properties:{ claim_id:newId, name:title, village, district:'Unknown', state:'Unknown', status:'Pending', claimant_families:1, area_hectares:0 }, geometry:{ type:'Polygon', coordinates: [poly] } };
-  addFeature(feat);
+  addFeature(normalizeFeature(feat));
   rebuildClusterAndHeat(); rebuildAutocomplete();
   alert('Claim raised (demo). ID: ' + newId);
 }
@@ -916,7 +1299,7 @@ function turfPointToPolygon(lat, lng, r) {
   ];
 }
 
-/* login handlers (demo only) */
+/* Login handlers (demo) */
 loginForm.addEventListener('submit', (e)=> {
   e.preventDefault();
   const role = roleSelect.value;
@@ -937,282 +1320,38 @@ logoutBtn.addEventListener('click', ()=> {
   refreshUserUI();
 });
 
-/* when popups open, add role-specific action buttons (already set by popupopen listener) */
-/* initial UI state */
+/* initial state */
 refreshUserUI();
 
-console.log("VisionForge: full update applied — login, contrast, NDVI timeline, compare, play/pause toggle, clusters, heatmap, export, filters. Firebase placeholder left as null.");
+/* Build officer dashboard & archive on load once features are present */
+function updateDashboardCounts(features){
+  const counts = { approved: 0, pending: 0, review: 0, rejected: 0 };
+  const states = new Set();
+  features.forEach(f => {
+    const status = (f.properties && (f.properties.status || '')).toLowerCase();
+    const st = (f.properties && f.properties.state) || '—';
+    states.add(st);
+    if (status.includes('approved')) counts.approved++;
+    else if (status.includes('pending')) counts.pending++;
+    else if (status.includes('review')) counts.review++;
+    else if (status.includes('reject')) counts.rejected++;
+  });
+  document.getElementById('approved-count').textContent = counts.approved;
+  document.getElementById('pending-count').textContent = counts.pending;
+  document.getElementById('review-count').textContent = counts.review;
+  document.getElementById('rejected-count').textContent = counts.rejected;
+  document.getElementById('last-update').textContent = 'Updated ' + new Date().toLocaleTimeString();
+  document.getElementById('coverageInfo').textContent = `Coverage: ${states.size} States | ${features.length} Active Claims`;
+}
+
+/* small initial build (if features loaded) */
+setTimeout(()=> {
+  const allFeatures = [];
+  layerMap.forEach(l => { const inner = l.getLayers ? l.getLayers()[0] : l; if (inner && inner.feature) allFeatures.push(inner.feature); });
+  if (allFeatures.length) { updateDashboardCounts(allFeatures); buildOfficerDashboard(); populateArchiveList(); rebuildAutocomplete(); }
+}, 1000);
+
+console.log('VisionForge full single-file UI loaded.');
 </script>
-
-  <!-- Officer Dashboard: charts, KPI cards, table — insert before </body> -->
-<!-- Chart.js CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-
-<style>
-  /* Officer modal specific styles (keeps theme variables) */
-  #officerModal .modal-card { max-width:1100px; width:95%; }
-  #officerModal .kpi-row { display:flex; gap:12px; margin-bottom:12px; }
-  #officerModal .kpi { flex:1; padding:12px; border-radius:10px; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.02); text-align:center }
-  #officerModal .kpi h4 { margin:0 0 6px 0; color:var(--accent-1) }
-  #officerModal .charts { display:flex; gap:16px; margin-bottom:12px; }
-  #officerModal .charts .chart { flex:1; min-height:240px; background:transparent; padding:8px; border-radius:8px; }
-  #officerModal .table-wrap { max-height:340px; overflow:auto; border-radius:8px; border:1px solid rgba(0,0,0,0.06); background:var(--input-bg-dark); padding:8px; }
-  #officerModal table { width:100%; border-collapse:collapse; font-size:13px; }
-  #officerModal th, #officerModal td { padding:8px 6px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; color:var(--input-text-dark) }
-  #officerModal .toolbar { display:flex; gap:8px; margin-bottom:8px; align-items:center }
-  #officerModal .small-muted { font-size:13px; color:var(--muted) }
-</style>
-
-<div id="officerModal" class="modal" aria-hidden="true">
-  <div class="modal-card" style="padding:14px;">
-    <div class="modal-header">
-      <h3 style="margin:0">Officer Dashboard — Review Queue</h3>
-      <button class="close" id="closeOfficer">&times;</button>
-    </div>
-    <div class="modal-body" style="padding:12px;">
-      <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px">
-        <div style="flex:1">
-          <div class="kpi-row">
-            <div class="kpi"><h4>Total Claims</h4><div id="kpiTotal" style="font-size:20px;font-weight:800">0</div></div>
-            <div class="kpi"><h4>Deforestation Alerts</h4><div id="kpiAlerts" style="font-size:20px;font-weight:800;color:#e04c4c">0</div></div>
-            <div class="kpi"><h4>Total Families</h4><div id="kpiFamilies" style="font-size:20px;font-weight:800">0</div></div>
-            <div class="kpi"><h4>Total Area (ha)</h4><div id="kpiArea" style="font-size:20px;font-weight:800">0</div></div>
-          </div>
-        </div>
-        <div style="width:220px;display:flex;flex-direction:column;gap:8px">
-          <button id="exportCSV" class="btn" style="background:linear-gradient(135deg,#10b981,#06b6d4);color:var(--btn-text-light)">Export CSV</button>
-          <button id="focusAlerts" class="btn secondary">Focus Alerts</button>
-        </div>
-      </div>
-
-      <div class="charts">
-        <div class="chart" style="min-width:260px">
-          <canvas id="statusPie"></canvas>
-        </div>
-        <div class="chart">
-          <canvas id="stateBar"></canvas>
-        </div>
-      </div>
-
-      <div class="toolbar">
-        <input id="officerSearch" placeholder="Search claim id / village / district / state" class="form-control" style="flex:1" />
-        <select id="officerStatusFilter" class="form-control" style="width:160px">
-          <option value="all">All statuses</option>
-          <option value="approved">Approved</option>
-          <option value="pending">Pending</option>
-          <option value="review">Under Review</option>
-          <option value="rejected">Rejected</option>
-        </select>
-      </div>
-
-      <div class="table-wrap">
-        <table id="claimsTable">
-          <thead><tr><th>ID</th><th>State</th><th>District</th><th>Village</th><th>Status</th><th>Area(ha)</th><th>Families</th><th>Alert</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-
-      <div style="margin-top:10px;text-align:right"><button id="closeOfficerFooter" class="btn secondary">Close</button></div>
-    </div>
-  </div>
-</div>
-
-<script>
-(function(){
-  // Ensure Chart.js is loaded
-  if (!window.Chart) { console.warn('Chart.js missing'); }
-
-  // modal wiring
-  const officerModal = document.getElementById('officerModal');
-  const closeOfficer = document.getElementById('closeOfficer');
-  const closeOfficerFooter = document.getElementById('closeOfficerFooter');
-  closeOfficer.addEventListener('click', ()=> hideOfficer());
-  closeOfficerFooter.addEventListener('click', ()=> hideOfficer());
-
-  function showOfficer(){ officerModal.classList.add('open'); officerModal.style.display='flex'; officerModal.setAttribute('aria-hidden','false'); }
-  function hideOfficer(){ officerModal.classList.remove('open'); officerModal.style.display='none'; officerModal.setAttribute('aria-hidden','true'); }
-
-  // find Review Queue button dynamically and wire it (roleActionsBox is filled at login)
-  function wireReviewButton(){
-    const btns = roleActionsBox.querySelectorAll('button');
-    btns.forEach(b => {
-      if (b.textContent && b.textContent.trim() === 'Review Queue') {
-        b.onclick = (e)=> { e.preventDefault(); buildOfficerDashboard(); showOfficer(); };
-      }
-    });
-  }
-  // observe roleActionsBox for changes (so when login creates buttons we attach handler)
-  const obs = new MutationObserver(wireReviewButton);
-  obs.observe(roleActionsBox, { childList:true, subtree:true });
-  // Also call once now in case it's already present
-  setTimeout(wireReviewButton, 400);
-
-  // Chart placeholders
-  let statusChart=null, stateChart=null;
-
-  // build officer dashboard from layerMap features
-  function buildOfficerDashboard() {
-    // gather features from layerMap
-    const features = [];
-    layerMap.forEach(layer => {
-      const inner = (layer.getLayers ? layer.getLayers()[0] : layer);
-      if (!inner) return;
-      const feat = inner.feature ? inner.feature : inner;
-      if (feat) features.push(feat);
-    });
-
-    // compute KPIs
-    let totalClaims = features.length;
-    let alerts = 0, families = 0, area = 0;
-    const statusCounts = {};
-    const stateCounts = {};
-    features.forEach(f => {
-      const p = f.properties || {};
-      const s = (p.status || 'Unknown').toString();
-      const st = (p.state || 'Unknown').toString();
-      statusCounts[s] = (statusCounts[s] || 0) + 1;
-      stateCounts[st] = (stateCounts[st] || 0) + 1;
-      if (p.deforestation_detected) alerts++;
-      families += Number(p.claimant_families||p.claimants||0);
-      area += Number(p.area_hectares||0) || 0;
-    });
-
-    document.getElementById('kpiTotal').textContent = totalClaims;
-    document.getElementById('kpiAlerts').textContent = alerts;
-    document.getElementById('kpiFamilies').textContent = families;
-    document.getElementById('kpiArea').textContent = Math.round(area);
-
-    // build status pie
-    const statusLabels = Object.keys(statusCounts);
-    const statusData = statusLabels.map(l => statusCounts[l]);
-    const pieCtx = document.getElementById('statusPie').getContext('2d');
-    if (statusChart) statusChart.destroy();
-    statusChart = new Chart(pieCtx, {
-      type:'pie',
-      data:{ labels: statusLabels, datasets:[{ data: statusData, backgroundColor:['#27ae60','#f1c40f','#8e44ad','#c0392b','#7f8c8d'] }] },
-      options:{ plugins:{ legend:{ position:'bottom' } } }
-    });
-
-    // build state bar (top 10)
-    const stateEntries = Object.entries(stateCounts).sort((a,b)=>b[1]-a[1]).slice(0,10);
-    const stateLabels = stateEntries.map(e=>e[0]);
-    const stateData = stateEntries.map(e=>e[1]);
-    const barCtx = document.getElementById('stateBar').getContext('2d');
-    if (stateChart) stateChart.destroy();
-    stateChart = new Chart(barCtx, {
-      type:'bar',
-      data:{ labels: stateLabels, datasets:[{ label:'Claims', data: stateData }] },
-      options:{ indexAxis:'y', plugins:{ legend:{ display:false } }, scales:{ x:{ beginAtZero:true } } }
-    });
-
-    // populate table
-    const tbody = document.querySelector('#claimsTable tbody');
-    tbody.innerHTML = '';
-    const rows = features.map(f => {
-      const p = f.properties || {};
-      return {
-        id: p.claim_id || p.name || '—',
-        state: p.state||'—',
-        district: p.district||'—',
-        village: p.village_name||p.village||'—',
-        status: p.status||'—',
-        area: p.area_hectares || p.area || 0,
-        families: p.claimant_families || p.claimants || 0,
-        alert: p.deforestation_detected ? 'Yes' : 'No'
-      };
-    });
-    // simple sort: alerts first
-    rows.sort((a,b)=> (b.alert==='Yes') - (a.alert==='Yes'));
-    rows.forEach(r=>{
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td><a href="#" class="claim-link" data-id="${r.id}">${r.id}</a></td>
-                      <td>${r.state}</td>
-                      <td>${r.district}</td>
-                      <td>${r.village}</td>
-                      <td>${r.status}</td>
-                      <td>${r.area}</td>
-                      <td>${r.families}</td>
-                      <td style="color:${r.alert==='Yes' ? '#c0392b':'#27ae60'}">${r.alert}</td>`;
-      tbody.appendChild(tr);
-    });
-
-    // wire claim link clicks to zoom
-    tbody.querySelectorAll('.claim-link').forEach(a=>{
-      a.addEventListener('click', (ev)=>{
-        ev.preventDefault();
-        const id = a.getAttribute('data-id');
-        // find layer and fit bounds
-        let found=false;
-        layerMap.forEach((layer,key)=>{
-          if (key === id) {
-            found=true;
-            const inner = layer.getLayers ? layer.getLayers()[0] : layer;
-            if (inner && inner.getBounds) {
-              map.fitBounds(inner.getBounds(), { padding:[40,40] });
-              setTimeout(()=> inner.openPopup && inner.openPopup(), 300);
-            }
-          }
-        });
-        if (!found) alert('Claim not found in current dataset.');
-      });
-    });
-
-    // setup filters
-    document.getElementById('officerSearch').oninput = filterTable;
-    document.getElementById('officerStatusFilter').onchange = filterTable;
-
-    // export CSV
-    document.getElementById('exportCSV').onclick = ()=> {
-      const csvRows = [['claim_id','state','district','village','status','area_ha','families','alert']];
-      rows.forEach(r => csvRows.push([r.id, r.state, r.district, r.village, r.status, r.area, r.families, r.alert]));
-      const csv = csvRows.map(r => r.map(cell => `"${String(cell).replace(/"/g,'""')}"`).join(',')).join('\n');
-      const blob = new Blob([csv], { type:'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href=url; a.download = `officer_claims_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-    };
-
-    // focus alerts button: zoom to those layers
-    document.getElementById('focusAlerts').onclick = ()=> {
-      const alertBounds = [];
-      layerMap.forEach(layer => {
-        const inner = layer.getLayers ? layer.getLayers()[0] : layer;
-        if (!inner || !inner.feature) return;
-        if (inner.feature.properties && inner.feature.properties.deforestation_detected) {
-          if (inner.getBounds) alertBounds.push(inner.getBounds());
-        }
-      });
-      if (!alertBounds.length) { alert('No alert layers currently visible'); return; }
-      const union = alertBounds.reduce((acc,b)=>acc.extend(b), alertBounds[0].clone());
-      map.fitBounds(union, { padding:[50,50] });
-    };
-  }
-
-  function filterTable(){
-    const q = (document.getElementById('officerSearch').value||'').toLowerCase();
-    const status = document.getElementById('officerStatusFilter').value;
-    const tbody = document.querySelector('#claimsTable tbody');
-    Array.from(tbody.children).forEach(tr=>{
-      const combined = tr.textContent.toLowerCase();
-      const matchesQ = !q || combined.includes(q);
-      const matchesStatus = (status === 'all') || combined.includes(status);
-      tr.style.display = (matchesQ && matchesStatus) ? '' : 'none';
-    });
-  }
-
-  // Expose builder so other parts can call it if needed
-  window.buildOfficerDashboard = buildOfficerDashboard;
-
-  // if user is already logged in and official, optionally open the dashboard automatically:
-  // (safeguard: only open when role=official)
-  setTimeout(()=> {
-    if (currentUser && currentUser.role === 'official') {
-      // build but don't auto-open — keep behind Review Queue button for UX
-      buildOfficerDashboard();
-    }
-  }, 800);
-
-})();
-</script>
-
 </body>
 </html>
