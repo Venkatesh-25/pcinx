@@ -1,8 +1,3 @@
-"""
-FRA Claims API Routes
-RESTful endpoints for FRA claim management
-"""
-
 from flask import Blueprint, request, jsonify
 from flask_restful import Api, Resource
 from app import db
@@ -20,17 +15,17 @@ class ClaimsListAPI(Resource):
     
     def get(self):
         try:
-            # Parse query parameters
+
             page = request.args.get('page', 1, type=int)
             per_page = min(request.args.get('per_page', 50, type=int), 100)
             state = request.args.get('state')
             district = request.args.get('district')
             status = request.args.get('status')
             
-            # Build query
+
             query = FRAClaim.query
             
-            # Apply filters
+
             if state:
                 query = query.filter(FRAClaim.state.ilike(f'%{state}%'))
             if district:
@@ -38,14 +33,14 @@ class ClaimsListAPI(Resource):
             if status:
                 query = query.filter(FRAClaim.status == status)
             
-            # Execute paginated query
+
             claims = query.paginate(
                 page=page, 
                 per_page=per_page, 
                 error_out=False
             )
             
-            # Prepare response
+
             result = {
                 'claims': [claim.to_dict() for claim in claims.items],
                 'pagination': {
@@ -73,11 +68,10 @@ class ClaimsGeoJSONAPI(Resource):
     
     def get(self):
         try:
-            # Parse filters
-            state = request.args.get('state')
-            bbox = request.args.get('bbox')  # format: minlon,minlat,maxlon,maxlat
             
-            # Build query with spatial data
+            state = request.args.get('state')
+            bbox = request.args.get('bbox')  
+            
             query = db.session.query(
                 FRAClaim,
                 ST_AsGeoJSON(FRAClaim.geometry).label('geom_json')
@@ -86,7 +80,6 @@ class ClaimsGeoJSONAPI(Resource):
             if state:
                 query = query.filter(FRAClaim.state.ilike(f'%{state}%'))
             
-            # Bounding box filter (if provided)
             if bbox:
                 try:
                     minlon, minlat, maxlon, maxlat = map(float, bbox.split(','))
@@ -99,7 +92,6 @@ class ClaimsGeoJSONAPI(Resource):
             
             results = query.all()
             
-            # Build GeoJSON FeatureCollection
             features = []
             for claim, geom_json in results:
                 feature = {
@@ -136,12 +128,10 @@ class ClaimDetailAPI(Resource):
             if not claim:
                 return {'error': 'Claim not found'}, 404
             
-            # Get recent monitoring data
             recent_monitoring = MonitoringData.query.filter_by(
                 claim_id=claim.id
             ).order_by(MonitoringData.observation_date.desc()).limit(10).all()
             
-            # Get active alerts
             active_alerts = claim.alerts.filter_by(status='active').all()
             
             result = {
@@ -165,26 +155,22 @@ class ClaimsStatsAPI(Resource):
     
     def get(self):
         try:
-            # Overall statistics
             total_claims = FRAClaim.query.count()
             approved_claims = FRAClaim.query.filter_by(status='Approved').count()
             pending_claims = FRAClaim.query.filter_by(status='Pending').count()
             under_review = FRAClaim.query.filter_by(status='Under Review').count()
             rejected_claims = FRAClaim.query.filter_by(status='Rejected').count()
             
-            # Area statistics
             total_area = db.session.query(func.sum(FRAClaim.area_hectares)).scalar() or 0
             approved_area = db.session.query(func.sum(FRAClaim.area_hectares)).filter_by(
                 status='Approved'
             ).scalar() or 0
             
-            # Family statistics
             total_families = db.session.query(func.sum(FRAClaim.claimant_families)).scalar() or 0
             protected_families = db.session.query(func.sum(FRAClaim.claimant_families)).filter_by(
                 status='Approved'
             ).scalar() or 0
             
-            # State-wise breakdown
             state_stats = db.session.query(
                 FRAClaim.state,
                 func.count(FRAClaim.id).label('claim_count'),
@@ -192,7 +178,6 @@ class ClaimsStatsAPI(Resource):
                 func.sum(FRAClaim.claimant_families).label('total_families')
             ).group_by(FRAClaim.state).all()
             
-            # Status breakdown
             status_stats = db.session.query(
                 FRAClaim.status,
                 func.count(FRAClaim.id).label('count'),
@@ -242,7 +227,6 @@ class ClaimsStatsAPI(Resource):
         except Exception as e:
             return {'error': str(e)}, 500
 
-# Register API resources
 api.add_resource(ClaimsListAPI, '/')
 api.add_resource(ClaimsGeoJSONAPI, '/geojson')
 api.add_resource(ClaimDetailAPI, '/<string:claim_id>')
