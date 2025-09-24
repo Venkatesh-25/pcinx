@@ -427,6 +427,7 @@
             <option value="dajgua">DAJGUA</option>
           </select>
           <button id="runDss" class="btn">Run DSS</button>
+          <button id="exportDssAssignments" class="btn secondary">Export Assignments</button>
         </div>
         <div id="dssResults" style="max-height:420px;overflow:auto;border:1px solid rgba(0,0,0,0.06);padding:8px;background:var(--input-bg-dark)"></div>
       </div>
@@ -436,19 +437,20 @@
   </div>
 </div>
 
-<!-- JS libraries -->
+<!-- JS libs -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
 
 <script>
 /* ===========================
-   Firebase placeholder - leave null for now
+   VisionForge: Full single-file app
+   - firebaseConfig intentionally null (you will add)
    =========================== */
 const firebaseConfig = null;
 let useFirebase = false;
 if (firebaseConfig) {
-  try { /* init firebase here */ useFirebase = true; } catch(e){ console.warn('Firebase init failed', e); }
+  try { /* firebase init here when provided */ useFirebase = true; } catch(e){ console.warn('Firebase init failed', e); }
 }
 
 /* App state */
@@ -540,7 +542,7 @@ const positron = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x
 L.control.layers({ "OpenStreetMap": osm, "Positron (Light)": positron }, {}, { position:'topright', collapsed:true }).addTo(map);
 
 /* -----------------------
-   Feature normalization
+   Normalization helper
    ----------------------- */
 function normalizeFeature(feat){
   const p = feat.properties || {};
@@ -561,7 +563,10 @@ function normalizeFeature(feat){
       doc_text: p.doc_text || p.ocr_text || '',
       ner: p.ner || {},
       assets: p.assets || {},
-      ndvi: p.ndvi || null
+      ndvi: p.ndvi || null,
+      gw_index: p.gw_index || null,
+      tribal: p.tribal || false,
+      other_scheme_coverage: p.other_scheme_coverage || false
     }
   };
 }
@@ -1144,61 +1149,355 @@ function populateArchiveList(){
 }
 
 /* -----------------------
-   DSS - rule-based demo
+   DSS: Enhanced rule-based implementation
+   - explainability, weights UI, local persistence, assignment
    ----------------------- */
-function computeDSSScoreForFeature(feat, scheme){
-  const p = feat.properties || {};
-  let score = 0;
-  if (scheme==='pmkisan') {
-    if ((p.assets && p.assets.land_use === 'agriculture') || (p.claimant_families>0)) score += 40;
-    if (!p.deforestation_detected) score += 20;
-    if (p.area_hectares >= 1) score += 10;
-    score += Math.min(30, (p.claimant_families||0) * 3);
-  } else if (scheme==='jaljeevan') {
-    const wb = (p.assets && p.assets.water_bodies) || 0;
-    if (wb===0) score += 60;
-    if (p.ndvi && p.ndvi < 0.25) score += 20;
-    score += Math.min(20, (1 - (p.gw_index||0)) * 20);
-  } else if (scheme==='mgnrega') {
-    if (p.area_hectares > 50) score += 20;
-    if (p.deforestation_detected) score += 30;
-    score += Math.min(50, (p.claimant_families||0) * 2);
-  } else if (scheme==='dajgua') {
-    if ((p.tribal && p.tribal === true) || (p.community && p.community === 'tribal')) score += 60;
-    if (!p.other_scheme_coverage) score += 20;
-    score += Math.min(20, (p.claimant_families||0));
-  } else {
-    // generic scoring
-    score = Math.min(100, Math.floor(Math.random()*40) + (p.claimant_families||0) * 2);
-  }
-  return Math.round(Math.min(100, score));
+
+/* small util */
+function safeNum(x){ const n = Number(x); return Number.isFinite(n) ? n : 0; }
+function nowISO(){ return (new Date()).toISOString(); }
+
+/* default DSS tunable weights (can be extended later) */
+const dssWeightsKey = 'vf_dss_weights_v1';
+const defaultWeights = {
+  pmkisan: { fam_weight: 3, area_weight: 2, deforestation_penalty: -20, land_use_bonus: 25 },
+  jaljeevan: { water_absence_bonus: 60, ndvi_dry_bonus: 20, gw_index_weight: 10 },
+  mgnrega: { degradation_bonus: 30, families_weight: 1.5, area_weight: 0.5 },
+  dajgua: { tribal_bonus: 60, coverage_penalty: -20, families_weight: 1 }
+};
+function loadDssWeights(){ try{ const s=localStorage.getItem(dssWeightsKey); return s?JSON.parse(s):defaultWeights; }catch(e){ return defaultWeights; } }
+function saveDssWeights(w){ localStorage.setItem(dssWeightsKey, JSON.stringify(w)); }
+
+/* Render a small weights UI inside DSS tab for quick tuning */
+function ensureWeightsUI(){
+  if (document.getElementById('dssWeightsBox')) return;
+  const container = document.getElementById('tabContentDSS');
+  if (!container) return;
+  const box = document.createElement('div'); box.id='dssWeightsBox'; box.style.marginBottom='10px';
+  box.innerHTML = `
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
+      <div style="font-weight:700">DSS Weights</div>
+      <div style="color:var(--muted);font-size:13px">Adjust simple influence multipliers (saved locally)</div>
+      <button id="resetDssWeights" class="btn secondary" style="margin-left:auto">Reset</button>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap" id="dssWeightsControls"></div>
+  `;
+  container.prepend(box);
+
+  const weights = loadDssWeights();
+  const controls = box.querySelector('#dssWeightsControls');
+
+  // Build a few sliders (for each scheme a couple of knobs)
+  Object.keys(weights).forEach(scheme=>{
+    const cfg = weights[scheme];
+    const panel = document.createElement('div');
+    panel.style.minWidth='220px'; panel.style.flex='1 1 220px'; panel.style.padding='8px'; panel.style.border='1px solid rgba(0,0,0,0.06)'; panel.style.borderRadius='8px'; panel.style.background='var(--input-bg-dark)';
+    panel.innerHTML = `<div style="font-weight:700;margin-bottom:6px">${scheme.toUpperCase()}</div>`;
+    Object.keys(cfg).forEach(k=>{
+      const id = `w_${scheme}_${k}`;
+      const val = cfg[k];
+      const row = document.createElement('div');
+      row.style.marginBottom='6px';
+      row.innerHTML = `<label style="font-size:13px">${k}</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="${id}" type="range" min="-100" max="100" step="1" value="${val}" style="flex:1"/>
+          <div id="${id}_val" style="width:48px;text-align:right;font-weight:700">${val}</div>
+        </div>`;
+      panel.appendChild(row);
+      controls.appendChild(panel);
+
+      const input = row.querySelector('input');
+      const valEl = row.querySelector(`#${id}_val`);
+      input.addEventListener('input', ()=>{
+        valEl.textContent = input.value;
+        const cur = loadDssWeights();
+        if (!cur[scheme]) cur[scheme] = {};
+        cur[scheme][k] = Number(input.value);
+        saveDssWeights(cur);
+      });
+    });
+  });
+
+  document.getElementById('resetDssWeights').addEventListener('click', ()=> {
+    if (!confirm('Reset DSS weights to defaults?')) return;
+    saveDssWeights(defaultWeights);
+    document.getElementById('dssWeightsBox').remove();
+    ensureWeightsUI();
+  });
 }
-function runDSS(scheme){
-  const results=[];
-  layerMap.forEach(layer=>{
+
+/* compute scoring with explainability: returns {score, factors: [{label, value}], raw} */
+function computeDSSScoreWithExplain(feat, scheme){
+  const p = feat.properties || {};
+  const w = loadDssWeights();
+  const schemeWeights = w[scheme] || {};
+  const factors = [];
+  let raw = 0;
+
+  // common features
+  const families = safeNum(p.claimant_families || p.claimants || 0);
+  const area = safeNum(p.area_hectares || p.area || 0);
+  const deforest = !!p.deforestation_detected;
+  const ndvi = (p.ndvi !== null && p.ndvi !== undefined) ? safeNum(p.ndvi) : null;
+  const tribal = (p.tribal === true) || (p.community && p.community.toLowerCase && p.community.toLowerCase().includes('tribal'));
+  const assets = p.assets || {};
+
+  if (scheme === 'pmkisan'){
+    const famScore = Math.min(50, families * (schemeWeights.fam_weight || 3));
+    factors.push({label:'Families factor', value: Math.round(famScore)});
+    raw += famScore;
+
+    const areaScore = Math.min(30, area * (schemeWeights.area_weight || 2));
+    factors.push({label:'Area factor', value: Math.round(areaScore)});
+    raw += areaScore;
+
+    const landUseBonus = (assets.land_use && assets.land_use === 'agriculture') ? (schemeWeights.land_use_bonus || 25) : 0;
+    if (landUseBonus) factors.push({label:'Agricultural land bonus', value: Math.round(landUseBonus)});
+    raw += landUseBonus;
+
+    const defPenalty = deforest ? (schemeWeights.deforestation_penalty || -20) : 0;
+    if (defPenalty) factors.push({label:'Deforestation penalty', value: Math.round(defPenalty)});
+    raw += defPenalty;
+
+    raw += (String(p.claim_id||'').split('').reduce((s,ch)=>s+ch.charCodeAt(0),0) % 7);
+  }
+
+  else if (scheme === 'jaljeevan'){
+    const waterBodies = safeNum(assets.water_bodies || 0);
+    const waterBonus = (waterBodies === 0) ? (schemeWeights.water_absence_bonus || 60) : 0;
+    if (waterBonus) factors.push({label:'No water bodies bonus', value:waterBonus});
+    raw += waterBonus;
+
+    if (ndvi !== null) {
+      const ndviDry = ndvi < 0.25 ? (schemeWeights.ndvi_dry_bonus || 20) : 0;
+      if (ndviDry) factors.push({label:'Low NDVI (dry) bonus', value:ndviDry});
+      raw += ndviDry;
+    }
+
+    const gwIndex = safeNum(p.gw_index || 0);
+    const gwScore = (1 - gwIndex) * (schemeWeights.gw_index_weight || 10);
+    factors.push({label:'Groundwater shortage factor', value: Math.round(gwScore)});
+    raw += gwScore;
+
+    raw += Math.min(10, families * 0.5);
+  }
+
+  else if (scheme === 'mgnrega'){
+    const degr = deforest ? (schemeWeights.degradation_bonus || 30) : 0;
+    if (degr) factors.push({label:'Degradation bonus', value:degr});
+    raw += degr;
+
+    const famFactor = Math.min(40, families * (schemeWeights.families_weight || 1.5));
+    factors.push({label:'Families factor', value: Math.round(famFactor)});
+    raw += famFactor;
+
+    const areaFactor = Math.min(20, area * (schemeWeights.area_weight || 0.5));
+    factors.push({label:'Large-area factor', value: Math.round(areaFactor)});
+    raw += areaFactor;
+  }
+
+  else if (scheme === 'dajgua'){
+    const tribalBonus = tribal ? (schemeWeights.tribal_bonus || 60) : 0;
+    if (tribalBonus) factors.push({label:'Tribal community bonus', value: tribalBonus});
+    raw += tribalBonus;
+
+    const coveragePenalty = p.other_scheme_coverage ? (schemeWeights.coverage_penalty || -20) : 0;
+    if (coveragePenalty) factors.push({label:'Other scheme coverage penalty', value: coveragePenalty});
+    raw += coveragePenalty;
+
+    raw += Math.min(20, families * (schemeWeights.families_weight || 1));
+  }
+
+  else {
+    raw = Math.min(80, families * 3 + (ndvi !== null ? (1 - ndvi) * 30 : 0) + (deforest ? 20 : 0));
+    factors.push({label:'Fallback raw', value: Math.round(raw)});
+  }
+
+  const score = Math.max(0, Math.min(100, Math.round(raw)));
+  return { score, factors, raw: Math.round(raw) };
+}
+
+/* Run DSS across all loaded features. scheme='' means multi (all) */
+function runDSS_v2(scheme){
+  const results = [];
+  layerMap.forEach(layer => {
     const inner = layer.getLayers ? layer.getLayers()[0] : layer;
     if (!inner || !inner.feature) return;
-    const score = computeDSSScoreForFeature(inner.feature, scheme);
-    results.push({ claim_id: inner.feature.properties.claim_id, village: inner.feature.properties.village, state: inner.feature.properties.state, score, status: inner.feature.properties.status });
+    const feat = inner.feature;
+    if (!scheme || scheme === 'all') {
+      const schemes = ['pmkisan','jaljeevan','mgnrega','dajgua'];
+      const per = {};
+      schemes.forEach(s => { per[s] = computeDSSScoreWithExplain(feat, s); });
+      results.push({ claim_id: feat.properties.claim_id, village: feat.properties.village, state: feat.properties.state, per });
+    } else {
+      const out = computeDSSScoreWithExplain(feat, scheme);
+      results.push({ claim_id: feat.properties.claim_id, village: feat.properties.village, state: feat.properties.state, score: out.score, factors: out.factors });
+    }
   });
-  results.sort((a,b)=>b.score - a.score);
+  if (scheme && scheme !== 'all') results.sort((a,b)=> (b.score||0)-(a.score||0));
   return results;
 }
 
-/* wire DSS UI */
-document.getElementById('runDss').addEventListener('click', ()=> {
-  const scheme = document.getElementById('dssSchemeSelect').value;
-  const results = runDSS(scheme === 'all' ? '' : scheme);
+/* Render DSS results into #dssResults */
+function renderDSSResults(results, scheme){
   const container = document.getElementById('dssResults');
   container.innerHTML = '';
-  results.slice(0,200).forEach(r => {
-    const el = document.createElement('div');
-    el.style.padding='10px'; el.style.borderBottom='1px solid rgba(0,0,0,0.06)';
-    el.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><div><strong>${r.claim_id}</strong> — ${r.village}, ${r.state}</div><div style="font-weight:800">${r.score}</div></div>
-                    <div style="margin-top:6px;color:var(--muted);font-size:13px">Status: ${r.status} — Recommendation score for ${document.getElementById('dssSchemeSelect').value || 'generic'}.</div>
-                    <div style="margin-top:8px"><button class="btn secondary" data-id="${r.claim_id}">Assign verification</button> <button class="btn" data-id2="${r.claim_id}" style="background:linear-gradient(135deg,#10b981,#06b6d4);color:var(--btn-text-light)">Export</button></div>`;
-    container.appendChild(el);
-  });
+  const singleScheme = !!scheme && scheme !== 'all' && scheme !== '';
+  if (singleScheme) {
+    results.forEach(r=>{
+      const el = document.createElement('div');
+      el.style.padding='10px'; el.style.borderBottom='1px solid rgba(0,0,0,0.06)';
+      el.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><strong>${r.claim_id}</strong> — ${r.village || '—'}, ${r.state || '—'}</div>
+          <div style="font-weight:800">${r.score}</div>
+        </div>
+        <div style="margin-top:6px;color:var(--muted);font-size:13px">Status: ${ ( (layerMap.get(r.claim_id) && layerMap.get(r.claim_id).getLayers ) ? (layerMap.get(r.claim_id).getLayers()[0].feature.properties.status) : '—') }</div>
+        <div style="margin-top:8px" class="dss-actions"></div>
+        <details style="margin-top:8px"><summary style="cursor:pointer">Score breakdown</summary>
+          <div style="margin-top:8px">${ r.factors.map(f=>`<div style="display:flex;justify-content:space-between;padding:4px 0"><div>${f.label}</div><div>${f.value}</div></div>`).join('') }</div>
+        </details>
+      `;
+      container.appendChild(el);
+
+      const actions = el.querySelector('.dss-actions');
+      const assignBtn = document.createElement('button'); assignBtn.className='btn'; assignBtn.style.marginRight='8px'; assignBtn.textContent='Assign verification';
+      assignBtn.addEventListener('click', ()=> assignVerification(r.claim_id, scheme, r.score, r.factors));
+      const exportBtn = document.createElement('button'); exportBtn.className='btn secondary'; exportBtn.textContent='Zoom';
+      exportBtn.addEventListener('click', ()=> {
+        const layer = layerMap.get(r.claim_id);
+        if (layer) { const inner = layer.getLayers ? layer.getLayers()[0] : layer; if (inner && inner.getBounds) { map.fitBounds(inner.getBounds(), { padding:[40,40] }); setTimeout(()=>inner.openPopup && inner.openPopup(), 300); } }
+        else alert('Claim not found in current dataset.');
+      });
+      actions.appendChild(assignBtn); actions.appendChild(exportBtn);
+    });
+  } else {
+    results.forEach(r=>{
+      const per = r.per || {};
+      const top = Object.entries(per).sort((a,b)=>b[1].score - a[1].score)[0];
+      const schemeName = top ? top[0] : '—';
+      const topScore = top ? top[1].score : 0;
+      const el = document.createElement('div');
+      el.style.padding='10px'; el.style.borderBottom='1px solid rgba(0,0,0,0.06)';
+      el.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><strong>${r.claim_id}</strong> — ${r.village || '—'}, ${r.state || '—'}</div>
+          <div style="font-weight:800">${schemeName.toUpperCase()} ${topScore}</div>
+        </div>
+        <div style="margin-top:6px;color:var(--muted);font-size:13px">Choose a scheme to see breakdown</div>
+        <div style="margin-top:8px" class="dss-actions"></div>
+      `;
+      container.appendChild(el);
+      const actions = el.querySelector('.dss-actions');
+
+      Object.keys(per).forEach(sch=>{
+        const b = document.createElement('button'); b.className='btn secondary'; b.style.marginRight='6px'; b.textContent = sch.toUpperCase();
+        b.addEventListener('click', ()=> {
+          const out = per[sch];
+          const lines = [`DSS breakdown for ${r.claim_id} — ${sch.toUpperCase()}`, `Score: ${out.score}`, '', 'Factors:'];
+          out.factors.forEach(f=> lines.push(`${f.label}: ${f.value}`));
+          alert(lines.join('\n'));
+        });
+        actions.appendChild(b);
+      });
+
+      const zoom = document.createElement('button'); zoom.className='btn'; zoom.textContent='Zoom'; zoom.style.marginLeft='8px';
+      zoom.addEventListener('click', ()=> {
+        const layer = layerMap.get(r.claim_id);
+        if (layer) { const inner = layer.getLayers ? layer.getLayers()[0] : layer; if (inner && inner.getBounds) { map.fitBounds(inner.getBounds(), { padding:[40,40] }); setTimeout(()=>inner.openPopup && inner.openPopup(), 300); } }
+        else alert('Claim not found in current dataset.');
+      });
+      actions.appendChild(zoom);
+    });
+  }
+
+  const footer = document.createElement('div');
+  footer.style.display='flex'; footer.style.justifyContent='flex-end'; footer.style.marginTop='10px'; footer.style.gap='8px';
+  const exp = document.createElement('button'); exp.className='btn'; exp.textContent='Export DSS CSV';
+  const saveRun = document.createElement('button'); saveRun.className='btn secondary'; saveRun.textContent='Save Run (audit)';
+  footer.appendChild(exp); footer.appendChild(saveRun);
+  container.appendChild(footer);
+
+  exp.addEventListener('click', ()=> exportDSSCSV(results, scheme));
+  saveRun.addEventListener('click', ()=> saveDSSRun(results, scheme));
+}
+
+/* Export CSV for DSS results */
+function exportDSSCSV(results, scheme){
+  const singleScheme = !!scheme && scheme !== 'all' && scheme !== '';
+  const rows = [];
+  if (singleScheme) {
+    rows.push(['claim_id','village','state','score','factors_json']);
+    results.forEach(r => rows.push([r.claim_id, r.village, r.state, r.score, JSON.stringify(r.factors)]));
+  } else {
+    rows.push(['claim_id','village','state','scheme','score','factors_json']);
+    results.forEach(r => {
+      const per = r.per || {};
+      Object.entries(per).forEach(([sch,out])=>{
+        rows.push([r.claim_id, r.village, r.state, sch, out.score, JSON.stringify(out.factors)]);
+      });
+    });
+  }
+  const csv = rows.map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type:'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download = `dss_results_${(scheme||'multi')}_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); a.remove(); window.URL.revokeObjectURL(url);
+}
+
+/* Persist DSS run metadata (audit) */
+function saveDSSRun(results, scheme){
+  try {
+    const key = 'vf_dss_runs';
+    const store = JSON.parse(localStorage.getItem(key) || '[]');
+    const run = { id: 'run-'+Date.now().toString().slice(-8), ts: nowISO(), scheme: scheme || 'multi', count: results.length, top: (results.slice(0,5).map(r=> r.claim_id || r.claim_id )) };
+    store.unshift(run);
+    localStorage.setItem(key, JSON.stringify(store.slice(0,200)));
+    alert('DSS run saved ('+run.id+'). Use Export CSV to download details.');
+  } catch(e){ console.warn(e); alert('Could not save DSS run: ' + e.message); }
+}
+
+/* Assign verification */
+function assignVerification(claimId, scheme, score, factors){
+  const key = 'vf_dss_assignments';
+  const store = JSON.parse(localStorage.getItem(key) || '{}');
+  const now = nowISO();
+  const assignment = {
+    claim_id: claimId,
+    scheme: scheme,
+    score: score,
+    factors: factors,
+    assigned_by: (currentUser && currentUser.username) || 'local-demo',
+    assigned_at: now,
+    status: 'Assigned'
+  };
+  store[claimId] = assignment;
+  localStorage.setItem(key, JSON.stringify(store));
+  alert('Assigned verification for ' + claimId + ' to scheme ' + scheme.toUpperCase() + '. Assignment saved locally.');
+  const auditsKey = 'vf_dss_assignment_audit';
+  const audits = JSON.parse(localStorage.getItem(auditsKey) || '[]');
+  audits.unshift({ claim_id: claimId, action: 'assign_verification', scheme, by: assignment.assigned_by, ts: now });
+  localStorage.setItem(auditsKey, JSON.stringify(audits.slice(0,500)));
+}
+
+/* Wire the Run button */
+document.getElementById('runDss').addEventListener('click', ()=>{
+  const scheme = document.getElementById('dssSchemeSelect').value || '';
+  ensureWeightsUI();
+  const results = runDSS_v2((scheme === 'all' ? '' : scheme));
+  renderDSSResults(results, (scheme === 'all' ? '' : scheme));
+  saveDSSRun(results, (scheme === 'all' ? '' : scheme));
+});
+
+/* Export assignments */
+document.getElementById('exportDssAssignments').addEventListener('click', ()=> {
+  const key = 'vf_dss_assignments';
+  const store = JSON.parse(localStorage.getItem(key) || '{}');
+  const rows = [['claim_id','scheme','score','assigned_by','assigned_at','status','factors_json']];
+  Object.values(store).forEach(a => rows.push([a.claim_id, a.scheme, a.score, a.assigned_by, a.assigned_at, a.status, JSON.stringify(a.factors || [])]));
+  const csv = rows.map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type:'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download = `dss_assignments_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
 });
 
 /* -----------------------
@@ -1217,14 +1516,14 @@ function showTab(name){
 }
 tabOverview.addEventListener('click', ()=> { showTab('Overview'); buildOfficerDashboard(); });
 tabArchive.addEventListener('click', ()=> { showTab('Archive'); populateArchiveList(); });
-tabDSS.addEventListener('click', ()=> { showTab('DSS'); });
+tabDSS.addEventListener('click', ()=> { showTab('DSS'); setTimeout(()=> ensureWeightsUI(), 80); });
 
 /* Wire Review Queue button once roleActionsBox is populated */
 function wireReviewButton(){
   const btns = roleActionsBox.querySelectorAll('button');
   btns.forEach(b => {
     if (b.textContent && b.textContent.trim() === 'Review Queue') {
-      b.onclick = (e)=> { e.preventDefault(); buildOfficerDashboard(); showOfficer(); };
+      b.onclick = (e)=> { buildOfficerDashboard(); showOfficer(); };
     }
   });
 }
@@ -1351,7 +1650,7 @@ setTimeout(()=> {
   if (allFeatures.length) { updateDashboardCounts(allFeatures); buildOfficerDashboard(); populateArchiveList(); rebuildAutocomplete(); }
 }, 1000);
 
-console.log('VisionForge full single-file UI loaded.');
+console.log('VisionForge full single-file UI loaded with DSS implemented.');
 </script>
 </body>
 </html>
