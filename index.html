@@ -943,5 +943,276 @@ refreshUserUI();
 
 console.log("VisionForge: full update applied — login, contrast, NDVI timeline, compare, play/pause toggle, clusters, heatmap, export, filters. Firebase placeholder left as null.");
 </script>
+
+  <!-- Officer Dashboard: charts, KPI cards, table — insert before </body> -->
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<style>
+  /* Officer modal specific styles (keeps theme variables) */
+  #officerModal .modal-card { max-width:1100px; width:95%; }
+  #officerModal .kpi-row { display:flex; gap:12px; margin-bottom:12px; }
+  #officerModal .kpi { flex:1; padding:12px; border-radius:10px; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.02); text-align:center }
+  #officerModal .kpi h4 { margin:0 0 6px 0; color:var(--accent-1) }
+  #officerModal .charts { display:flex; gap:16px; margin-bottom:12px; }
+  #officerModal .charts .chart { flex:1; min-height:240px; background:transparent; padding:8px; border-radius:8px; }
+  #officerModal .table-wrap { max-height:340px; overflow:auto; border-radius:8px; border:1px solid rgba(0,0,0,0.06); background:var(--input-bg-dark); padding:8px; }
+  #officerModal table { width:100%; border-collapse:collapse; font-size:13px; }
+  #officerModal th, #officerModal td { padding:8px 6px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; color:var(--input-text-dark) }
+  #officerModal .toolbar { display:flex; gap:8px; margin-bottom:8px; align-items:center }
+  #officerModal .small-muted { font-size:13px; color:var(--muted) }
+</style>
+
+<div id="officerModal" class="modal" aria-hidden="true">
+  <div class="modal-card" style="padding:14px;">
+    <div class="modal-header">
+      <h3 style="margin:0">Officer Dashboard — Review Queue</h3>
+      <button class="close" id="closeOfficer">&times;</button>
+    </div>
+    <div class="modal-body" style="padding:12px;">
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px">
+        <div style="flex:1">
+          <div class="kpi-row">
+            <div class="kpi"><h4>Total Claims</h4><div id="kpiTotal" style="font-size:20px;font-weight:800">0</div></div>
+            <div class="kpi"><h4>Deforestation Alerts</h4><div id="kpiAlerts" style="font-size:20px;font-weight:800;color:#e04c4c">0</div></div>
+            <div class="kpi"><h4>Total Families</h4><div id="kpiFamilies" style="font-size:20px;font-weight:800">0</div></div>
+            <div class="kpi"><h4>Total Area (ha)</h4><div id="kpiArea" style="font-size:20px;font-weight:800">0</div></div>
+          </div>
+        </div>
+        <div style="width:220px;display:flex;flex-direction:column;gap:8px">
+          <button id="exportCSV" class="btn" style="background:linear-gradient(135deg,#10b981,#06b6d4);color:var(--btn-text-light)">Export CSV</button>
+          <button id="focusAlerts" class="btn secondary">Focus Alerts</button>
+        </div>
+      </div>
+
+      <div class="charts">
+        <div class="chart" style="min-width:260px">
+          <canvas id="statusPie"></canvas>
+        </div>
+        <div class="chart">
+          <canvas id="stateBar"></canvas>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <input id="officerSearch" placeholder="Search claim id / village / district / state" class="form-control" style="flex:1" />
+        <select id="officerStatusFilter" class="form-control" style="width:160px">
+          <option value="all">All statuses</option>
+          <option value="approved">Approved</option>
+          <option value="pending">Pending</option>
+          <option value="review">Under Review</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
+
+      <div class="table-wrap">
+        <table id="claimsTable">
+          <thead><tr><th>ID</th><th>State</th><th>District</th><th>Village</th><th>Status</th><th>Area(ha)</th><th>Families</th><th>Alert</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div style="margin-top:10px;text-align:right"><button id="closeOfficerFooter" class="btn secondary">Close</button></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  // Ensure Chart.js is loaded
+  if (!window.Chart) { console.warn('Chart.js missing'); }
+
+  // modal wiring
+  const officerModal = document.getElementById('officerModal');
+  const closeOfficer = document.getElementById('closeOfficer');
+  const closeOfficerFooter = document.getElementById('closeOfficerFooter');
+  closeOfficer.addEventListener('click', ()=> hideOfficer());
+  closeOfficerFooter.addEventListener('click', ()=> hideOfficer());
+
+  function showOfficer(){ officerModal.classList.add('open'); officerModal.style.display='flex'; officerModal.setAttribute('aria-hidden','false'); }
+  function hideOfficer(){ officerModal.classList.remove('open'); officerModal.style.display='none'; officerModal.setAttribute('aria-hidden','true'); }
+
+  // find Review Queue button dynamically and wire it (roleActionsBox is filled at login)
+  function wireReviewButton(){
+    const btns = roleActionsBox.querySelectorAll('button');
+    btns.forEach(b => {
+      if (b.textContent && b.textContent.trim() === 'Review Queue') {
+        b.onclick = (e)=> { e.preventDefault(); buildOfficerDashboard(); showOfficer(); };
+      }
+    });
+  }
+  // observe roleActionsBox for changes (so when login creates buttons we attach handler)
+  const obs = new MutationObserver(wireReviewButton);
+  obs.observe(roleActionsBox, { childList:true, subtree:true });
+  // Also call once now in case it's already present
+  setTimeout(wireReviewButton, 400);
+
+  // Chart placeholders
+  let statusChart=null, stateChart=null;
+
+  // build officer dashboard from layerMap features
+  function buildOfficerDashboard() {
+    // gather features from layerMap
+    const features = [];
+    layerMap.forEach(layer => {
+      const inner = (layer.getLayers ? layer.getLayers()[0] : layer);
+      if (!inner) return;
+      const feat = inner.feature ? inner.feature : inner;
+      if (feat) features.push(feat);
+    });
+
+    // compute KPIs
+    let totalClaims = features.length;
+    let alerts = 0, families = 0, area = 0;
+    const statusCounts = {};
+    const stateCounts = {};
+    features.forEach(f => {
+      const p = f.properties || {};
+      const s = (p.status || 'Unknown').toString();
+      const st = (p.state || 'Unknown').toString();
+      statusCounts[s] = (statusCounts[s] || 0) + 1;
+      stateCounts[st] = (stateCounts[st] || 0) + 1;
+      if (p.deforestation_detected) alerts++;
+      families += Number(p.claimant_families||p.claimants||0);
+      area += Number(p.area_hectares||0) || 0;
+    });
+
+    document.getElementById('kpiTotal').textContent = totalClaims;
+    document.getElementById('kpiAlerts').textContent = alerts;
+    document.getElementById('kpiFamilies').textContent = families;
+    document.getElementById('kpiArea').textContent = Math.round(area);
+
+    // build status pie
+    const statusLabels = Object.keys(statusCounts);
+    const statusData = statusLabels.map(l => statusCounts[l]);
+    const pieCtx = document.getElementById('statusPie').getContext('2d');
+    if (statusChart) statusChart.destroy();
+    statusChart = new Chart(pieCtx, {
+      type:'pie',
+      data:{ labels: statusLabels, datasets:[{ data: statusData, backgroundColor:['#27ae60','#f1c40f','#8e44ad','#c0392b','#7f8c8d'] }] },
+      options:{ plugins:{ legend:{ position:'bottom' } } }
+    });
+
+    // build state bar (top 10)
+    const stateEntries = Object.entries(stateCounts).sort((a,b)=>b[1]-a[1]).slice(0,10);
+    const stateLabels = stateEntries.map(e=>e[0]);
+    const stateData = stateEntries.map(e=>e[1]);
+    const barCtx = document.getElementById('stateBar').getContext('2d');
+    if (stateChart) stateChart.destroy();
+    stateChart = new Chart(barCtx, {
+      type:'bar',
+      data:{ labels: stateLabels, datasets:[{ label:'Claims', data: stateData }] },
+      options:{ indexAxis:'y', plugins:{ legend:{ display:false } }, scales:{ x:{ beginAtZero:true } } }
+    });
+
+    // populate table
+    const tbody = document.querySelector('#claimsTable tbody');
+    tbody.innerHTML = '';
+    const rows = features.map(f => {
+      const p = f.properties || {};
+      return {
+        id: p.claim_id || p.name || '—',
+        state: p.state||'—',
+        district: p.district||'—',
+        village: p.village_name||p.village||'—',
+        status: p.status||'—',
+        area: p.area_hectares || p.area || 0,
+        families: p.claimant_families || p.claimants || 0,
+        alert: p.deforestation_detected ? 'Yes' : 'No'
+      };
+    });
+    // simple sort: alerts first
+    rows.sort((a,b)=> (b.alert==='Yes') - (a.alert==='Yes'));
+    rows.forEach(r=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td><a href="#" class="claim-link" data-id="${r.id}">${r.id}</a></td>
+                      <td>${r.state}</td>
+                      <td>${r.district}</td>
+                      <td>${r.village}</td>
+                      <td>${r.status}</td>
+                      <td>${r.area}</td>
+                      <td>${r.families}</td>
+                      <td style="color:${r.alert==='Yes' ? '#c0392b':'#27ae60'}">${r.alert}</td>`;
+      tbody.appendChild(tr);
+    });
+
+    // wire claim link clicks to zoom
+    tbody.querySelectorAll('.claim-link').forEach(a=>{
+      a.addEventListener('click', (ev)=>{
+        ev.preventDefault();
+        const id = a.getAttribute('data-id');
+        // find layer and fit bounds
+        let found=false;
+        layerMap.forEach((layer,key)=>{
+          if (key === id) {
+            found=true;
+            const inner = layer.getLayers ? layer.getLayers()[0] : layer;
+            if (inner && inner.getBounds) {
+              map.fitBounds(inner.getBounds(), { padding:[40,40] });
+              setTimeout(()=> inner.openPopup && inner.openPopup(), 300);
+            }
+          }
+        });
+        if (!found) alert('Claim not found in current dataset.');
+      });
+    });
+
+    // setup filters
+    document.getElementById('officerSearch').oninput = filterTable;
+    document.getElementById('officerStatusFilter').onchange = filterTable;
+
+    // export CSV
+    document.getElementById('exportCSV').onclick = ()=> {
+      const csvRows = [['claim_id','state','district','village','status','area_ha','families','alert']];
+      rows.forEach(r => csvRows.push([r.id, r.state, r.district, r.village, r.status, r.area, r.families, r.alert]));
+      const csv = csvRows.map(r => r.map(cell => `"${String(cell).replace(/"/g,'""')}"`).join(',')).join('\n');
+      const blob = new Blob([csv], { type:'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download = `officer_claims_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    };
+
+    // focus alerts button: zoom to those layers
+    document.getElementById('focusAlerts').onclick = ()=> {
+      const alertBounds = [];
+      layerMap.forEach(layer => {
+        const inner = layer.getLayers ? layer.getLayers()[0] : layer;
+        if (!inner || !inner.feature) return;
+        if (inner.feature.properties && inner.feature.properties.deforestation_detected) {
+          if (inner.getBounds) alertBounds.push(inner.getBounds());
+        }
+      });
+      if (!alertBounds.length) { alert('No alert layers currently visible'); return; }
+      const union = alertBounds.reduce((acc,b)=>acc.extend(b), alertBounds[0].clone());
+      map.fitBounds(union, { padding:[50,50] });
+    };
+  }
+
+  function filterTable(){
+    const q = (document.getElementById('officerSearch').value||'').toLowerCase();
+    const status = document.getElementById('officerStatusFilter').value;
+    const tbody = document.querySelector('#claimsTable tbody');
+    Array.from(tbody.children).forEach(tr=>{
+      const combined = tr.textContent.toLowerCase();
+      const matchesQ = !q || combined.includes(q);
+      const matchesStatus = (status === 'all') || combined.includes(status);
+      tr.style.display = (matchesQ && matchesStatus) ? '' : 'none';
+    });
+  }
+
+  // Expose builder so other parts can call it if needed
+  window.buildOfficerDashboard = buildOfficerDashboard;
+
+  // if user is already logged in and official, optionally open the dashboard automatically:
+  // (safeguard: only open when role=official)
+  setTimeout(()=> {
+    if (currentUser && currentUser.role === 'official') {
+      // build but don't auto-open — keep behind Review Queue button for UX
+      buildOfficerDashboard();
+    }
+  }, 800);
+
+})();
+</script>
+
 </body>
 </html>
