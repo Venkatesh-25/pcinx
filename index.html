@@ -1,505 +1,338 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 	<title>FRA Atlas DSS - Decision Support System</title>
+
+	<!-- Keep your existing external references (unchanged) -->
 	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+	<!-- Modern font -->
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
 	<style>
-		* {
-			margin: 0;
-			padding: 0;
-			box-sizing: border-box;
+		:root{
+			--bg-1: 20 22 28;          /* dark base (r g b) */
+			--glass-1: rgba(255,255,255,0.06);
+			--glass-2: rgba(255,255,255,0.04);
+			--accent: 45 80 22;       /* green-ish accent rgb */
+			--accent-hex: #2d5016;
+			--muted: #9aa3ab;
+			--card-radius: 14px;
+			--transition: 0.25s;
 		}
-        
+
+		/* Light theme variables */
+		body[data-theme="light"]{
+			--bg-1: 102 126 234;
+			--glass-1: rgba(255,255,255,0.95);
+			--glass-2: rgba(255,255,255,0.9);
+			--muted: #666;
+			--accent: 45 80 22;
+			--accent-hex: #2d5016;
+		}
+
+		*{box-sizing:border-box;margin:0;padding:0}
+		html,body{height:100%}
 		body {
-			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-			height: 100vh;
-			overflow: hidden;
+			font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+			background: radial-gradient(1200px 600px at 10% 10%, rgba(45,80,22,0.08), transparent),
+			            radial-gradient(1200px 600px at 90% 90%, rgba(39, 174, 96, 0.03), transparent),
+			            rgba(var(--bg-1),1);
+			color: #e6eef8;
+			-webkit-font-smoothing:antialiased;
+			-moz-osx-font-smoothing:grayscale;
+			height:100vh;
+			overflow:hidden;
+			transition: background var(--transition) ease;
 		}
 
+		/* Layout */
 		.header {
-			background: rgba(255, 255, 255, 0.95);
-			backdrop-filter: blur(10px);
-			padding: 15px 20px;
-			box-shadow: 0 2px 20px rgba(0,0,0,0.1);
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
 			position: relative;
-			z-index: 1000;
+			z-index: 1200;
+			display:flex;
+			align-items:center;
+			justify-content:space-between;
+			padding:18px 22px;
+			gap:16px;
+			backdrop-filter: blur(10px) saturate(110%);
+			background: linear-gradient(180deg, rgba(var(--bg-1),0.12), rgba(var(--bg-1),0.06));
+			border-radius: 12px;
+			margin: 14px;
+			box-shadow: 0 6px 30px rgba(0,0,0,0.35);
 		}
 
-		.logo {
-			display: flex;
-			align-items: center;
-			gap: 10px;
+		.brand {
+			display:flex;
+			align-items:center;
+			gap:12px;
 		}
 
-		.logo i {
-			color: #2d5016;
-			font-size: 1.8em;
+		.logo-mark {
+			width:48px;height:48px;border-radius:12px;
+			background: linear-gradient(135deg, rgba(var(--accent),0.12), rgba(var(--accent),0.06));
+			display:flex;align-items:center;justify-content:center;
+			border: 1px solid rgba(255,255,255,0.04);
+			box-shadow: 0 6px 18px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.02);
 		}
 
-		.logo h1 {
-			color: #2d5016;
-			font-size: 1.5em;
-			font-weight: 700;
+		.logo-mark i{color:var(--accent-hex);font-size:20px}
+		.title {
+			display:flex;flex-direction:column;
 		}
+		.title h1{
+			font-size:18px;color: var(--accent-hex);font-weight:700;
+		}
+		.title p{font-size:12px;color:var(--muted);margin-top:2px}
+
+		.header-controls {
+			display:flex;align-items:center;gap:10px;
+		}
+
+		.btn {
+			padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:600;
+			backdrop-filter: blur(6px);
+			background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+			color: #e9f4ee;
+			box-shadow: 0 6px 14px rgba(0,0,0,0.35);
+			transition: transform .18s ease, box-shadow .18s ease;
+			display:inline-flex;align-items:center;gap:8px;
+		}
+		.btn:hover{transform:translateY(-3px)}
+		.btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06)}
+		.btn.ghost{background:transparent;border:1px dashed rgba(255,255,255,0.03)}
 
 		.status-bar {
-			display: flex;
-			gap: 20px;
-			align-items: center;
+			display:flex;gap:10px;align-items:center;
 		}
-
 		.status-item {
-			display: flex;
-			align-items: center;
-			gap: 5px;
-			padding: 8px 15px;
-			border-radius: 20px;
-			background: rgba(45, 80, 22, 0.1);
-			color: #2d5016;
-			font-weight: 600;
+			padding:8px 12px;border-radius:10px;background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+			font-size:13px;color:var(--muted);display:flex;gap:8px;align-items:center;border:1px solid rgba(255,255,255,0.03)
 		}
+		.status-item i{color:var(--accent-hex)}
 
+		/* Main */
 		.main-container {
-			display: flex;
-			height: calc(100vh - 80px);
+			display:flex;
+			height: calc(100vh - 120px);
+			margin: 14px;
+			gap: 18px;
 		}
 
+		/* Map area */
 		#map {
-			flex: 1;
-			position: relative;
+			flex:1;
+			border-radius: 16px;
+			overflow: hidden;
+			box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+			border: 1px solid rgba(255,255,255,0.02);
 		}
 
+		/* Dashboard */
 		.dashboard {
-			width: 350px;
-			background: rgba(255, 255, 255, 0.95);
-			backdrop-filter: blur(10px);
-			padding: 20px;
-			overflow-y: auto;
-			box-shadow: -5px 0 25px rgba(0,0,0,0.1);
+			width:380px;
+			min-width:300px;
+			max-width:420px;
+			padding:20px;
+			border-radius: var(--card-radius);
+			backdrop-filter: blur(12px) saturate(120%);
+			background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+			border: 1px solid rgba(255,255,255,0.03);
+			box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+			overflow-y:auto;
 		}
 
 		.dashboard-section {
-			margin-bottom: 25px;
-			background: white;
-			padding: 20px;
-			border-radius: 12px;
-			box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-			border-left: 4px solid #2d5016;
+			margin-bottom:18px;padding:16px;border-radius:12px;
+			background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+			border: 1px solid rgba(255,255,255,0.025);
 		}
 
-		.dashboard-section h3 {
-			color: #2d5016;
-			margin-bottom: 15px;
-			display: flex;
-			align-items: center;
-			gap: 10px;
-			font-size: 1.1em;
-		}
+		.section-title{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+		.section-title h3{font-size:14px;color:var(--accent-hex);margin:0}
+		.section-title p{font-size:12px;color:var(--muted);margin:0}
 
-		.stat-grid {
-			display: grid;
-			grid-template-columns: 1fr 1fr;
-			gap: 10px;
+		.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+		.stat-card{
+			padding:12px;border-radius:10px;background: linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.12));
+			border:1px solid rgba(255,255,255,0.02);
+			text-align:center;
 		}
+		.stat-number{font-size:20px;font-weight:800;color:#fff}
+		.stat-label{font-size:12px;color:var(--muted);margin-top:6px;text-transform:uppercase;letter-spacing:0.6px}
 
-		.stat-card {
-			background: linear-gradient(135deg, #f8f9ff 0%, #e8f5e8 100%);
-			padding: 15px;
-			border-radius: 8px;
-			text-align: center;
-			border: 1px solid rgba(45, 80, 22, 0.1);
+		.control-btn{
+			width:100%;padding:12px;border-radius:10px;border:none;font-weight:700;cursor:pointer;margin-top:8px;
+			backdrop-filter: blur(6px);
+			transition: transform .18s ease;
 		}
+		.control-btn:hover{transform:translateY(-3px)}
+		.btn-before{background: linear-gradient(135deg, rgba(39,174,96,0.95), rgba(34,197,94,0.9)); color:#fff}
+		.btn-after{background: linear-gradient(135deg, rgba(220,53,69,0.95), rgba(200,32,35,0.9)); color:#fff}
+		.btn-reset{background: linear-gradient(135deg, rgba(59,130,246,0.95), rgba(37,99,235,0.9)); color:#fff}
+		.btn-export{background: linear-gradient(135deg, rgba(16,185,129,0.95), rgba(34,197,94,0.9)); color:#fff}
+		.btn-report{background: linear-gradient(135deg, rgba(239,68,68,0.95), rgba(220,38,38,0.9)); color:#fff}
 
-		.stat-number {
-			font-size: 1.8em;
-			font-weight: bold;
-			color: #2d5016;
-			margin-bottom: 5px;
-		}
-
-		.stat-label {
-			font-size: 0.9em;
-			color: #666;
-			text-transform: uppercase;
-			letter-spacing: 0.5px;
-		}
-
-		.control-btn {
-			width: 100%;
-			padding: 12px 15px;
-			margin: 8px 0;
-			border: none;
-			border-radius: 8px;
-			cursor: pointer;
-			font-weight: 600;
-			font-size: 0.95em;
-			transition: all 0.3s ease;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			gap: 8px;
-		}
-
-		.btn-before {
-			background: linear-gradient(135deg, #4CAF50, #45a049);
-			color: white;
-		}
-
-		.btn-after {
-			background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-			color: white;
-		}
-
-		.btn-reset {
-			background: linear-gradient(135deg, #74b9ff, #0984e3);
-			color: white;
-		}
-
-		.control-btn:hover {
-			transform: translateY(-2px);
-			box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-		}
-
+		/* Alert */
 		.alert {
-			background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-			color: white;
-			padding: 15px;
-			border-radius: 8px;
-			margin-bottom: 15px;
-			animation: pulse 2s infinite;
-			display: flex;
-			align-items: center;
-			gap: 10px;
+			padding:12px;border-radius:10px;margin-bottom:14px;
+			background: linear-gradient(90deg, rgba(244,67,54,0.15), rgba(255, 208, 208,0.03));
+			border: 1px solid rgba(244,67,54,0.12);
+			color:#ffdede;
+			display:flex;align-items:flex-start;gap:12px;
+		}
+		.alert strong{color:#ffdede}
+
+		/* Legend (map overlay) */
+		.legend{
+			position:absolute;bottom:22px;left:22px;padding:12px;border-radius:10px;z-index:1100;
+			background: linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.28));
+			border:1px solid rgba(255,255,255,0.04)
+		}
+		.legend h4{margin:0 0 10px 0;color:var(--accent-hex)}
+		.legend-item{display:flex;gap:10px;align-items:center;color:#e6eef8;margin-bottom:8px}
+		.legend-color{width:18px;height:18px;border-radius:4px;border:2px solid rgba(0,0,0,0.4)}
+
+		/* Popups */
+		.popup-custom, .custom-popup { font-family: inherit; color: #111 }
+		.leaflet-popup-content-wrapper { border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important; }
+
+		/* Modal */
+		.modal { display: none; position: fixed; z-index: 1400; left:0;top:0;width:100%;height:100%;background: rgba(0,0,0,0.45); align-items:center; justify-content:center; }
+		.modal.open{display:flex}
+		.modal-card{ width:94%; max-width:520px; border-radius:14px; overflow:hidden; background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.94)); color:#111; box-shadow: 0 30px 70px rgba(0,0,0,0.5) }
+		.modal-header{ padding:18px 20px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(0,0,0,0.06)}
+		.modal-body{ padding:18px 20px; max-height:65vh; overflow:auto }
+		.modal .close { background:transparent;border:none; font-size:20px; cursor:pointer; color:#333; }
+
+		.form-group{ margin-bottom:12px }
+		.form-group label{ display:block; font-weight:700; font-size:13px; margin-bottom:6px }
+		.form-group input, .form-group select, .form-group textarea {
+			width:100%; padding:10px 12px; border-radius:8px; border:1px solid rgba(0,0,0,0.08); font-size:14px;
 		}
 
-		@keyframes pulse {
-			0% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.7); }
-			70% { box-shadow: 0 0 0 10px rgba(255, 107, 107, 0); }
-			100% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0); }
-		}
+		/* Login badge */
+		.user-badge{ display:inline-flex; gap:10px; align-items:center; padding:8px 10px; border-radius:12px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.03); font-weight:700; color:#fff }
+		.user-role{ font-size:12px; color:var(--muted) }
 
-		.legend {
-			background: rgba(255, 255, 255, 0.9);
-			backdrop-filter: blur(10px);
-			position: absolute;
-			bottom: 20px;
-			left: 20px;
-			padding: 15px;
-			border-radius: 10px;
-			box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-			z-index: 1000;
-		}
-
-		.legend-item {
-			display: flex;
-			align-items: center;
-			gap: 10px;
-			margin-bottom: 8px;
-		}
-
-		.legend-color {
-			width: 20px;
-			height: 20px;
-			border-radius: 4px;
-			border: 2px solid #333;
-		}
-
-		/* Modal Styles */
-		.modal {
-			display: none;
-			position: fixed;
-			z-index: 10000;
-			left: 0;
-			top: 0;
-			width: 100%;
-			height: 100%;
-			background-color: rgba(0,0,0,0.5);
-			backdrop-filter: blur(5px);
-		}
-
-		.modal-content {
-			background-color: white;
-			margin: 5% auto;
-			padding: 0;
-			border-radius: 12px;
-			width: 90%;
-			max-width: 500px;
-			box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-			animation: modalSlideIn 0.3s ease-out;
-		}
-
-		@keyframes modalSlideIn {
-			from { opacity: 0; transform: translateY(-50px); }
-			to { opacity: 1; transform: translateY(0); }
-		}
-
-		.modal-header {
-			background: linear-gradient(135deg, #dc3545, #c82333);
-			color: white;
-			padding: 20px;
-			border-radius: 12px 12px 0 0;
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-		}
-
-		.modal-header h2 {
-			margin: 0;
-			display: flex;
-			align-items: center;
-			gap: 10px;
-		}
-
-		.close {
-			font-size: 24px;
-			font-weight: bold;
-			cursor: pointer;
-			color: white;
-			opacity: 0.8;
-			transition: opacity 0.3s;
-		}
-
-		.close:hover {
-			opacity: 1;
-		}
-
-		.modal-body {
-			padding: 25px;
-		}
-
-		.form-group {
-			margin-bottom: 20px;
-		}
-
-		.form-group label {
-			display: block;
-			margin-bottom: 8px;
-			font-weight: 600;
-			color: #333;
-		}
-
-		.form-group input,
-		.form-group select,
-		.form-group textarea {
-			width: 100%;
-			padding: 12px;
-			border: 2px solid #e1e1e1;
-			border-radius: 8px;
-			font-size: 14px;
-			transition: border-color 0.3s;
-		}
-
-		.form-group input:focus,
-		.form-group select:focus,
-		.form-group textarea:focus {
-			outline: none;
-			border-color: #dc3545;
-		}
-
-		.form-group textarea {
-			resize: vertical;
-			min-height: 100px;
-		}
-
-		.form-row {
-			display: grid;
-			grid-template-columns: 1fr 1fr;
-			gap: 15px;
-		}
-
-		.submit-btn {
-			background: linear-gradient(135deg, #dc3545, #c82333);
-			color: white;
-			border: none;
-			padding: 12px 25px;
-			border-radius: 8px;
-			cursor: pointer;
-			font-weight: 600;
-			font-size: 16px;
-			width: 100%;
-			transition: all 0.3s ease;
-		}
-
-		.submit-btn:hover {
-			transform: translateY(-2px);
-			box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
-		}
-
-		.loading-spinner {
-			display: none;
-			position: fixed;
-			z-index: 20000;
-			left: 50%;
-			top: 50%;
-			transform: translate(-50%, -50%);
-			background: rgba(255, 255, 255, 0.95);
-			padding: 30px;
-			border-radius: 12px;
-			box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-		}
-
-		.spinner {
-			width: 40px;
-			height: 40px;
-			border: 4px solid #f3f3f3;
-			border-top: 4px solid #2d5016;
-			border-radius: 50%;
-			animation: spin 1s linear infinite;
-			margin: 0 auto 15px;
-		}
-
-		@keyframes spin {
-			0% { transform: rotate(0deg); }
-			100% { transform: rotate(360deg); }
-		}
-
-		.loading {
-			display: none;
-			position: fixed;
-			top: 50%;
-			left: 50%;
-			transform: translate(-50%, -50%);
-			background: rgba(255, 255, 255, 0.95);
-			padding: 30px;
-			border-radius: 10px;
-			box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-			z-index: 2000;
-			text-align: center;
-		}
-
-		.spinner {
-			border: 4px solid #f3f3f3;
-			border-top: 4px solid #2d5016;
-			border-radius: 50%;
-			width: 40px;
-			height: 40px;
-			animation: spin 1s linear infinite;
-			margin: 0 auto 15px;
-		}
-
-		@keyframes spin {
-			0% { transform: rotate(0deg); }
-			100% { transform: rotate(360deg); }
-		}
-
-		.popup-custom {
-			font-family: inherit;
-		}
-
-		.popup-custom .leaflet-popup-content-wrapper {
-			border-radius: 8px;
-			box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+		/* small screens */
+		@media (max-width:900px){
+			.dashboard{ display:none }
+			.main-container{ margin:8px }
 		}
 	</style>
-	<link rel="preconnect" href="https://unpkg.com" />
-	<link rel="preconnect" href="https://cdnjs.cloudflare.com" />
 </head>
-<body>
-	<div class="loading" id="loading">
-		<div class="spinner"></div>
-		<p>Analyzing satellite data...</p>
-	</div>
-
-	<div class="header">
-		<div class="logo">
-			<i class="fas fa-tree"></i>
-			<h1>FRA Atlas DSS</h1>
-		</div>
-		<div class="status-bar">
-			<div class="status-item">
-				<i class="fas fa-satellite"></i>
-				<span>Sentinel-2 Connected</span>
-			</div>
-			<div class="status-item">
-				<i class="fas fa-database"></i>
-				<span>4 States Loaded</span>
-			</div>
-			<div class="status-item">
-				<i class="fas fa-shield-alt"></i>
-				<span>Real-time Monitoring</span>
+<body data-theme="dark">
+	<!-- Loading overlay -->
+	<div id="loading" style="display:none;position:fixed;z-index:1600;left:0;top:0;width:100%;height:100%;align-items:center;justify-content:center;background:rgba(0,0,0,0.45)">
+		<div style="background:rgba(255,255,255,0.03);backdrop-filter:blur(6px);padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);color:#fff">
+			<div style="margin-bottom:8px;font-weight:700">Analyzing satellite data...</div>
+			<div style="height:6px;background:rgba(255,255,255,0.06);border-radius:6px;overflow:hidden">
+				<div style="width:48%;height:100%;background:linear-gradient(90deg, rgba(39,174,96,0.95), rgba(34,197,94,0.9));animation:progress 2s linear infinite"></div>
 			</div>
 		</div>
 	</div>
 
+	<header class="header">
+		<div class="brand">
+			<div class="logo-mark"><i class="fas fa-tree"></i></div>
+			<div class="title">
+				<h1>FRA Atlas DSS</h1>
+				<p>AI-powered FRA Atlas & WebGIS Decision Support System</p>
+			</div>
+		</div>
+
+		<div style="display:flex;gap:12px;align-items:center">
+			<div class="status-bar" style="margin-right:14px">
+				<div class="status-item"><i class="fas fa-satellite"></i><span>Sentinel-2 Connected</span></div>
+				<div class="status-item"><i class="fas fa-database"></i><span>4 States Loaded</span></div>
+			</div>
+
+			<div class="header-controls">
+				<button id="themeToggle" class="btn secondary" title="Toggle dark / light mode"><i class="fas fa-adjust"></i> Theme</button>
+				<button id="aboutBtn" class="btn ghost"><i class="fas fa-info-circle"></i> About</button>
+				<button id="loginOpen" class="btn"><i class="fas fa-sign-in-alt"></i> Login</button>
+				<div id="userBadge" style="display:none" class="user-badge"><span id="userName">User</span> <span class="user-role" id="userRoleTag"></span></div>
+			</div>
+		</div>
+	</header>
+
+	<!-- Main -->
 	<div class="main-container">
 		<div id="map"></div>
-        
-		<div class="dashboard">
-			<div class="alert">
-				<i class="fas fa-exclamation-triangle fa-lg"></i>
-				<div>
-					<strong>Deforestation Alert!</strong><br>
-					Forest loss detected in CFR-2024-OD-101
+
+		<aside class="dashboard" aria-label="Control dashboard">
+			<div class="alert" role="status">
+				<div style="flex:1">
+					<strong>Deforestation Alert</strong>
+					<div style="font-size:13px;margin-top:6px;color:var(--muted)">Forest loss detected in CFR-2024-OD-101 — requires verification</div>
+				</div>
+				<div style="min-width:90px;text-align:right">
+					<button id="exportBtn" class="btn control-btn btn-export" style="width:100%">Generate Report</button>
 				</div>
 			</div>
 
-            <div class="dashboard-section">
-                <h3><i class="fas fa-file-alt"></i>FRA Claims Overview</h3>
-                <div class="stat-grid">
-                    <div class="stat-card">
-                        <div class="stat-number" id="approved-count">1,247</div>
-                        <div class="stat-label">Approved</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="pending-count">156</div>
-                        <div class="stat-label">Pending</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="review-count">43</div>
-                        <div class="stat-label">Under Review</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="rejected-count">12</div>
-                        <div class="stat-label">Rejected</div>
-                    </div>
-                </div>
-                <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px; font-size: 0.9em;">
-                    <strong>Live Updates:</strong> <span id="last-update">Real-time monitoring active</span>
-                </div>
-            </div>			<div class="dashboard-section">
-				<h3><i class="fas fa-satellite-dish"></i>Satellite Monitoring</h3>
-				<p style="color: #666; margin-bottom: 15px; font-size: 0.9em;">
-					Compare vegetation health using NDVI analysis from Sentinel-2 imagery
-				</p>
-				<button class="control-btn btn-before" id="beforeBtn">
-					<i class="fas fa-leaf"></i>
-					January 2025 (Baseline)
-				</button>
-				<button class="control-btn btn-after" id="afterBtn">
-					<i class="fas fa-exclamation-triangle"></i>
-					September 2025 (Current)
-				</button>
-                <button class="control-btn btn-reset" id="resetBtn">
-                    <i class="fas fa-undo"></i>
-                    Reset View
-                </button>
-                <button class="control-btn" id="exportBtn" style="background: linear-gradient(135deg, #28a745, #20c997); color: white;">
-                    <i class="fas fa-download"></i>
-                    Generate Report
-                </button>
-                <button class="control-btn" id="reportBtn" style="background: linear-gradient(135deg, #dc3545, #c82333); color: white;">
-                    <i class="fas fa-exclamation-circle"></i>
-                    Report Issue
-                </button>
-            </div>			<div class="dashboard-section">
-				<h3><i class="fas fa-chart-line"></i>System Analytics</h3>
-				<div style="color: #666; font-size: 0.9em; line-height: 1.6;">
-					<p><strong>Coverage:</strong> 4 States (Odisha, MP, Tripura, Telangana)</p>
-					<p><strong>Last Update:</strong> 2 hours ago</p>
-					<p><strong>NDVI Threshold:</strong> 0.3 (Deforestation Alert)</p>
+			<div class="dashboard-section">
+				<div class="section-title">
+					<h3>FRA Claims Overview</h3>
+					<p style="margin-left:auto" id="coverageInfo">Coverage: 4 States</p>
+				</div>
+
+				<div class="stat-grid">
+					<div class="stat-card">
+						<div class="stat-number" id="approved-count">1,247</div>
+						<div class="stat-label">Approved</div>
+					</div>
+					<div class="stat-card">
+						<div class="stat-number" id="pending-count">156</div>
+						<div class="stat-label">Pending</div>
+					</div>
+					<div class="stat-card">
+						<div class="stat-number" id="review-count">43</div>
+						<div class="stat-label">Under Review</div>
+					</div>
+					<div class="stat-card">
+						<div class="stat-number" id="rejected-count">12</div>
+						<div class="stat-label">Rejected</div>
+					</div>
+				</div>
+
+				<div style="margin-top:12px;padding:10px;border-radius:10px;background:linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.04));font-size:13px;color:var(--muted)">
+					<strong>Live Updates:</strong> <span id="last-update">Real-time monitoring active</span>
+				</div>
+			</div>
+
+			<div class="dashboard-section">
+				<div class="section-title">
+					<h3>Satellite Monitoring</h3>
+					<p>Compare NDVI analysis from Sentinel-2</p>
+				</div>
+
+				<button id="beforeBtn" class="control-btn btn-before">January 2025 (Baseline)</button>
+				<button id="afterBtn" class="control-btn btn-after">September 2025 (Current)</button>
+				<button id="resetBtn" class="control-btn btn-reset">Reset View</button>
+				<button id="reportBtn" class="control-btn btn-report">Report Issue</button>
+			</div>
+
+			<div class="dashboard-section">
+				<div class="section-title">
+					<h3>System Analytics</h3>
+				</div>
+				<div style="color:var(--muted);font-size:13px;line-height:1.6">
+					<p><strong>Coverage:</strong> 4 States (Odisha, Madhya Pradesh, Tripura, Telangana)</p>
+					<p><strong>Last Update:</strong> <span id="lastUpdateText">2 hours ago</span></p>
+					<p><strong>NDVI Threshold:</strong> 0.3 (Deforestation alert)</p>
 					<p><strong>Spatial Resolution:</strong> 10m (Sentinel-2)</p>
 				</div>
 			</div>
 
 			<div class="dashboard-section">
-				<h3><i class="fas fa-users"></i>Community Impact</h3>
+				<div class="section-title">
+					<h3>Community Impact</h3>
+				</div>
 				<div class="stat-grid">
 					<div class="stat-card">
 						<div class="stat-number">8,542</div>
@@ -511,15 +344,28 @@
 					</div>
 				</div>
 			</div>
-		</div>
+
+			<!-- SIH problem statement summary -->
+			<div class="dashboard-section" style="border-left:4px solid rgba(var(--accent),0.9)">
+				<div class="section-title"><h3>SIH Alignment (SIH12508)</h3></div>
+				<div style="font-size:13px;color:var(--muted);line-height:1.5">
+					<p><strong>Problem:</strong> Development of AI-powered FRA Atlas and WebGIS-based Decision Support System for Integrated Monitoring of Forest Rights Act (FRA) implementation.</p>
+					<p><strong>Target States:</strong> Madhya Pradesh, Tripura, Odisha, Telangana</p>
+					<p>This UI & mapping tool implements multi-state claim loading, NDVI overlays, reporting, and an official review workflow to meet SIH12508 requirements.</p>
+				</div>
+			</div>
+		</aside>
 	</div>
 
 	<!-- Report Issue Modal -->
-	<div id="reportModal" class="modal">
-		<div class="modal-content">
+	<div id="reportModal" class="modal" aria-hidden="true">
+		<div class="modal-card">
 			<div class="modal-header">
-				<h2><i class="fas fa-exclamation-triangle"></i> Report Environmental Issue</h2>
-				<span class="close" id="closeModal">&times;</span>
+				<div style="display:flex;gap:12px;align-items:center">
+					<h3 style="margin:0">Report Environmental Issue</h3>
+					<span style="font-size:12px;color:var(--muted)">Submit a new report for the Forest Department</span>
+				</div>
+				<button class="close" id="closeModal">&times;</button>
 			</div>
 			<div class="modal-body">
 				<form id="reportForm">
@@ -534,8 +380,8 @@
 							<option value="other">Other Environmental Violation</option>
 						</select>
 					</div>
-					
-					<div class="form-row">
+
+					<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
 						<div class="form-group">
 							<label for="reporterName">Your Name *</label>
 							<input type="text" id="reporterName" required>
@@ -545,8 +391,8 @@
 							<input type="tel" id="reporterPhone">
 						</div>
 					</div>
-					
-					<div class="form-row">
+
+					<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
 						<div class="form-group">
 							<label for="location">Location/Village *</label>
 							<input type="text" id="location" required>
@@ -556,62 +402,176 @@
 							<input type="text" id="district" required>
 						</div>
 					</div>
-					
+
 					<div class="form-group">
 						<label for="description">Detailed Description *</label>
-						<textarea id="description" placeholder="Please describe the environmental issue in detail, including when you noticed it, estimated area affected, and any other relevant information..." required></textarea>
+						<textarea id="description" placeholder="Describe the issue, estimated area, when observed..." required></textarea>
 					</div>
-					
+
 					<div class="form-group">
 						<label for="coordinates">GPS Coordinates (if available)</label>
 						<input type="text" id="coordinates" placeholder="Latitude, Longitude (e.g., 20.2961, 85.8245)">
 					</div>
-					
-					<button type="submit" class="submit-btn">
-						<i class="fas fa-paper-plane"></i> Submit Report
-					</button>
+
+					<button type="submit" class="btn" style="width:100%;background:linear-gradient(135deg, rgba(39,174,96,0.95), rgba(34,197,94,0.9));color:#fff">Submit Report</button>
 				</form>
 			</div>
 		</div>
 	</div>
 
-	<!-- Loading Spinner -->
-	<div id="loadingSpinner" class="loading-spinner">
-		<div class="spinner"></div>
-		<div style="text-align: center; color: #2d5016; font-weight: 600;">Processing...</div>
+	<!-- About / SIH Modal -->
+	<div id="aboutModal" class="modal" aria-hidden="true">
+		<div class="modal-card">
+			<div class="modal-header">
+				<h3 style="margin:0">About FRA Atlas DSS</h3>
+				<button class="close" id="closeAbout">&times;</button>
+			</div>
+			<div class="modal-body">
+				<p style="font-size:14px;color:#111;line-height:1.6">
+					This application is built to satisfy SIH Problem Statement <strong>SIH12508</strong> for the Ministry of Tribal Affairs (MoTA): <em>Development of AI-powered FRA Atlas and WebGIS-based Decision Support System (DSS) for Integrated Monitoring of Forest Rights Act (FRA) Implementation</em>.
+				</p>
+				<ul style="color:#111">
+					<li>States concentrated: <strong>Odisha, Madhya Pradesh, Tripura, Telangana</strong></li>
+					<li>Features included: multi-state GeoJSON claim loading, NDVI overlays, reporting workflow, official review controls</li>
+					<li>Satellite source: Sentinel-2 (10m)</li>
+				</ul>
+
+				<p style="font-size:13px;color:var(--muted)">Designer note: Login has two roles — Citizen and Government Official. Officials can review and change claim status from the claim popup. For production, authenticate using your backend/auth provider and connect claim update endpoints.</p>
+			</div>
+		</div>
 	</div>
 
+	<!-- Login Modal -->
+	<div id="loginModal" class="modal" aria-hidden="true">
+		<div class="modal-card">
+			<div class="modal-header">
+				<h3 style="margin:0">Login</h3>
+				<button class="close" id="closeLogin">&times;</button>
+			</div>
+			<div class="modal-body">
+				<form id="loginForm">
+					<div class="form-group">
+						<label for="roleSelect">Login As</label>
+						<select id="roleSelect" required>
+							<option value="citizen">Citizen</option>
+							<option value="official">Government Official</option>
+						</select>
+					</div>
+
+					<div class="form-group">
+						<label for="username">Username</label>
+						<input id="username" type="text" placeholder="demo user" required>
+					</div>
+
+					<div class="form-group">
+						<label for="password">Password</label>
+						<input id="password" type="password" placeholder="demo password" required>
+					</div>
+
+					<div style="display:flex;gap:8px">
+						<button type="submit" class="btn" style="flex:1;background:linear-gradient(135deg, rgba(59,130,246,0.95), rgba(37,99,235,0.9));">Sign in</button>
+						<button type="button" id="loginDemo" class="btn secondary" style="flex:1">Demo</button>
+					</div>
+
+					<p style="font-size:12px;color:var(--muted);margin-top:10px">Demo credentials accepted for both roles for UI demo purposes.</p>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<!-- Loading small -->
+	<div id="loadingSpinner" style="display:none;position:fixed;z-index:2000;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(255,255,255,0.95);padding:18px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.3);">
+		<div style="height:40px;margin-bottom:10px;background:linear-gradient(90deg, rgba(39,174,96,0.95), rgba(34,197,94,0.9));width:40px;border-radius:50%"></div>
+		<div style="text-align:center;font-weight:700;color:var(--accent-hex)">Processing...</div>
+	</div>
+
+	<!-- Legend -->
 	<div class="legend">
-		<h4 style="margin-bottom: 10px; color: #2d5016;">Map Legend</h4>
-		<div class="legend-item">
-			<div class="legend-color" style="background-color: #ff7800;"></div>
-			<span>FRA Claim Boundary</span>
-		</div>
-		<div class="legend-item">
-			<div class="legend-color" style="background-color: #4CAF50; opacity: 0.7;"></div>
-			<span>Healthy Vegetation (High NDVI)</span>
-		</div>
-		<div class="legend-item">
-			<div class="legend-color" style="background-color: #ff6b6b; opacity: 0.7;"></div>
-			<span>Forest Loss (Low NDVI)</span>
-		</div>
+		<h4>Map Legend</h4>
+		<div class="legend-item"><div class="legend-color" style="background-color:#ff7800"></div><div>FRA Claim Boundary</div></div>
+		<div class="legend-item"><div class="legend-color" style="background-color:#4CAF50;opacity:0.8"></div><div>Healthy Vegetation (High NDVI)</div></div>
+		<div class="legend-item"><div class="legend-color" style="background-color:#ff6b6b;opacity:0.8"></div><div>Forest Loss (Low NDVI)</div></div>
 	</div>
 
+	<!-- Keep Leaflet script reference unchanged -->
 	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 	<script>
-		// Initialize the map centered on Odisha, India
+		// === Global state for demo login & roles ===
+		let currentUser = null; // { username, role: 'citizen' | 'official' }
+
+		// Utilities to show/hide modals
+		const showModal = (id) => document.getElementById(id).classList.add('open') || (document.getElementById(id).style.display = 'flex');
+		const hideModal = (id) => document.getElementById(id).classList.remove('open') || (document.getElementById(id).style.display = 'none');
+
+		// DOM references
+		const loginOpenBtn = document.getElementById('loginOpen');
+		const loginModal = document.getElementById('loginModal');
+		const closeLogin = document.getElementById('closeLogin');
+		const loginForm = document.getElementById('loginForm');
+		const loginDemoBtn = document.getElementById('loginDemo');
+		const userBadge = document.getElementById('userBadge');
+		const userNameEl = document.getElementById('userName');
+		const userRoleTag = document.getElementById('userRoleTag');
+
+		loginOpenBtn.addEventListener('click', () => {
+			showModal('loginModal');
+		});
+		closeLogin.addEventListener('click', () => hideModal('loginModal'));
+		document.getElementById('closeModal').addEventListener('click', () => hideModal('reportModal'));
+		document.getElementById('closeAbout').addEventListener('click', () => hideModal('aboutModal'));
+		document.getElementById('aboutBtn').addEventListener('click', () => showModal('aboutModal'));
+
+		loginForm.addEventListener('submit', function(e){
+			e.preventDefault();
+			const role = document.getElementById('roleSelect').value;
+			const username = document.getElementById('username').value.trim() || 'User';
+			// For demo: accept any credentials
+			currentUser = { username, role };
+			afterLogin();
+			hideModal('loginModal');
+		});
+
+		loginDemoBtn.addEventListener('click', () => {
+			// Toggle between a sample citizen and official for quick testing
+			const role = document.getElementById('roleSelect').value;
+			currentUser = { username: role === 'official' ? 'official.demo' : 'citizen.demo', role };
+			afterLogin();
+			hideModal('loginModal');
+		});
+
+		function afterLogin(){
+			if (!currentUser) return;
+			userBadge.style.display = 'inline-flex';
+			userNameEl.textContent = currentUser.username;
+			userRoleTag.textContent = currentUser.role === 'official' ? 'Government Official' : 'Citizen';
+			loginOpenBtn.style.display = 'none';
+		}
+
+		// Simple logout (clicking the badge logs out)
+		userBadge.addEventListener('click', () => {
+			currentUser = null;
+			userBadge.style.display = 'none';
+			loginOpenBtn.style.display = 'inline-flex';
+		});
+
+		// === Theme toggle (dark/light) ===
+		const themeToggle = document.getElementById('themeToggle');
+		themeToggle.addEventListener('click', () => {
+			const body = document.body;
+			const current = body.getAttribute('data-theme') || 'dark';
+			const next = current === 'dark' ? 'light' : 'dark';
+			body.setAttribute('data-theme', next);
+		});
+
+		// === Map initialization (preserved, minimal changes) ===
 		var map = L.map('map', {
 			center: [20.2961, 85.8245],
 			zoom: 12,
 			zoomControl: false
 		});
+		L.control.zoom({ position: 'topright' }).addTo(map);
 
-		// Add zoom control to top right
-		L.control.zoom({
-			position: 'topright'
-		}).addTo(map);
-
-		// Base layers
 		var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 			attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
 			maxZoom: 18,
@@ -620,8 +580,11 @@
 			attribution: '&copy; <a href="https://carto.com/attributions">CARTO</a>, &copy; OpenStreetMap contributors',
 			maxZoom: 19
 		});
+		var baseMaps = { "OpenStreetMap": osm, "Positron (Light)": positron };
+		var overlayMaps = {}; // we'll add claimsGroup later
+		var layerControl = L.control.layers(baseMaps, overlayMaps, { position: 'topright', collapsed: true }).addTo(map);
 
-		// Sample FRA claim boundary (polygon around a forest area in Odisha)
+		// Built-in sample claim (preserve)
 		var claimBoundary = {
 			"type": "Feature",
 			"properties": {
@@ -631,7 +594,12 @@
 				"area": "245 hectares",
 				"status": "Approved",
 				"claimants": "127 families",
-				"approval_date": "2024-03-15"
+				"approval_date": "2024-03-15",
+				"claim_id": "CFR-2024-OD-101",
+				"state": "Odisha",
+				"deforestation_detected": true,
+				"area_hectares": 245,
+				"claimant_families": 127
 			},
 			"geometry": {
 				"type": "Polygon",
@@ -645,111 +613,96 @@
 			}
 		};
 
-		// Add FRA claim boundary to map (fallback sample)
-		var claimLayer = L.geoJSON(claimBoundary, {
-			style: {
-				color: "#ff7800",
-				weight: 3,
-				opacity: 0.8,
-				fillOpacity: 0.2,
-				fillColor: "#ff7800"
-			},
-			onEachFeature: function(feature, layer) {
-				var popupContent = `
-					<div style="font-family: inherit; min-width: 200px;">
-						<h4 style="margin: 0 0 10px 0; color: #2d5016;">
-							<i class="fas fa-map-marker-alt"></i> ${feature.properties.name}
-						</h4>
-						<p><strong>Village:</strong> ${feature.properties.village}</p>
-						<p><strong>District:</strong> ${feature.properties.district}</p>
-						<p><strong>Area:</strong> ${feature.properties.area}</p>
-						<p><strong>Status:</strong> <span style="color: green; font-weight: bold;">${feature.properties.status}</span></p>
-						<p><strong>Beneficiaries:</strong> ${feature.properties.claimants}</p>
-						<p><strong>Approved:</strong> ${feature.properties.approval_date}</p>
-					</div>
-				`;
-				layer.bindPopup(popupContent, {
-					className: 'popup-custom'
-				});
-			}
-		});
-
-		// Group for claims to allow replacement when external data loads
+		// Add claims group
+		var claimLayer = L.geoJSON(claimBoundary, { style: claimStyle, onEachFeature: onEachFeatureBasic });
 		var claimsGroup = L.layerGroup([claimLayer]).addTo(map);
+		overlayMaps["FRA Claims"] = claimsGroup;
+		layerControl.addOverlay(claimsGroup, "FRA Claims");
 
-		// Define image bounds for the overlays (matching the claim area)
-		var imageBounds = [[20.2900, 85.8100], [20.3100, 85.8300]];
+		function claimStyle(feature){
+			const props = feature.properties || {};
+			const status = (props.status || '').toLowerCase();
+			let color = '#ff7800';
+			if (status.includes('pending')) color = '#f1c40f';
+			else if (status.includes('reject') || status.includes('rejected')) color = '#c0392b';
+			else if (status.includes('review')) color = '#8e44ad';
+			else if (status.includes('approved')) color = '#27ae60';
+			const hasAlert = props.deforestation_detected;
+			return {
+				color: hasAlert ? '#e74c3c' : color,
+				weight: hasAlert ? 3.5 : 2.5,
+				fillColor: color,
+				fillOpacity: hasAlert ? 0.4 : 0.2,
+				dashArray: hasAlert ? '5,5' : null
+			};
+		}
 
-		// Create NDVI overlay layers
-		var beforeOverlay, afterOverlay;
+		// Basic onEachFeature for fallback sample
+		function onEachFeatureBasic(feature, layer){
+			const name = feature.properties.claim_id || feature.properties.name || 'Claim';
+			const status = feature.properties.status || 'Unknown';
+			const area = (feature.properties.area_hectares ? feature.properties.area_hectares + ' ha' : (feature.properties.area || '—'));
+			const village = feature.properties.village || '—';
+			const district = feature.properties.district || '—';
+			const state = feature.properties.state || '—';
+			const families = feature.properties.claimant_families || feature.properties.claimants || '—';
+			const alertHTML = feature.properties.deforestation_detected ? '<div style="color:#c0392b;font-weight:700;margin-top:8px;padding:6px;border-radius:6px;background:#fff5f5">DEFORESTATION ALERT</div>' : '<div style="color:#27ae60;font-weight:700;margin-top:8px">No Active Alerts</div>';
+			const claimId = feature.properties.claim_id || name;
 
-		// Create canvas-based overlays for NDVI visualization
+			const popupContent = `
+				<div style="min-width:240px;font-family:inherit;">
+					<h4 style="margin:0 0 8px 0;color:var(--accent-hex)">${name}</h4>
+					<p style="margin:4px 0"><strong>State:</strong> ${state}</p>
+					<p style="margin:4px 0"><strong>Village:</strong> ${village}</p>
+					<p style="margin:4px 0"><strong>District:</strong> ${district}</p>
+					<p style="margin:4px 0"><strong>Status:</strong> <span style="font-weight:700">${status}</span></p>
+					<p style="margin:4px 0"><strong>Area:</strong> ${area}</p>
+					<p style="margin:4px 0"><strong>Families:</strong> ${families}</p>
+					${alertHTML}
+					<div style="margin-top:10px" data-claim-id="${claimId}" class="action-area"></div>
+				</div>
+			`;
+			layer.bindPopup(popupContent, { maxWidth:300, className:'popup-custom' });
+		}
+
+		// NDVI overlay creation preserved
 		function createNDVIOverlay(type) {
 			var canvas = document.createElement('canvas');
-			canvas.width = 200;
-			canvas.height = 200;
+			canvas.width = 200; canvas.height = 200;
 			var ctx = canvas.getContext('2d');
-            
 			if (type === 'before') {
-				// Create gradient for healthy vegetation (green)
-				var gradient = ctx.createLinearGradient(0, 0, 200, 200);
+				var gradient = ctx.createLinearGradient(0,0,200,200);
 				gradient.addColorStop(0, 'rgba(76, 175, 80, 0.7)');
 				gradient.addColorStop(1, 'rgba(139, 195, 74, 0.7)');
 				ctx.fillStyle = gradient;
 			} else {
-				// Create pattern for deforestation (red patches)
-				ctx.fillStyle = 'rgba(76, 175, 80, 0.7)'; // Base green
-				ctx.fillRect(0, 0, 200, 200);
-                
-				// Add red patches for deforestation
+				ctx.fillStyle = 'rgba(76, 175, 80, 0.7)';
+				ctx.fillRect(0,0,200,200);
 				ctx.fillStyle = 'rgba(244, 67, 54, 0.8)';
-				ctx.fillRect(60, 80, 80, 40);  // Main deforested area
-				ctx.fillRect(120, 140, 40, 30); // Secondary patch
-				ctx.fillRect(30, 150, 50, 25);  // Third patch
+				ctx.fillRect(60,80,80,40);
+				ctx.fillRect(120,140,40,30);
+				ctx.fillRect(30,150,50,25);
 			}
-            
-			if (type === 'before') {
-				ctx.fillRect(0, 0, 200, 200);
-			}
-            
+			if (type === 'before') ctx.fillRect(0,0,200,200);
 			return canvas.toDataURL();
 		}
-
-		// Initialize overlays
+		var imageBounds = [[20.2900, 85.8100], [20.3100, 85.8300]];
 		var beforeImageData = createNDVIOverlay('before');
 		var afterImageData = createNDVIOverlay('after');
 
-		beforeOverlay = L.imageOverlay(beforeImageData, imageBounds, {
-			opacity: 0.6,
-			interactive: false
-		});
+		var beforeOverlay = L.imageOverlay(beforeImageData, imageBounds, { opacity: 0.6, interactive: false });
+		var afterOverlay = L.imageOverlay(afterImageData, imageBounds, { opacity: 0.6, interactive: false });
 
-		afterOverlay = L.imageOverlay(afterImageData, imageBounds, {
-			opacity: 0.6,
-			interactive: false
-		});
-
-		// Layer Controls (base + overlays)
-		var baseMaps = { "OpenStreetMap": osm, "Positron (Light)": positron };
-		var overlayMaps = { "FRA Claims": claimsGroup };
-		var layerControl = L.control.layers(baseMaps, overlayMaps, { position: 'topright', collapsed: true }).addTo(map);
-
-		// Button event handlers
+		// Button handlers (preserve flow but remove emojis)
 		document.getElementById('beforeBtn').addEventListener('click', function() {
 			showLoading();
 			setTimeout(function() {
 				map.removeLayer(afterOverlay);
 				beforeOverlay.addTo(map);
 				hideLoading();
-                
-				// Show info popup
-				var popup = L.popup()
-					.setLatLng([20.3000, 85.8200])
-					.setContent('<div style="text-align: center;"><strong>January 2025</strong><br>Healthy Forest Cover<br>NDVI: 0.75 (High)</div>')
-					.openOn(map);
-                    
-				setTimeout(function() { map.closePopup(); }, 3000);
-			}, 1500);
+				var popup = L.popup().setLatLng([20.3000,85.8200]).setContent('<div style="text-align:center;"><strong>January 2025</strong><br>Healthy Forest Cover<br>NDVI: 0.75 (High)</div>').openOn(map);
+				setTimeout(()=>map.closePopup(), 3000);
+			}, 1200);
 		});
 
 		document.getElementById('afterBtn').addEventListener('click', function() {
@@ -758,63 +711,54 @@
 				map.removeLayer(beforeOverlay);
 				afterOverlay.addTo(map);
 				hideLoading();
-                
-				// Show alert popup
-				var popup = L.popup()
-					.setLatLng([20.2980, 85.8150])
-					.setContent('<div style="text-align: center; color: #d32f2f;"><strong>⚠️ September 2025</strong><br>Deforestation Detected<br>NDVI: 0.21 (Critical)</div>')
-					.openOn(map);
-                    
-				setTimeout(function() { map.closePopup(); }, 4000);
-			}, 1500);
+				var popup = L.popup().setLatLng([20.2980,85.8150]).setContent('<div style="text-align:center;color:#c0392b;"><strong>September 2025</strong><br>Deforestation Detected<br>NDVI: 0.21 (Critical)</div>').openOn(map);
+				setTimeout(()=>map.closePopup(), 3500);
+			}, 1200);
 		});
 
-        document.getElementById('resetBtn').addEventListener('click', function() {
-            map.removeLayer(beforeOverlay);
-            map.removeLayer(afterOverlay);
-            map.setView([20.2961, 85.8245], 12);
-        });
+		document.getElementById('resetBtn').addEventListener('click', function(){
+			map.removeLayer(beforeOverlay); map.removeLayer(afterOverlay);
+			map.setView([20.2961,85.8245], 12);
+		});
 
-        // Export Report functionality - Generate actual PDF report
-        document.getElementById('exportBtn').addEventListener('click', function() {
-            showCustomLoading();
-            setTimeout(function() {
-                hideCustomLoading();
-                
-                // Create downloadable report content
-                const reportData = generateReportData();
-                const reportContent = `
+		// Export report - keep original generation, remove emojis and use notifications
+		document.getElementById('exportBtn').addEventListener('click', function(){
+			showCustomLoading();
+			setTimeout(function(){
+				hideCustomLoading();
+				const reportData = generateReportData();
+				const reportContent = `
 FRA ATLAS DECISION SUPPORT SYSTEM - COMPREHENSIVE REPORT
 Generated on: ${new Date().toLocaleString()}
 
-=== EXECUTIVE SUMMARY ===
+EXECUTIVE SUMMARY
 Total FRA Claims Monitored: ${reportData.totalClaims}
 States Covered: Odisha, Madhya Pradesh, Tripura, Telangana
 Monitoring Period: January 2025 - September 2025
 
-=== CLAIM STATUS DISTRIBUTION ===
-• Approved Claims: ${reportData.approved}
-• Pending Review: ${reportData.pending}  
-• Under Review: ${reportData.review}
-• Rejected Claims: ${reportData.rejected}
+CLAIM STATUS DISTRIBUTION
+Approved Claims: ${reportData.approved}
+Pending Review: ${reportData.pending}
+Under Review: ${reportData.review}
+Rejected Claims: ${reportData.rejected}
 
-=== ENVIRONMENTAL ALERTS ===
-• Deforestation Detected: ${reportData.deforestationAlerts} locations
-• High-risk Areas: ${reportData.highRiskAreas}
-• NDVI Threshold Violations: ${reportData.ndviViolations}
+ENVIRONMENTAL ALERTS
+Deforestation Detected: ${reportData.deforestationAlerts} locations
+High-risk Areas: ${reportData.highRiskAreas}
+NDVI Threshold Violations: ${reportData.ndviViolations}
 
-=== COMMUNITY IMPACT ===
-• Total Families Protected: 8,542
-• Forest Area Secured: 24,156 hectares
-• Average Claim Size: ${(24156/reportData.totalClaims).toFixed(1)} hectares
+COMMUNITY IMPACT
+Total Families Protected: 8,542
+Forest Area Secured: 24,156 hectares
+Average Claim Size: ${(24156/reportData.totalClaims).toFixed(1)} hectares
 
-=== TECHNICAL SPECIFICATIONS ===
-• Satellite Data Source: Sentinel-2 (10m resolution)
-• NDVI Calculation: Band 8 (NIR) and Band 4 (Red)
-• Deforestation Threshold: NDVI < 0.3
-• Update Frequency: Bi-weekly
+TECHNICAL SPECIFICATIONS
+Satellite Data Source: Sentinel-2 (10m resolution)
+NDVI Calculation: Band 8 (NIR) and Band 4 (Red)
+Deforestation Threshold: NDVI < 0.3
+Update Frequency: Bi-weekly
 
-=== RECOMMENDATIONS ===
+RECOMMENDATIONS
 1. Prioritize review of ${reportData.pending} pending claims
 2. Investigate ${reportData.deforestationAlerts} deforestation alerts
 3. Deploy ground verification teams to high-risk areas
@@ -823,255 +767,258 @@ Monitoring Period: January 2025 - September 2025
 Report generated by FRA Atlas DSS v1.0
 For SIH 2025 - Problem Statement SIH12508
 Team: Green Guardians
-                `;
-                
-                // Create and download the report
-                const blob = new Blob([reportContent], { type: 'text/plain' });
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `FRA_Atlas_Report_${new Date().toISOString().split('T')[0]}.txt`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-                
-                // Show success message
-                setTimeout(() => {
-                    alert('📄 Report Generated Successfully!\n\nComprehensive FRA Atlas report has been downloaded.\n\nIncludes:\n• Claim status analysis\n• Environmental alerts\n• NDVI trends\n• Community impact metrics\n• Technical specifications');
-                }, 500);
-            }, 2000);
-        });
+				`;
+				const blob = new Blob([reportContent], { type: 'text/plain' });
+				const url = window.URL.createObjectURL(blob);
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = `FRA_Atlas_Report_${new Date().toISOString().split('T')[0]}.txt`;
+				document.body.appendChild(a);
+				a.click();
+				document.body.removeChild(a);
+				window.URL.revokeObjectURL(url);
+				setTimeout(()=> { alert('Report generated and downloaded. The report includes claim status, alerts, NDVI trends and community impact.'); }, 300);
+			}, 1400);
+		});
 
-        // Report Issue Modal functionality
-        const modal = document.getElementById('reportModal');
-        const reportBtn = document.getElementById('reportBtn');
-        const closeModal = document.getElementById('closeModal');
-        const reportForm = document.getElementById('reportForm');
+		// Report Issue Modal open/close
+		const modal = document.getElementById('reportModal');
+		const reportBtn = document.getElementById('reportBtn');
+		const closeModal = document.getElementById('closeModal');
+		const reportForm = document.getElementById('reportForm');
 
-        reportBtn.addEventListener('click', function() {
-            modal.style.display = 'block';
-        });
+		reportBtn.addEventListener('click', function() { showModal('reportModal') });
+		closeModal.addEventListener('click', function() { hideModal('reportModal') });
+		window.addEventListener('click', function(event) { if (event.target === modal) hideModal('reportModal') });
 
-        closeModal.addEventListener('click', function() {
-            modal.style.display = 'none';
-        });
+		reportForm.addEventListener('submit', function(e) {
+			e.preventDefault();
+			showCustomLoading();
+			setTimeout(function() {
+				hideCustomLoading();
+				hideModal('reportModal');
+				reportForm.reset();
+				alert('Report submitted successfully. Your report has been sent to the Forest Department. Report ID: ENV-' + Date.now().toString().slice(-6) + '. Expected Response Time: 24-48 hours.');
+			}, 1300);
+		});
 
-        window.addEventListener('click', function(event) {
-            if (event.target === modal) {
-                modal.style.display = 'none';
-            }
-        });
-
-        reportForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            showCustomLoading();
-            
-            // Simulate processing
-            setTimeout(function() {
-                hideCustomLoading();
-                modal.style.display = 'none';
-                
-                // Clear form
-                reportForm.reset();
-                
-                // Show success message
-                alert('✅ Report Submitted Successfully!\n\nYour environmental issue report has been submitted to the Forest Department.\n\nReport ID: ENV-' + Date.now().toString().slice(-6) + '\n\nExpected Response Time: 24-48 hours\n\nThank you for helping protect our forests!');
-            }, 2500);
-        });
-
-        function generateReportData() {
-            const counts = document.querySelectorAll('.stat-number');
-            return {
-                totalClaims: parseInt(counts[0]?.textContent || '0') + parseInt(counts[1]?.textContent || '0') + parseInt(counts[2]?.textContent || '0') + parseInt(counts[3]?.textContent || '0'),
-                approved: parseInt(counts[0]?.textContent || '0'),
-                pending: parseInt(counts[1]?.textContent || '0'),
-                review: parseInt(counts[2]?.textContent || '0'),
-                rejected: parseInt(counts[3]?.textContent || '0'),
-                deforestationAlerts: Math.floor(Math.random() * 8) + 3,
-                highRiskAreas: Math.floor(Math.random() * 5) + 2,
-                ndviViolations: Math.floor(Math.random() * 12) + 5
-            };
-        }
-
-        function showCustomLoading() {
-            document.getElementById('loadingSpinner').style.display = 'block';
-        }
-
-        function hideCustomLoading() {
-            document.getElementById('loadingSpinner').style.display = 'none';
-        }
-
-        // Function to update dashboard counts from loaded GeoJSON
-        function updateDashboardCounts(features) {
-            const counts = { approved: 0, pending: 0, review: 0, rejected: 0 };
-            let totalFamilies = 0, totalArea = 0;
-            
-            features.forEach(f => {
-                const status = (f.properties.status || '').toLowerCase();
-                const families = f.properties.claimant_families || 0;
-                const area = f.properties.area_hectares || 0;
-                
-                totalFamilies += families;
-                totalArea += area;
-                
-                if (status.includes('approved')) counts.approved++;
-                else if (status.includes('pending')) counts.pending++;
-                else if (status.includes('review')) counts.review++;
-                else if (status.includes('reject')) counts.rejected++;
-            });
-            
-            // Update DOM elements with real data
-            document.getElementById('approved-count').textContent = counts.approved;
-            document.getElementById('pending-count').textContent = counts.pending;
-            document.getElementById('review-count').textContent = counts.review;
-            document.getElementById('rejected-count').textContent = counts.rejected;
-            
-            // Update last update time
-            document.getElementById('last-update').textContent = 'Updated ' + new Date().toLocaleTimeString();
-        }		// Loading functions
-		function showLoading() {
-			document.getElementById('loading').style.display = 'block';
+		function generateReportData() {
+			const counts = document.querySelectorAll('.stat-number');
+			return {
+				totalClaims: parseInt(counts[0]?.textContent || '0') + parseInt(counts[1]?.textContent || '0') + parseInt(counts[2]?.textContent || '0') + parseInt(counts[3]?.textContent || '0'),
+				approved: parseInt(counts[0]?.textContent || '0'),
+				pending: parseInt(counts[1]?.textContent || '0'),
+				review: parseInt(counts[2]?.textContent || '0'),
+				rejected: parseInt(counts[3]?.textContent || '0'),
+				deforestationAlerts: Math.floor(Math.random()*8)+3,
+				highRiskAreas: Math.floor(Math.random()*5)+2,
+				ndviViolations: Math.floor(Math.random()*12)+5
+			};
 		}
 
-		function hideLoading() {
-			document.getElementById('loading').style.display = 'none';
+		function showCustomLoading(){ document.getElementById('loadingSpinner').style.display = 'block' }
+		function hideCustomLoading(){ document.getElementById('loadingSpinner').style.display = 'none' }
+		function showLoading(){ document.getElementById('loading').style.display = 'flex' }
+		function hideLoading(){ document.getElementById('loading').style.display = 'none' }
+
+		// Update dashboard counts based on loaded features
+		function updateDashboardCounts(features){
+			const counts = { approved:0, pending:0, review:0, rejected:0 };
+			let totalFamilies = 0, totalArea = 0;
+			features.forEach(f => {
+				const status = (f.properties.status || '').toLowerCase();
+				const families = f.properties.claimant_families || f.properties.claimants || 0;
+				const area = f.properties.area_hectares || 0;
+				totalFamilies += Number(families) || 0;
+				totalArea += Number(area) || 0;
+				if (status.includes('approved')) counts.approved++;
+				else if (status.includes('pending')) counts.pending++;
+				else if (status.includes('review')) counts.review++;
+				else if (status.includes('reject')) counts.rejected++;
+			});
+			document.getElementById('approved-count').textContent = counts.approved;
+			document.getElementById('pending-count').textContent = counts.pending;
+			document.getElementById('review-count').textContent = counts.review;
+			document.getElementById('rejected-count').textContent = counts.rejected;
+			document.getElementById('last-update').textContent = 'Updated ' + new Date().toLocaleTimeString();
+			document.getElementById('coverageInfo').textContent = `Coverage: ${new Set(features.map(f=>f.properties.state)).size || 1} States | ${features.length} Active Claims`;
 		}
 
-		// Add scale control
-		L.control.scale({
-			position: 'bottomright'
-		}).addTo(map);
+		// Try to load external GeoJSONs (preserve your files)
+		(async function loadAllStateDatasets(){
+			const stateFiles = [
+				'assets/data/sample-claims.geojson',
+				'assets/data/mp-claims.geojson',
+				'assets/data/tripura-claims.geojson',
+				'assets/data/telangana-claims.geojson'
+			];
+			const loadedFeatures = [];
+			let successCount = 0;
+			for (const file of stateFiles) {
+				try {
+					const resp = await fetch(file, { cache: 'no-store' });
+					if (!resp.ok) throw new Error('HTTP ' + resp.status);
+					const data = await resp.json();
+					loadedFeatures.push(...(data.features || []));
+					successCount++;
+					console.log('Loaded', file, (data.features || []).length, 'claims');
+				} catch (err) {
+					console.warn('Could not load', file, err.message);
+				}
+			}
+			if (loadedFeatures.length > 0) {
+				claimsGroup.clearLayers();
+				const allStatesData = { type:'FeatureCollection', features: loadedFeatures };
+				const loaded = L.geoJSON(allStatesData, {
+					style: claimStyle,
+					onEachFeature: function(f, layer){
+						// Build popup similar to fallback but include action placeholder
+						const status = f.properties.status || 'Unknown';
+						const name = f.properties.claim_id || f.properties.name || 'Claim';
+						const area = (f.properties.area_hectares ? f.properties.area_hectares + ' ha' : (f.properties.area || '—'));
+						const village = f.properties.village_name || f.properties.village || '—';
+						const district = f.properties.district || '—';
+						const state = f.properties.state || '—';
+						const families = f.properties.claimant_families || f.properties.claimants || '—';
+						const alertHTML = f.properties.deforestation_detected ? '<div style="color:#c0392b;font-weight:700;margin-top:8px;padding:6px;border-radius:6px;background:#fff5f5">DEFORESTATION ALERT</div>' : '<div style="color:#27ae60;font-weight:700;margin-top:8px">No Active Alerts</div>';
+						const claimId = f.properties.claim_id || name;
 
-        // Try to load all state GeoJSON datasets when served via http(s)
-        (async function loadAllStateDatasets() {
-            const stateFiles = [
-                'assets/data/sample-claims.geojson',  // Odisha (original)
-                'assets/data/mp-claims.geojson',      // Madhya Pradesh  
-                'assets/data/tripura-claims.geojson', // Tripura
-                'assets/data/telangana-claims.geojson' // Telangana
-            ];
-            
-            const loadedFeatures = [];
-            let successCount = 0;
-            
-            for (const file of stateFiles) {
-                try {
-                    const resp = await fetch(file, { cache: 'no-store' });
-                    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-                    const data = await resp.json();
-                    loadedFeatures.push(...data.features);
-                    successCount++;
-                    console.log(`✅ Loaded ${file} - ${data.features.length} claims`);
-                } catch (err) {
-                    console.warn(`⚠️ Could not load ${file}:`, err.message);
-                }
-            }
-            
-            if (loadedFeatures.length > 0) {
-                // Replace current claims group with all loaded features
-                claimsGroup.clearLayers();
-                const allStatesData = { type: 'FeatureCollection', features: loadedFeatures };
-                
-                const loaded = L.geoJSON(allStatesData, {
-                    style: function (feature) {
-                        const status = (feature.properties.status || '').toLowerCase();
-                        const hasAlert = feature.properties.deforestation_detected;
-                        
-                        let color = '#ff7800'; // default orange
-                        if (status.includes('pending')) color = '#f1c40f';      // yellow
-                        else if (status.includes('reject')) color = '#c0392b';  // red
-                        else if (status.includes('review')) color = '#8e44ad';  // purple
-                        else if (status.includes('approved')) color = '#27ae60'; // green
-                        
-                        // Add red border for deforestation alerts
-                        return { 
-                            color: hasAlert ? '#e74c3c' : color, 
-                            weight: hasAlert ? 3.5 : 2.5, 
-                            fillColor: color, 
-                            fillOpacity: hasAlert ? 0.4 : 0.2,
-                            dashArray: hasAlert ? '5, 5' : null
-                        };
-                    },
-                    onEachFeature: function(f, layer){
-                        const status = f.properties.status || 'Unknown';
-                        const name = f.properties.claim_id || f.properties.name || 'Claim';
-                        const area = (f.properties.area_hectares ? f.properties.area_hectares + ' ha' : (f.properties.area || '—'));
-                        const village = f.properties.village_name || f.properties.village || '—';
-                        const district = f.properties.district || '—';
-                        const state = f.properties.state || '—';
-                        const families = f.properties.claimant_families || '—';
-                        const alert = f.properties.deforestation_detected ? 
-                            '<div style="color:#e74c3c;font-weight:600;background:#fff5f5;padding:5px;border-radius:4px;margin-top:8px;">🚨 DEFORESTATION ALERT</div>' : 
-                            '<div style="color:#27ae60;font-weight:600;">✅ No Active Alerts</div>';
-                        
-                        layer.bindPopup(`
-                            <div style="min-width:250px; font-family: inherit;">
-                                <h4 style="margin:0 0 10px;color:#2d5016;border-bottom:2px solid #e1e1e1;padding-bottom:5px">${name}</h4>
-                                <p><strong>State:</strong> ${state}</p>
-                                <p><strong>Village:</strong> ${village}</p>
-                                <p><strong>District:</strong> ${district}</p>
-                                <p><strong>Status:</strong> <span style="color:${getStatusColor(status)};font-weight:600">${status}</span></p>
-                                <p><strong>Area:</strong> ${area}</p>
-                                <p><strong>Families:</strong> ${families}</p>
-                                ${alert}
-                            </div>
-                        `, {
-                            maxWidth: 300,
-                            className: 'custom-popup'
-                        });
-                    }
-                });
-                
-                claimsGroup.addLayer(loaded);
-                
-                // Fit map to show all loaded claims
-                try { 
-                    map.fitBounds(loaded.getBounds(), { padding: [50,50] }); 
-                } catch (e) {
-                    // Fallback to India center if bounds calculation fails
-                    map.setView([20.5937, 78.9629], 6);
-                }
-                
-                // Update dashboard counts based on all loaded data
-                updateDashboardCounts(loadedFeatures);
-                console.log(`🌳 Successfully loaded ${successCount}/${stateFiles.length} state datasets with ${loadedFeatures.length} total claims`);
-                
-                // Update coverage info
-                document.querySelector('.dashboard-section p').innerHTML = 
-                    `Coverage: ${successCount} States | ${loadedFeatures.length} Active Claims`;
-                    
-            } else {
-                // Fallback to built-in sample when all external loads fail
-                console.warn('Could not load any external GeoJSON files, using built-in sample. Tip: run a local server for full demo.');
-                claimsGroup.addLayer(claimLayer).addTo(map);
-                try { map.fitBounds(claimLayer.getBounds(), { padding: [20,20] }); } catch (e) {}
-                // Keep default hardcoded counts for fallback
-            }
-        })();
-        
-        function getStatusColor(status) {
-            const s = status.toLowerCase();
-            if (s.includes('approved')) return '#27ae60';
-            if (s.includes('pending')) return '#f39c12';
-            if (s.includes('review')) return '#8e44ad';
-            if (s.includes('reject')) return '#c0392b';
-            return '#34495e';
-        }		// Initial guidance popup (after claims layer is ready). Delay slightly for dataset load
-		setTimeout(function() {
+						layer.bindPopup(`
+							<div style="min-width:250px;font-family:inherit;">
+								<h4 style="margin:0 0 10px 0;color:var(--accent-hex)">${name}</h4>
+								<p><strong>State:</strong> ${state}</p>
+								<p><strong>Village:</strong> ${village}</p>
+								<p><strong>District:</strong> ${district}</p>
+								<p><strong>Status:</strong> <span style="font-weight:700">${status}</span></p>
+								<p><strong>Area:</strong> ${area}</p>
+								<p><strong>Families:</strong> ${families}</p>
+								${alertHTML}
+								<div style="margin-top:10px" data-claim-id="${claimId}" class="action-area"></div>
+							</div>
+						`, { maxWidth:300, className:'custom-popup' });
+					}
+				});
+				claimsGroup.addLayer(loaded);
+				try { map.fitBounds(loaded.getBounds(), { padding:[50,50] }) } catch(e){ map.setView([20.5937,78.9629],6) }
+				updateDashboardCounts(loadedFeatures);
+				console.log(`Successfully loaded ${successCount}/${stateFiles.length} datasets with ${loadedFeatures.length} total claims`);
+			} else {
+				console.warn('Could not load external GeoJSON files, using built-in sample. Run a local server for full demo.');
+				claimsGroup.addLayer(claimLayer);
+				try{ map.fitBounds(claimLayer.getBounds(), { padding:[20,20] }) } catch(e){}
+			}
+		})();
+
+		// When a popup opens, attach role-based action buttons (officials can change claim status)
+		map.on('popupopen', function(e){
+			const popupNode = e.popup.getElement ? e.popup.getElement() : null;
+			if (!popupNode) return;
+			const actionArea = popupNode.querySelector('.action-area');
+			if (!actionArea) return;
+			const claimId = actionArea.getAttribute('data-claim-id') || ('claim-' + Date.now());
+			actionArea.innerHTML = ''; // clear
+
+			// Always allow 'Report Issue' (citizen or official)
+			const reportBtn = document.createElement('button');
+			reportBtn.className = 'btn secondary';
+			reportBtn.style.marginRight = '8px';
+			reportBtn.textContent = 'Report Issue';
+			reportBtn.addEventListener('click', () => {
+				showModal('reportModal');
+			});
+			actionArea.appendChild(reportBtn);
+
+			// If official, show approve/reject controls
+			if (currentUser && currentUser.role === 'official') {
+				const approveBtn = document.createElement('button');
+				approveBtn.className = 'btn';
+				approveBtn.style.background = 'linear-gradient(135deg, rgba(39,174,96,0.95), rgba(34,197,94,0.9))';
+				approveBtn.style.marginRight = '8px';
+				approveBtn.textContent = 'Approve';
+				approveBtn.addEventListener('click', () => {
+					updateClaimStatusByPopup(e.popup, claimId, 'Approved');
+				});
+				const rejectBtn = document.createElement('button');
+				rejectBtn.className = 'btn';
+				rejectBtn.style.background = 'linear-gradient(135deg, rgba(220,53,69,0.95), rgba(200,32,35,0.9))';
+				rejectBtn.textContent = 'Reject';
+				rejectBtn.addEventListener('click', () => {
+					updateClaimStatusByPopup(e.popup, claimId, 'Rejected');
+				});
+				actionArea.appendChild(approveBtn);
+				actionArea.appendChild(rejectBtn);
+			} else {
+				const info = document.createElement('div');
+				info.style.fontSize = '12px';
+				info.style.color = 'var(--muted)';
+				info.style.marginTop = '8px';
+				info.textContent = 'Log in as a Government Official to review claims.';
+				actionArea.appendChild(info);
+			}
+		});
+
+		// Update claim status given popup and claimId (in-memory only)
+		function updateClaimStatusByPopup(popup, claimId, newStatus) {
+			// find feature/layer with matching claim_id in claimsGroup
+			let found = false;
+			claimsGroup.eachLayer(function(groupLayer){
+				// groupLayer may be a layerGroup containing geoJSON layers
+				if (groupLayer.eachLayer) {
+					groupLayer.eachLayer(function(layer){
+						if (layer.feature && (layer.feature.properties.claim_id === claimId || layer.feature.properties.name === claimId)) {
+							layer.feature.properties.status = newStatus;
+							layer.setStyle(claimStyle(layer.feature));
+							found = true;
+						}
+					});
+				} else if (groupLayer.feature) {
+					if (groupLayer.feature.properties.claim_id === claimId || groupLayer.feature.properties.name === claimId) {
+						groupLayer.feature.properties.status = newStatus;
+						groupLayer.setStyle(claimStyle(groupLayer.feature));
+						found = true;
+					}
+				}
+			});
+			if (found) {
+				// rebuild counts from all features
+				const allFeatures = [];
+				claimsGroup.eachLayer(function(gl){
+					if (gl.getLayers) {
+						gl.getLayers().forEach(l => l.feature && allFeatures.push(l.feature));
+					} else if (gl.feature) {
+						allFeatures.push(gl.feature);
+					}
+				});
+				updateDashboardCounts(allFeatures);
+				alert('Claim ' + claimId + ' status updated to ' + newStatus + '.');
+				popup._source && popup._source.closePopup && popup._source.closePopup();
+			} else {
+				alert('Unable to find claim to update. For production, perform updates via your API.');
+			}
+		}
+
+		// initial guidance popup (try to open first popup)
+		setTimeout(function(){
 			try {
 				var any = claimsGroup.getLayers()[0];
 				var inner = any && any.getLayers ? any.getLayers()[0] : any;
 				if (inner && inner.openPopup) inner.openPopup();
-			} catch (e) {}
-		}, 2500);
+			} catch(e){}
+		}, 1400);
 
-		console.log("🌳 FRA Atlas DSS MVP loaded successfully!");
-		console.log("📊 Multi-state monitoring: Odisha, MP, Tripura, Telangana");
-		console.log("🛰️ Real-time satellite analysis using Sentinel-2 data");
-		console.log("📋 Enhanced with reporting system and PDF export");
-		console.log("🚀 Ready for SIH 2025 presentation!");
+		// small helpers and console messages (no emojis)
+		console.log("FRA Atlas DSS loaded.");
+		console.log("Multi-state monitoring: Odisha, MP, Tripura, Telangana.");
+
+		// helper for status color used in earlier popups (when building strings)
+		function getStatusColor(status) {
+			const s = (status||'').toLowerCase();
+			if (s.includes('approved')) return '#27ae60';
+			if (s.includes('pending')) return '#f39c12';
+			if (s.includes('review')) return '#8e44ad';
+			if (s.includes('reject')) return '#c0392b';
+			return '#34495e';
+		}
 	</script>
 </body>
 </html>
