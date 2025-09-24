@@ -5,16 +5,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>VisionForge — FRA Atlas DSS</title>
 
-<!-- Keep external links unchanged -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 
-<!-- Marker cluster & heat -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
 
-<!-- Chart.js for officer charts -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <style>
@@ -28,6 +25,8 @@
     --input-bg-dark: rgba(255,255,255,0.03);
     --input-text-dark: #e6eef8;
     --btn-text-light: #ffffff;
+    --danger: #ef4444;
+    --success: #27ae60;
   }
 
   body[data-theme="light"]{
@@ -51,9 +50,7 @@
     overflow:hidden;
   }
 
-  /* Header */
-  .header{
-    display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;margin:14px;border-radius:12px;
+  .header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;margin:14px;border-radius:12px;
     background: linear-gradient(180deg, var(--glass-dark), rgba(255,255,255,0.01));
     backdrop-filter: blur(8px) saturate(120%);
     box-shadow: 0 8px 30px rgba(0,0,0,0.35);
@@ -62,23 +59,15 @@
   .brand{display:flex;align-items:center;gap:12px}
   .logo-mark{width:54px;height:54px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, rgba(16,185,129,0.08), rgba(255,255,255,0.02));border:1px solid rgba(0,0,0,0.06)}
   .logo-mark i{color:var(--accent-1);font-size:20px}
-  .title h1{
-    font-size:18px;margin-bottom:2px;background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
-    -webkit-background-clip: text; background-clip: text; color: transparent;font-weight:800;
-  }
+  .title h1{font-size:18px;margin-bottom:2px;background: linear-gradient(90deg, var(--accent-1), var(--accent-2));-webkit-background-clip: text; background-clip: text; color: transparent;font-weight:800;}
   .title p{font-size:12px;color:var(--muted);margin:0;max-width:360px}
 
   .header-controls{display:flex;align-items:center;gap:10px}
-  .btn{
-    padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;gap:8px;
-    background:linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
-    color:var(--btn-text-light);backdrop-filter: blur(4px);border:1px solid rgba(255,255,255,0.03);
-  }
+  .btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));color:var(--btn-text-light);backdrop-filter: blur(4px);border:1px solid rgba(255,255,255,0.03);}
   .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--input-text-dark)}
   .btn.ghost{background:transparent;border:1px dashed rgba(255,255,255,0.03)}
   .auth-controls{display:flex;gap:8px;align-items:center}
 
-  /* Layout */
   .main-container{display:flex;height:calc(100vh - 120px);margin:14px;gap:18px}
   #map{flex:1;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.02);position:relative}
   .dashboard{width:400px;padding:18px;border-radius:var(--card-radius);backdrop-filter:blur(8px);background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));border:1px solid rgba(255,255,255,0.02);box-shadow:0 20px 60px rgba(0,0,0,0.45);overflow:auto}
@@ -93,7 +82,6 @@
   .stat-number{font-size:20px;font-weight:800;color:var(--input-text-dark)}
   .stat-label{font-size:12px;color:var(--muted);margin-top:6px;text-transform:uppercase;letter-spacing:0.6px}
 
-  /* inputs */
   input[type="text"], input[type="email"], input[type="password"], textarea, select, .form-control, input[list], .range {
     background: var(--input-bg-dark);
     color: var(--input-text-dark);
@@ -114,22 +102,18 @@
 
   .leaflet-popup-content-wrapper{border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.3)}
 
-  /* compare */
   .compare-container{position:absolute;top:80px;right:40px;width:560px;height:360px;z-index:1400;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.06);background:rgba(0,0,0,0.5);backdrop-filter:blur(6px)}
   .compare-bottom, .compare-top{position:absolute;left:0;top:0;height:100%;width:100%;overflow:hidden}
   .compare-top{width:50%}
   .compare-bottom img, .compare-top img{width:100%;height:100%;object-fit:cover;display:block}
   .compare-divider{position:absolute;left:50%;top:0;height:100%;width:4px;margin-left:-2px;background:linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.6));cursor:ew-resize;box-shadow:0 4px 12px rgba(0,0,0,0.4)}
 
-  /* timeline */
   .timeline-controls{display:flex;gap:8px;align-items:center;margin-top:8px}
   .range{flex:1}
 
-  /* role actions */
   .role-actions{display:flex;gap:8px;margin-bottom:12px;align-items:center}
   .role-actions .btn{flex:1}
 
-  /* modal */
   .modal{display:none;position:fixed;z-index:1600;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.45);align-items:center;justify-content:center}
   .modal.open{display:flex}
   .modal-card{width:94%;max-width:720px;border-radius:14px;overflow:hidden;background:linear-gradient(180deg,#fff,#fafafa);color:#111;box-shadow:0 30px 70px rgba(0,0,0,0.5)}
@@ -139,7 +123,6 @@
   .form-control{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(0,0,0,0.08)}
   @media(max-width:900px){ .dashboard{ display:none } }
 
-  /* Officer modal extras */
   #officerModal .modal-card { max-width:1100px; width:95%; }
   #officerModal .kpi-row { display:flex; gap:12px; margin-bottom:12px; }
   #officerModal .kpi { flex:1; padding:12px; border-radius:10px; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.02); text-align:center }
@@ -195,7 +178,6 @@
         <p id="coverageInfo">Coverage: 4 States</p>
       </div>
 
-      <!-- role actions -->
       <div class="role-actions" id="roleActionsBox" style="display:none"></div>
 
       <div class="search-row">
@@ -238,7 +220,6 @@
 
       <div style="margin-top:12px">
         <div class="timeline-controls">
-          <!-- Single Play/Pause toggle -->
           <button id="playPauseBtn" class="btn" style="background:linear-gradient(135deg,#10b981,#06b6d4);color:var(--btn-text-light)">Play</button>
           <input id="timelineRange" class="range" type="range" min="0" max="4" step="1" value="0" />
           <select id="timelineSpeed" class="form-control" style="width:92px;">
@@ -268,20 +249,21 @@
   </aside>
 </div>
 
-<!-- Compare panel -->
 <div id="compareContainer" class="compare-container" style="display:none">
   <div class="compare-bottom"><img id="compareBefore" src="" alt="before"/></div>
   <div id="compareTop" class="compare-top"><img id="compareAfter" src="" alt="after"/></div>
   <div id="divider" class="compare-divider"></div>
 </div>
 
-<!-- Legend -->
 <div class="legend">
   <h4>Map Legend</h4>
   <div class="legend-item"><div class="legend-color" style="width:18px;height:18px;background-color:#ff7800;border-radius:4px;border:2px solid rgba(0,0,0,0.15)"></div><div>FRA Claim Boundary</div></div>
   <div class="legend-item"><div class="legend-color" style="width:18px;height:18px;background-color:#4CAF50;opacity:0.8;border-radius:4px;border:2px solid rgba(0,0,0,0.15)"></div><div>Healthy Vegetation (High NDVI)</div></div>
   <div class="legend-item"><div class="legend-color" style="width:18px;height:18px;background-color:#ff6b6b;opacity:0.8;border-radius:4px;border:2px solid rgba(0,0,0,0.15)"></div><div>Forest Loss (Low NDVI)</div></div>
 </div>
+
+<!-- Modals and officer / DSS content (kept same structure as earlier - includes officer modal, login, about, report) -->
+<!-- (For brevity the modals are identical to the prior full-file version — they are present and unchanged) -->
 
 <!-- Report Modal -->
 <div id="reportModal" class="modal" aria-hidden="true">
@@ -305,7 +287,7 @@
   </div>
 </div>
 
-<!-- Login modal -->
+<!-- Login -->
 <div id="loginModal" class="modal" aria-hidden="true">
   <div class="modal-card" style="max-width:820px">
     <div class="modal-header"><h3 style="margin:0">Sign in to VisionForge</h3><button class="close" id="closeLogin">&times;</button></div>
@@ -341,7 +323,7 @@
   </div>
 </div>
 
-<!-- About modal -->
+<!-- About -->
 <div id="aboutModal" class="modal" aria-hidden="true">
   <div class="modal-card">
     <div class="modal-header"><h3 style="margin:0">About VisionForge</h3><button class="close" id="closeAbout">&times;</button></div>
@@ -351,7 +333,7 @@
   </div>
 </div>
 
-<!-- Officer Dashboard modal (Review Queue, Archive, DSS) -->
+<!-- Officer dashboard (Review Queue, Archive, DSS) -->
 <div id="officerModal" class="modal" aria-hidden="true">
   <div class="modal-card" style="padding:14px;">
     <div class="modal-header">
@@ -437,30 +419,28 @@
   </div>
 </div>
 
-<!-- JS libs -->
+<!-- Libraries -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
 
 <script>
 /* ===========================
-   VisionForge: Full single-file app
-   - firebaseConfig intentionally null (you will add)
+   VisionForge - Combined final file
+   Firebase intentionally null for you to add later
    =========================== */
 const firebaseConfig = null;
 let useFirebase = false;
 if (firebaseConfig) {
-  try { /* firebase init here when provided */ useFirebase = true; } catch(e){ console.warn('Firebase init failed', e); }
+  try { /* firebase init when provided */ useFirebase = true; } catch(e){ console.warn('Firebase init failed', e); }
 }
 
 /* App state */
-let currentUser = null; // {username, role}
-const layerMap = new Map(); // id -> L.geoJSON layer
+let currentUser = null;
+const layerMap = new Map();
 let clusterGroup = null, heatmapLayer = null;
-let timelineTimer = null;
-let timelineIndex = 0;
-const ndviImages = [];
-const ndviOverlays = [];
+let timelineTimer = null, timelineIndex = 0;
+const ndviImages = [], ndviOverlays = [];
 
 /* DOM refs */
 const loginOpen = document.getElementById('loginOpen');
@@ -516,11 +496,11 @@ const tabOverview = document.getElementById('tabOverview');
 const tabArchive = document.getElementById('tabArchive');
 const tabDSS = document.getElementById('tabDSS');
 
-/* helper functions for modals */
+/* helpers */
 function showModal(node){ node.classList.add('open'); node.style.display='flex'; node.setAttribute('aria-hidden','false'); }
 function hideModal(node){ node.classList.remove('open'); node.style.display='none'; node.setAttribute('aria-hidden','true'); }
 
-/* Header wiring */
+/* header wiring */
 loginOpen.addEventListener('click', ()=> showModal(loginModal));
 closeLogin.addEventListener('click', ()=> hideModal(loginModal));
 aboutBtn.addEventListener('click', ()=> showModal(aboutModal));
@@ -533,17 +513,14 @@ themeToggle.addEventListener('click', ()=> {
   b.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
 });
 
-/* Map setup */
+/* Map */
 const map = L.map('map', { center:[20.2961,85.8245], zoom:12, zoomControl:true });
 L.control.zoom({ position:'topright' }).addTo(map);
-
 const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution:'&copy; OpenStreetMap', maxZoom:18 }).addTo(map);
 const positron = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution:'&copy; CARTO & OpenStreetMap', maxZoom:19 });
 L.control.layers({ "OpenStreetMap": osm, "Positron (Light)": positron }, {}, { position:'topright', collapsed:true }).addTo(map);
 
-/* -----------------------
-   Normalization helper
-   ----------------------- */
+/* normalize incoming feature to consistent props */
 function normalizeFeature(feat){
   const p = feat.properties || {};
   return {
@@ -571,7 +548,7 @@ function normalizeFeature(feat){
   };
 }
 
-/* Add feature to map + layerMap */
+/* add feature */
 function addFeature(feature){
   const layer = L.geoJSON(feature, {
     style: claimStyle,
@@ -582,14 +559,14 @@ function addFeature(feature){
   layer.addTo(map);
 }
 
-/* sample fallback feature (normalized) */
+/* fallback feature */
 const fallbackFeature = normalizeFeature({
-  "type":"Feature","properties":{"name":"CFR-2024-OD-101","village":"Khandagiri","district":"Khurda","area_hectares":245,"status":"Approved","claimant_families":127,"claim_id":"CFR-2024-OD-101","state":"Odisha","deforestation_detected":true,"doc_text":"","assets":{}},
-  "geometry":{"type":"Polygon","coordinates":[[[85.8100,20.3100],[85.8300,20.3100],[85.8300,20.2900],[85.8100,20.2900],[85.8100,20.3100]]]}
+  "type":"Feature","properties":{"name":"CFR-2024-OD-101","village":"Khandagiri","district":"Khurda","area_hectares":245,"status":"Approved","claimant_families":127,"claim_id":"CFR-2024-OD-101","state":"Odisha","deforestation_detected":true,"doc_text":"Patta: PATT-OD-12345 Village: Khandagiri Holder: Shri Ram","assets":{"land_use":"forest"}}
+  ,"geometry":{"type":"Polygon","coordinates":[[[85.8100,20.3100],[85.8300,20.3100],[85.8300,20.2900],[85.8100,20.2900],[85.8100,20.3100]]] }
 });
 addFeature(fallbackFeature);
 
-/* Popup & style */
+/* popup / style */
 function claimStyle(feature){
   const props = feature.properties||{};
   const s = (props.status||'').toLowerCase();
@@ -628,7 +605,7 @@ function buildPopup(feature){
 }
 
 /* -----------------------
-   NDVI demo images and overlays
+   NDVI images & timeline (high-res)
    ----------------------- */
 function createHighResNDVI(type, seed){
   const W = 1600, H = 1000;
@@ -662,8 +639,6 @@ ndviImages.forEach(img => {
   const o = L.imageOverlay(img, imageBounds, { opacity: Number(ndviOpacity.value) });
   ndviOverlays.push(o);
 });
-
-/* timeline helper */
 function setTimelineOverlay(idx){
   ndviOverlays.forEach(o => { if (map.hasLayer(o)) map.removeLayer(o); });
   if (ndviOverlays[idx]) ndviOverlays[idx].addTo(map);
@@ -672,7 +647,7 @@ function setTimelineOverlay(idx){
 }
 ndviOverlays.forEach(o => { if (map.hasLayer(o)) map.removeLayer(o); });
 
-/* play/pause toggle */
+/* Play/pause toggle */
 let playing = false;
 function startTimeline(){ const speed = Number(timelineSpeed.value) || 1200; if (timelineTimer) clearInterval(timelineTimer); timelineTimer = setInterval(()=>{ timelineIndex = (timelineIndex + 1) % ndviOverlays.length; setTimelineOverlay(timelineIndex); }, speed); playing = true; playPauseBtn.textContent = 'Pause'; playPauseBtn.style.background = 'linear-gradient(135deg,#ef4444,#dc2626)'; }
 function stopTimeline(){ if (timelineTimer) clearInterval(timelineTimer); timelineTimer = null; playing = false; playPauseBtn.textContent = 'Play'; playPauseBtn.style.background = 'linear-gradient(135deg,#10b981,#06b6d4)'; }
@@ -687,7 +662,7 @@ toggleTimelineOverlay.addEventListener('click', ()=> {
 });
 ndviOpacity.addEventListener('input', (e)=> { const v = Number(e.target.value); ndviOverlays.forEach(o => o.setOpacity(v)); });
 
-/* compare open/drag */
+/* Compare */
 compareOpen.addEventListener('click', ()=> {
   if (!compareContainer.style.display || compareContainer.style.display === 'none') {
     compareBefore.src = ndviImages[0];
@@ -712,9 +687,7 @@ document.addEventListener('mousemove', (e)=>{
   divider.style.left = pct + '%';
 });
 
-/* -----------------------
-   clustering & heat
-   ----------------------- */
+/* Clustering & heat */
 function rebuildClusterAndHeat(){
   const markers = L.markerClusterGroup();
   const heatPoints = [];
@@ -749,9 +722,7 @@ toggleHeatmapBtn.addEventListener('click', ()=> {
   toggleHeatmapBtn.textContent = heatShown ? 'Hide Heatmap' : 'Show Heatmap';
 });
 
-/* -----------------------
-   Popup actions (role-based)
-   ----------------------- */
+/* Popup actions (role-based) */
 map.on('popupopen', (e)=>{
   const popupEl = e.popup.getElement && e.popup.getElement();
   if (!popupEl) return;
@@ -762,8 +733,8 @@ map.on('popupopen', (e)=>{
   const reportBtn = document.createElement('button'); reportBtn.className='btn secondary'; reportBtn.textContent='Report'; reportBtn.onclick = ()=> showModal(reportModal);
   actionArea.appendChild(reportBtn);
   if (currentUser && currentUser.role === 'official') {
-    const approve = document.createElement('button'); approve.className='btn'; approve.style.background='linear-gradient(135deg,#2ecc71,#27ae60)'; approve.textContent='Approve';
-    const reject = document.createElement('button'); reject.className='btn'; reject.style.background='linear-gradient(135deg,#ef4444,#dc2626)'; reject.textContent='Reject';
+    const approve = document.createElement('button'); approve.className='btn'; approve.style.background=`linear-gradient(135deg,${getComputedStyle(document.documentElement).getPropertyValue('--success')||'#2ecc71'}, #27ae60)`; approve.textContent='Approve';
+    const reject = document.createElement('button'); reject.className='btn'; reject.style.background=`linear-gradient(135deg,${getComputedStyle(document.documentElement).getPropertyValue('--danger')||'#ef4444'}, #dc2626)`; reject.textContent='Reject';
     approve.onclick = ()=> updateClaimStatus(claimId, 'Approved', e.popup);
     reject.onclick = ()=> updateClaimStatus(claimId, 'Rejected', e.popup);
     actionArea.appendChild(approve); actionArea.appendChild(reject);
@@ -773,7 +744,7 @@ map.on('popupopen', (e)=>{
   }
 });
 
-/* update claim status locally and attempt persist (demo) */
+/* update status demo */
 async function updateClaimStatus(claimId, newStatus, popup){
   let found=false;
   layerMap.forEach((layer,id)=>{
@@ -788,10 +759,9 @@ async function updateClaimStatus(claimId, newStatus, popup){
   });
   try {
     if (useFirebase) {
-      // implement persistence when firebaseConfig is provided
+      // write to firestore
     } else {
-      fetch('/api/claims/update', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ claimId, status:newStatus }) })
-        .catch(()=>{/* ignore in demo */});
+      fetch('/api/claims/update', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ claimId, status:newStatus }) }).catch(()=>{});
     }
   } catch(e){ console.warn(e) }
   const allFeatures = [];
@@ -804,9 +774,7 @@ async function updateClaimStatus(claimId, newStatus, popup){
   else alert('Could not find claim locally (demo).');
 }
 
-/* -----------------------
-   Search, filters, saved filters
-   ----------------------- */
+/* Search + filters + saved */
 function rebuildAutocomplete(){
   const vals = new Set();
   layerMap.forEach((layer,id)=>{
@@ -823,7 +791,6 @@ function rebuildAutocomplete(){
     const opt = document.createElement('option'); opt.value = v; autoList.appendChild(opt);
   });
 }
-
 function applySearchFilter(){
   const q = (searchInput.value||'').trim().toLowerCase();
   const status = statusFilter.value;
@@ -840,7 +807,6 @@ function applySearchFilter(){
   });
   updateDashboardCounts(matched);
 }
-
 function loadSavedFilters(){
   const s = localStorage.getItem('vf_saved_filters');
   const arr = s ? JSON.parse(s) : [];
@@ -883,9 +849,7 @@ exportBtn.addEventListener('click', ()=> {
   alert('Exported visible claims.');
 });
 
-/* -----------------------
-   Load GeoJSON datasets (unchanged paths)
-   ----------------------- */
+/* Load datasets (unchanged paths) */
 (async function loadDatasets(){
   const files = [
     'assets/data/sample-claims.geojson',
@@ -927,12 +891,11 @@ exportBtn.addEventListener('click', ()=> {
     updateDashboardCounts(allFeatures);
   }
   loadSavedFilters();
-  // build officer dashboard initial data if open later
   setTimeout(()=> { buildOfficerDashboard(); populateArchiveList(); }, 600);
 })();
 
 /* -----------------------
-   Dashboard (Officer) code
+   Officer dashboard / archive logic
    ----------------------- */
 let statusChart=null, stateChart=null;
 function buildOfficerDashboard() {
@@ -964,7 +927,6 @@ function buildOfficerDashboard() {
   document.getElementById('kpiFamilies').textContent = families;
   document.getElementById('kpiArea').textContent = Math.round(area);
 
-  // status pie
   const statusLabels = Object.keys(statusCounts);
   const statusData = statusLabels.map(l => statusCounts[l]);
   const pieCtx = document.getElementById('statusPie').getContext('2d');
@@ -975,7 +937,6 @@ function buildOfficerDashboard() {
     options:{ plugins:{ legend:{ position:'bottom' } } }
   });
 
-  // state bar
   const stateEntries = Object.entries(stateCounts).sort((a,b)=>b[1]-a[1]).slice(0,10);
   const stateLabels = stateEntries.map(e=>e[0]);
   const stateData = stateEntries.map(e=>e[1]);
@@ -987,7 +948,6 @@ function buildOfficerDashboard() {
     options:{ indexAxis:'y', plugins:{ legend:{ display:false } }, scales:{ x:{ beginAtZero:true } } }
   });
 
-  // populate table
   const tbody = document.querySelector('#claimsTable tbody');
   tbody.innerHTML = '';
   const rows = features.map(f => {
@@ -1062,7 +1022,6 @@ function buildOfficerDashboard() {
     map.fitBounds(union, { padding:[50,50] });
   };
 }
-
 function filterOfficerTable(){
   const q = (document.getElementById('officerSearch').value||'').toLowerCase();
   const status = document.getElementById('officerStatusFilter').value;
@@ -1075,9 +1034,7 @@ function filterOfficerTable(){
   });
 }
 
-/* -----------------------
-   Archive (simple NER/OCR demo)
-   ----------------------- */
+/* Archive / simple NER */
 function simpleNER(text){
   const out = { village:null, patta:null, person:null, coords:null, dates:[] };
   try {
@@ -1149,26 +1106,157 @@ function populateArchiveList(){
 }
 
 /* -----------------------
-   DSS: Enhanced rule-based implementation
-   - explainability, weights UI, local persistence, assignment
+   DSS with sentiment ("question the emotion")
    ----------------------- */
-
-/* small util */
 function safeNum(x){ const n = Number(x); return Number.isFinite(n) ? n : 0; }
 function nowISO(){ return (new Date()).toISOString(); }
 
-/* default DSS tunable weights (can be extended later) */
 const dssWeightsKey = 'vf_dss_weights_v1';
 const defaultWeights = {
-  pmkisan: { fam_weight: 3, area_weight: 2, deforestation_penalty: -20, land_use_bonus: 25 },
-  jaljeevan: { water_absence_bonus: 60, ndvi_dry_bonus: 20, gw_index_weight: 10 },
-  mgnrega: { degradation_bonus: 30, families_weight: 1.5, area_weight: 0.5 },
-  dajgua: { tribal_bonus: 60, coverage_penalty: -20, families_weight: 1 }
+  pmkisan: { fam_weight: 3, area_weight: 2, deforestation_penalty: -20, land_use_bonus: 25, sentiment_bonus: 10 },
+  jaljeevan: { water_absence_bonus: 60, ndvi_dry_bonus: 20, gw_index_weight: 10, sentiment_bonus: 6 },
+  mgnrega: { degradation_bonus: 30, families_weight: 1.5, area_weight: 0.5, sentiment_bonus: 5 },
+  dajgua: { tribal_bonus: 60, coverage_penalty: -20, families_weight: 1, sentiment_bonus: 8 }
 };
 function loadDssWeights(){ try{ const s=localStorage.getItem(dssWeightsKey); return s?JSON.parse(s):defaultWeights; }catch(e){ return defaultWeights; } }
 function saveDssWeights(w){ localStorage.setItem(dssWeightsKey, JSON.stringify(w)); }
 
-/* Render a small weights UI inside DSS tab for quick tuning */
+/* very simple sentiment check (demo): returns -1..+1 */
+function simpleSentiment(text){
+  if (!text) return 0;
+  const negative = ['angry','frustrated','urgent','urgent!','please help','violence','loss','destroy','destroyed','stolen','illegal','threat'];
+  const positive = ['thank','grateful','resolved','fixed','received','thank you','helped'];
+  const t = text.toLowerCase();
+  let score = 0;
+  negative.forEach(w => { if (t.includes(w)) score -= 1; });
+  positive.forEach(w => { if (t.includes(w)) score += 1; });
+  // length and exclamation mark increase intensity
+  if (t.includes('!!!') || t.includes('!!')) score *= 1.5;
+  // normalize to -1..1
+  if (score > 0) return Math.min(1, score / 3);
+  if (score < 0) return Math.max(-1, score / 3);
+  return 0;
+}
+
+/* compute explainable DSS including sentiment factor */
+function computeDSSScoreWithExplain(feat, scheme){
+  const p = feat.properties || {};
+  const w = loadDssWeights();
+  const schemeWeights = w[scheme] || {};
+  const factors = [];
+  let raw = 0;
+
+  const families = safeNum(p.claimant_families || p.claimants || 0);
+  const area = safeNum(p.area_hectares || p.area || 0);
+  const deforest = !!p.deforestation_detected;
+  const ndvi = (p.ndvi !== null && p.ndvi !== undefined) ? safeNum(p.ndvi) : null;
+  const tribal = (p.tribal === true) || (p.community && p.community.toLowerCase && p.community.toLowerCase().includes('tribal'));
+  const assets = p.assets || {};
+  const sentiment = simpleSentiment((p.doc_text||'') + ' ' + (p.report_text||''));
+  // include sentiment factor (positive = satisfied, negative = urgent/distress)
+  const sentimentScore = Math.round(sentiment * 10);
+
+  if (scheme === 'pmkisan'){
+    const famScore = Math.min(50, families * (schemeWeights.fam_weight || 3));
+    factors.push({label:'Families factor', value: Math.round(famScore)}); raw += famScore;
+
+    const areaScore = Math.min(30, area * (schemeWeights.area_weight || 2));
+    factors.push({label:'Area factor', value: Math.round(areaScore)}); raw += areaScore;
+
+    const landUseBonus = (assets.land_use && assets.land_use === 'agriculture') ? (schemeWeights.land_use_bonus || 25) : 0;
+    if (landUseBonus) factors.push({label:'Agricultural land bonus', value: Math.round(landUseBonus)}); raw += landUseBonus;
+
+    const defPenalty = deforest ? (schemeWeights.deforestation_penalty || -20) : 0;
+    if (defPenalty) factors.push({label:'Deforestation penalty', value: Math.round(defPenalty)}); raw += defPenalty;
+
+    // sentiment: negative -> increase priority
+    const sentBonus = (sentiment < 0) ? Math.round(Math.abs(sentiment) * (schemeWeights.sentiment_bonus||10)) : 0;
+    if (sentBonus) factors.push({label:'Citizen urgency (sentiment) bonus', value: sentBonus}); raw += sentBonus;
+
+    raw += (String(p.claim_id||'').split('').reduce((s,ch)=>s+ch.charCodeAt(0),0) % 7);
+  }
+
+  else if (scheme === 'jaljeevan'){
+    const waterBodies = safeNum(assets.water_bodies || 0);
+    const waterBonus = (waterBodies === 0) ? (schemeWeights.water_absence_bonus || 60) : 0;
+    if (waterBonus) factors.push({label:'No water bodies bonus', value:waterBonus}); raw += waterBonus;
+
+    if (ndvi !== null) {
+      const ndviDry = ndvi < 0.25 ? (schemeWeights.ndvi_dry_bonus || 20) : 0;
+      if (ndviDry) factors.push({label:'Low NDVI (dry) bonus', value:ndviDry}); raw += ndviDry;
+    }
+
+    const gwIndex = safeNum(p.gw_index || 0);
+    const gwScore = (1 - gwIndex) * (schemeWeights.gw_index_weight || 10);
+    factors.push({label:'Groundwater shortage factor', value: Math.round(gwScore)}); raw += gwScore;
+
+    const sentBonus = (sentiment < 0) ? Math.round(Math.abs(sentiment) * (schemeWeights.sentiment_bonus||6)) : 0;
+    if (sentBonus) factors.push({label:'Citizen urgency (sentiment) bonus', value: sentBonus}); raw += sentBonus;
+
+    raw += Math.min(10, families * 0.5);
+  }
+
+  else if (scheme === 'mgnrega'){
+    const degr = deforest ? (schemeWeights.degradation_bonus || 30) : 0;
+    if (degr) factors.push({label:'Degradation bonus', value:degr}); raw += degr;
+
+    const famFactor = Math.min(40, families * (schemeWeights.families_weight || 1.5));
+    factors.push({label:'Families factor', value: Math.round(famFactor)}); raw += famFactor;
+
+    const areaFactor = Math.min(20, area * (schemeWeights.area_weight || 0.5));
+    factors.push({label:'Large-area factor', value: Math.round(areaFactor)}); raw += areaFactor;
+
+    const sentBonus = (sentiment < 0) ? Math.round(Math.abs(sentiment) * (schemeWeights.sentiment_bonus||5)) : 0;
+    if (sentBonus) factors.push({label:'Citizen urgency (sentiment) bonus', value: sentBonus}); raw += sentBonus;
+  }
+
+  else if (scheme === 'dajgua'){
+    const tribalBonus = tribal ? (schemeWeights.tribal_bonus || 60) : 0;
+    if (tribalBonus) factors.push({label:'Tribal community bonus', value: tribalBonus}); raw += tribalBonus;
+
+    const coveragePenalty = p.other_scheme_coverage ? (schemeWeights.coverage_penalty || -20) : 0;
+    if (coveragePenalty) factors.push({label:'Other scheme coverage penalty', value: coveragePenalty}); raw += coveragePenalty;
+
+    const sentBonus = (sentiment < 0) ? Math.round(Math.abs(sentiment) * (schemeWeights.sentiment_bonus||8)) : 0;
+    if (sentBonus) factors.push({label:'Citizen urgency (sentiment) bonus', value: sentBonus}); raw += sentBonus;
+
+    raw += Math.min(20, families * (schemeWeights.families_weight || 1));
+  }
+
+  else {
+    raw = Math.min(80, families * 3 + (ndvi !== null ? (1 - ndvi) * 30 : 0) + (deforest ? 20 : 0));
+    factors.push({label:'Fallback raw', value: Math.round(raw)});
+  }
+
+  // include the sentiment factor for explainability always
+  factors.push({label:'Sentiment (raw -1..1)', value: Math.round(sentiment * 100)/100});
+
+  const score = Math.max(0, Math.min(100, Math.round(raw)));
+  return { score, factors, raw: Math.round(raw) };
+}
+
+/* Run DSS */
+function runDSS_v2(scheme){
+  const results = [];
+  layerMap.forEach(layer => {
+    const inner = layer.getLayers ? layer.getLayers()[0] : layer;
+    if (!inner || !inner.feature) return;
+    const feat = inner.feature;
+    if (!scheme || scheme === 'all') {
+      const schemes = ['pmkisan','jaljeevan','mgnrega','dajgua'];
+      const per = {};
+      schemes.forEach(s => { per[s] = computeDSSScoreWithExplain(feat, s); });
+      results.push({ claim_id: feat.properties.claim_id, village: feat.properties.village, state: feat.properties.state, per });
+    } else {
+      const out = computeDSSScoreWithExplain(feat, scheme);
+      results.push({ claim_id: feat.properties.claim_id, village: feat.properties.village, state: feat.properties.state, score: out.score, factors: out.factors });
+    }
+  });
+  if (scheme && scheme !== 'all') results.sort((a,b)=> (b.score||0)-(a.score||0));
+  return results;
+}
+
+/* DSS UI: weights UI, render results, export, assign */
 function ensureWeightsUI(){
   if (document.getElementById('dssWeightsBox')) return;
   const container = document.getElementById('tabContentDSS');
@@ -1177,7 +1265,7 @@ function ensureWeightsUI(){
   box.innerHTML = `
     <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
       <div style="font-weight:700">DSS Weights</div>
-      <div style="color:var(--muted);font-size:13px">Adjust simple influence multipliers (saved locally)</div>
+      <div style="color:var(--muted);font-size:13px">Adjust influence multipliers (saved locally)</div>
       <button id="resetDssWeights" class="btn secondary" style="margin-left:auto">Reset</button>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap" id="dssWeightsControls"></div>
@@ -1187,7 +1275,6 @@ function ensureWeightsUI(){
   const weights = loadDssWeights();
   const controls = box.querySelector('#dssWeightsControls');
 
-  // Build a few sliders (for each scheme a couple of knobs)
   Object.keys(weights).forEach(scheme=>{
     const cfg = weights[scheme];
     const panel = document.createElement('div');
@@ -1226,119 +1313,6 @@ function ensureWeightsUI(){
   });
 }
 
-/* compute scoring with explainability: returns {score, factors: [{label, value}], raw} */
-function computeDSSScoreWithExplain(feat, scheme){
-  const p = feat.properties || {};
-  const w = loadDssWeights();
-  const schemeWeights = w[scheme] || {};
-  const factors = [];
-  let raw = 0;
-
-  // common features
-  const families = safeNum(p.claimant_families || p.claimants || 0);
-  const area = safeNum(p.area_hectares || p.area || 0);
-  const deforest = !!p.deforestation_detected;
-  const ndvi = (p.ndvi !== null && p.ndvi !== undefined) ? safeNum(p.ndvi) : null;
-  const tribal = (p.tribal === true) || (p.community && p.community.toLowerCase && p.community.toLowerCase().includes('tribal'));
-  const assets = p.assets || {};
-
-  if (scheme === 'pmkisan'){
-    const famScore = Math.min(50, families * (schemeWeights.fam_weight || 3));
-    factors.push({label:'Families factor', value: Math.round(famScore)});
-    raw += famScore;
-
-    const areaScore = Math.min(30, area * (schemeWeights.area_weight || 2));
-    factors.push({label:'Area factor', value: Math.round(areaScore)});
-    raw += areaScore;
-
-    const landUseBonus = (assets.land_use && assets.land_use === 'agriculture') ? (schemeWeights.land_use_bonus || 25) : 0;
-    if (landUseBonus) factors.push({label:'Agricultural land bonus', value: Math.round(landUseBonus)});
-    raw += landUseBonus;
-
-    const defPenalty = deforest ? (schemeWeights.deforestation_penalty || -20) : 0;
-    if (defPenalty) factors.push({label:'Deforestation penalty', value: Math.round(defPenalty)});
-    raw += defPenalty;
-
-    raw += (String(p.claim_id||'').split('').reduce((s,ch)=>s+ch.charCodeAt(0),0) % 7);
-  }
-
-  else if (scheme === 'jaljeevan'){
-    const waterBodies = safeNum(assets.water_bodies || 0);
-    const waterBonus = (waterBodies === 0) ? (schemeWeights.water_absence_bonus || 60) : 0;
-    if (waterBonus) factors.push({label:'No water bodies bonus', value:waterBonus});
-    raw += waterBonus;
-
-    if (ndvi !== null) {
-      const ndviDry = ndvi < 0.25 ? (schemeWeights.ndvi_dry_bonus || 20) : 0;
-      if (ndviDry) factors.push({label:'Low NDVI (dry) bonus', value:ndviDry});
-      raw += ndviDry;
-    }
-
-    const gwIndex = safeNum(p.gw_index || 0);
-    const gwScore = (1 - gwIndex) * (schemeWeights.gw_index_weight || 10);
-    factors.push({label:'Groundwater shortage factor', value: Math.round(gwScore)});
-    raw += gwScore;
-
-    raw += Math.min(10, families * 0.5);
-  }
-
-  else if (scheme === 'mgnrega'){
-    const degr = deforest ? (schemeWeights.degradation_bonus || 30) : 0;
-    if (degr) factors.push({label:'Degradation bonus', value:degr});
-    raw += degr;
-
-    const famFactor = Math.min(40, families * (schemeWeights.families_weight || 1.5));
-    factors.push({label:'Families factor', value: Math.round(famFactor)});
-    raw += famFactor;
-
-    const areaFactor = Math.min(20, area * (schemeWeights.area_weight || 0.5));
-    factors.push({label:'Large-area factor', value: Math.round(areaFactor)});
-    raw += areaFactor;
-  }
-
-  else if (scheme === 'dajgua'){
-    const tribalBonus = tribal ? (schemeWeights.tribal_bonus || 60) : 0;
-    if (tribalBonus) factors.push({label:'Tribal community bonus', value: tribalBonus});
-    raw += tribalBonus;
-
-    const coveragePenalty = p.other_scheme_coverage ? (schemeWeights.coverage_penalty || -20) : 0;
-    if (coveragePenalty) factors.push({label:'Other scheme coverage penalty', value: coveragePenalty});
-    raw += coveragePenalty;
-
-    raw += Math.min(20, families * (schemeWeights.families_weight || 1));
-  }
-
-  else {
-    raw = Math.min(80, families * 3 + (ndvi !== null ? (1 - ndvi) * 30 : 0) + (deforest ? 20 : 0));
-    factors.push({label:'Fallback raw', value: Math.round(raw)});
-  }
-
-  const score = Math.max(0, Math.min(100, Math.round(raw)));
-  return { score, factors, raw: Math.round(raw) };
-}
-
-/* Run DSS across all loaded features. scheme='' means multi (all) */
-function runDSS_v2(scheme){
-  const results = [];
-  layerMap.forEach(layer => {
-    const inner = layer.getLayers ? layer.getLayers()[0] : layer;
-    if (!inner || !inner.feature) return;
-    const feat = inner.feature;
-    if (!scheme || scheme === 'all') {
-      const schemes = ['pmkisan','jaljeevan','mgnrega','dajgua'];
-      const per = {};
-      schemes.forEach(s => { per[s] = computeDSSScoreWithExplain(feat, s); });
-      results.push({ claim_id: feat.properties.claim_id, village: feat.properties.village, state: feat.properties.state, per });
-    } else {
-      const out = computeDSSScoreWithExplain(feat, scheme);
-      results.push({ claim_id: feat.properties.claim_id, village: feat.properties.village, state: feat.properties.state, score: out.score, factors: out.factors });
-    }
-  });
-  if (scheme && scheme !== 'all') results.sort((a,b)=> (b.score||0)-(a.score||0));
-  return results;
-}
-
-/* Render DSS results into #dssResults */
 function renderDSSResults(results, scheme){
   const container = document.getElementById('dssResults');
   container.innerHTML = '';
@@ -1354,7 +1328,7 @@ function renderDSSResults(results, scheme){
         </div>
         <div style="margin-top:6px;color:var(--muted);font-size:13px">Status: ${ ( (layerMap.get(r.claim_id) && layerMap.get(r.claim_id).getLayers ) ? (layerMap.get(r.claim_id).getLayers()[0].feature.properties.status) : '—') }</div>
         <div style="margin-top:8px" class="dss-actions"></div>
-        <details style="margin-top:8px"><summary style="cursor:pointer">Score breakdown</summary>
+        <details style="margin-top:8px"><summary style="cursor:pointer">Score breakdown & explainability</summary>
           <div style="margin-top:8px">${ r.factors.map(f=>`<div style="display:flex;justify-content:space-between;padding:4px 0"><div>${f.label}</div><div>${f.value}</div></div>`).join('') }</div>
         </details>
       `;
@@ -1422,7 +1396,6 @@ function renderDSSResults(results, scheme){
   saveRun.addEventListener('click', ()=> saveDSSRun(results, scheme));
 }
 
-/* Export CSV for DSS results */
 function exportDSSCSV(results, scheme){
   const singleScheme = !!scheme && scheme !== 'all' && scheme !== '';
   const rows = [];
@@ -1441,10 +1414,9 @@ function exportDSSCSV(results, scheme){
   const csv = rows.map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob = new Blob([csv], { type:'text/csv' });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href=url; a.download = `dss_results_${(scheme||'multi')}_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); a.remove(); window.URL.revokeObjectURL(url);
+  const a = document.createElement('a'); a.href=url; a.download = `dss_results_${(scheme||'multi')}_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
 }
 
-/* Persist DSS run metadata (audit) */
 function saveDSSRun(results, scheme){
   try {
     const key = 'vf_dss_runs';
@@ -1456,7 +1428,6 @@ function saveDSSRun(results, scheme){
   } catch(e){ console.warn(e); alert('Could not save DSS run: ' + e.message); }
 }
 
-/* Assign verification */
 function assignVerification(claimId, scheme, score, factors){
   const key = 'vf_dss_assignments';
   const store = JSON.parse(localStorage.getItem(key) || '{}');
@@ -1479,7 +1450,7 @@ function assignVerification(claimId, scheme, score, factors){
   localStorage.setItem(auditsKey, JSON.stringify(audits.slice(0,500)));
 }
 
-/* Wire the Run button */
+/* Wire run button */
 document.getElementById('runDss').addEventListener('click', ()=>{
   const scheme = document.getElementById('dssSchemeSelect').value || '';
   ensureWeightsUI();
@@ -1487,8 +1458,6 @@ document.getElementById('runDss').addEventListener('click', ()=>{
   renderDSSResults(results, (scheme === 'all' ? '' : scheme));
   saveDSSRun(results, (scheme === 'all' ? '' : scheme));
 });
-
-/* Export assignments */
 document.getElementById('exportDssAssignments').addEventListener('click', ()=> {
   const key = 'vf_dss_assignments';
   const store = JSON.parse(localStorage.getItem(key) || '{}');
@@ -1500,15 +1469,11 @@ document.getElementById('exportDssAssignments').addEventListener('click', ()=> {
   const a = document.createElement('a'); a.href=url; a.download = `dss_assignments_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
 });
 
-/* -----------------------
-   Officer modal tabs + wiring
-   ----------------------- */
+/* Officer tabs */
 function showOfficer(){ officerModal.classList.add('open'); officerModal.style.display='flex'; officerModal.setAttribute('aria-hidden','false'); }
 function hideOfficer(){ officerModal.classList.remove('open'); officerModal.style.display='none'; officerModal.setAttribute('aria-hidden','true'); }
-
 closeOfficer.addEventListener('click', ()=> hideOfficer());
 closeOfficerFooter.addEventListener('click', ()=> hideOfficer());
-
 function showTab(name){
   document.getElementById('tabContentOverview').style.display = name==='Overview' ? '' : 'none';
   document.getElementById('tabContentArchive').style.display = name==='Archive' ? '' : 'none';
@@ -1518,22 +1483,7 @@ tabOverview.addEventListener('click', ()=> { showTab('Overview'); buildOfficerDa
 tabArchive.addEventListener('click', ()=> { showTab('Archive'); populateArchiveList(); });
 tabDSS.addEventListener('click', ()=> { showTab('DSS'); setTimeout(()=> ensureWeightsUI(), 80); });
 
-/* Wire Review Queue button once roleActionsBox is populated */
-function wireReviewButton(){
-  const btns = roleActionsBox.querySelectorAll('button');
-  btns.forEach(b => {
-    if (b.textContent && b.textContent.trim() === 'Review Queue') {
-      b.onclick = (e)=> { buildOfficerDashboard(); showOfficer(); };
-    }
-  });
-}
-const obs = new MutationObserver(wireReviewButton);
-obs.observe(roleActionsBox, { childList:true, subtree:true });
-setTimeout(wireReviewButton, 400);
-
-/* -----------------------
-   Login, role UI, citizen actions
-   ----------------------- */
+/* Role actions wiring (populate after login) */
 function refreshUserUI(){
   if (!currentUser) {
     userPanel.style.display = 'none';
@@ -1568,7 +1518,7 @@ function citizenRaise(){
   const lat = 20.2961 + (Math.random()-0.5)*0.02;
   const lng = 85.8245 + (Math.random()-0.5)*0.02;
   const poly = turfPointToPolygon(lat, lng, 0.004);
-  const feat = { type:'Feature', properties:{ claim_id:newId, name:title, village, district:'Unknown', state:'Unknown', status:'Pending', claimant_families:1, area_hectares:0 }, geometry:{ type:'Polygon', coordinates: [poly] } };
+  const feat = { type:'Feature', properties:{ claim_id:newId, name:title, village, district:'Unknown', state:'Unknown', status:'Pending', claimant_families:1, area_hectares:0, doc_text:'', report_text: '' }, geometry:{ type:'Polygon', coordinates: [poly] } };
   addFeature(normalizeFeature(feat));
   rebuildClusterAndHeat(); rebuildAutocomplete();
   alert('Claim raised (demo). ID: ' + newId);
@@ -1585,8 +1535,6 @@ function citizenTrack(){
   });
   if (!found) alert('Claim not found in current dataset.');
 }
-
-/* small polygon helper */
 function turfPointToPolygon(lat, lng, r) {
   const radius = r || 0.002;
   return [
@@ -1598,7 +1546,7 @@ function turfPointToPolygon(lat, lng, r) {
   ];
 }
 
-/* Login handlers (demo) */
+/* login handlers */
 loginForm.addEventListener('submit', (e)=> {
   e.preventDefault();
   const role = roleSelect.value;
@@ -1612,17 +1560,10 @@ loginDemo.addEventListener('click', ()=> {
   currentUser = { username: role + '.demo@example.com', role };
   hideModal(loginModal); refreshUserUI();
 });
+logoutBtn.addEventListener('click', ()=> { currentUser = null; refreshUserUI(); });
 
-/* logout */
-logoutBtn.addEventListener('click', ()=> {
-  currentUser = null;
-  refreshUserUI();
-});
-
-/* initial state */
+/* initial state and dashboard */
 refreshUserUI();
-
-/* Build officer dashboard & archive on load once features are present */
 function updateDashboardCounts(features){
   const counts = { approved: 0, pending: 0, review: 0, rejected: 0 };
   const states = new Set();
@@ -1643,14 +1584,14 @@ function updateDashboardCounts(features){
   document.getElementById('coverageInfo').textContent = `Coverage: ${states.size} States | ${features.length} Active Claims`;
 }
 
-/* small initial build (if features loaded) */
+/* populate initial counts after small delay */
 setTimeout(()=> {
   const allFeatures = [];
   layerMap.forEach(l => { const inner = l.getLayers ? l.getLayers()[0] : l; if (inner && inner.feature) allFeatures.push(inner.feature); });
   if (allFeatures.length) { updateDashboardCounts(allFeatures); buildOfficerDashboard(); populateArchiveList(); rebuildAutocomplete(); }
 }, 1000);
 
-console.log('VisionForge full single-file UI loaded with DSS implemented.');
+console.log('VisionForge final build with DSS + sentiment integrated loaded.');
 </script>
 </body>
 </html>
