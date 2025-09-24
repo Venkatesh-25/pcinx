@@ -1,8 +1,3 @@
-"""
-Analytics API Routes
-Advanced analytics and reporting endpoints
-"""
-
 from flask import Blueprint, request, jsonify, send_file
 from flask_restful import Api, Resource
 from app import db
@@ -21,23 +16,21 @@ class DashboardStatsAPI(Resource):
     
     def get(self):
         try:
-            # Time period
+
             days = request.args.get('days', 30, type=int)
             cutoff_date = datetime.utcnow() - timedelta(days=days)
             
-            # Claim statistics
+
             total_claims = FRAClaim.query.count()
             approved_claims = FRAClaim.query.filter_by(status='Approved').count()
             pending_claims = FRAClaim.query.filter_by(status='Pending').count()
             under_review = FRAClaim.query.filter_by(status='Under Review').count()
             rejected_claims = FRAClaim.query.filter_by(status='Rejected').count()
             
-            # Recent claims
             recent_claims = FRAClaim.query.filter(
                 FRAClaim.created_at >= cutoff_date
             ).count()
             
-            # Area and family statistics
             total_area = db.session.query(func.sum(FRAClaim.area_hectares)).scalar() or 0
             approved_area = db.session.query(func.sum(FRAClaim.area_hectares)).filter_by(
                 status='Approved'
@@ -48,7 +41,6 @@ class DashboardStatsAPI(Resource):
                 status='Approved'
             ).scalar() or 0
             
-            # Alert statistics
             active_alerts = Alert.query.filter_by(status='active').count()
             critical_alerts = Alert.query.filter(
                 Alert.status == 'active',
@@ -59,11 +51,9 @@ class DashboardStatsAPI(Resource):
                 Alert.detected_at >= cutoff_date
             ).count()
             
-            # Monitoring coverage
             monitored_claims = db.session.query(FRAClaim.id).join(MonitoringData).distinct().count()
             monitoring_coverage = (monitored_claims / total_claims * 100) if total_claims > 0 else 0
             
-            # Recent NDVI trends
             recent_monitoring = db.session.query(
                 func.avg(MonitoringData.ndvi_mean).label('avg_ndvi')
             ).filter(
@@ -71,9 +61,8 @@ class DashboardStatsAPI(Resource):
                 MonitoringData.ndvi_mean.isnot(None)
             ).scalar()
             
-            # System health indicators
             system_health = {
-                'data_freshness': 'good',  # Based on last monitoring data
+                'data_freshness': 'good',  
                 'alert_response_time': '< 2 hours',
                 'api_status': 'operational',
                 'database_status': 'healthy'
@@ -121,7 +110,6 @@ class PerformanceMetricsAPI(Resource):
     
     def get(self):
         try:
-            # Processing time analysis
             processing_times = db.session.query(
                 FRAClaim.application_date,
                 FRAClaim.approval_date,
@@ -130,7 +118,6 @@ class PerformanceMetricsAPI(Resource):
                 FRAClaim.approval_date.isnot(None)
             ).all()
             
-            # Calculate average processing times
             processing_days = []
             for app_date, approval_date, status in processing_times:
                 if app_date and approval_date:
@@ -139,12 +126,10 @@ class PerformanceMetricsAPI(Resource):
             
             avg_processing_time = sum(processing_days) / len(processing_days) if processing_days else 0
             
-            # SLA compliance (assume 90 days SLA)
             sla_threshold = 90
             within_sla = len([d for d in processing_days if d <= sla_threshold])
             sla_compliance = (within_sla / len(processing_days) * 100) if processing_days else 0
             
-            # Monthly approval trends
             monthly_approvals = db.session.query(
                 extract('year', FRAClaim.approval_date).label('year'),
                 extract('month', FRAClaim.approval_date).label('month'),
@@ -154,7 +139,6 @@ class PerformanceMetricsAPI(Resource):
                 FRAClaim.approval_date.isnot(None)
             ).group_by('year', 'month').order_by('year', 'month').all()
             
-            # State-wise performance
             state_performance = db.session.query(
                 FRAClaim.state,
                 func.count(FRAClaim.id).label('total'),
@@ -206,12 +190,11 @@ class ExportReportAPI(Resource):
     
     def get(self):
         try:
-            format_type = request.args.get('format', 'json')  # json, csv
+            format_type = request.args.get('format', 'json')  
             
             if format_type not in ['json', 'csv']:
                 return {'error': 'Invalid format. Use json or csv'}, 400
             
-            # Generate comprehensive report data
             claims_data = db.session.query(
                 FRAClaim.claim_id,
                 FRAClaim.village_name,
@@ -224,7 +207,6 @@ class ExportReportAPI(Resource):
                 FRAClaim.approval_date
             ).all()
             
-            # Latest monitoring data for each claim
             latest_monitoring = db.session.query(
                 FRAClaim.claim_id,
                 MonitoringData.ndvi_mean,
@@ -234,7 +216,6 @@ class ExportReportAPI(Resource):
                 desc(MonitoringData.observation_date)
             ).distinct(FRAClaim.claim_id).all()
             
-            # Active alerts
             active_alerts = db.session.query(
                 FRAClaim.claim_id,
                 Alert.alert_type,
@@ -242,7 +223,6 @@ class ExportReportAPI(Resource):
                 Alert.detected_at
             ).join(Alert).filter(Alert.status == 'active').all()
             
-            # Combine data
             report_data = []
             monitoring_dict = {claim_id: (ndvi, date) for claim_id, ndvi, date in latest_monitoring}
             alerts_dict = {}
@@ -287,11 +267,9 @@ class ExportReportAPI(Resource):
                 }, 200
             
             elif format_type == 'csv':
-                # Create CSV in memory
                 output = io.StringIO()
                 writer = csv.writer(output)
                 
-                # CSV headers
                 headers = [
                     'claim_id', 'village_name', 'district', 'state', 
                     'area_hectares', 'status', 'claimant_families',
@@ -300,7 +278,6 @@ class ExportReportAPI(Resource):
                 ]
                 writer.writerow(headers)
                 
-                # CSV data
                 for row in report_data:
                     writer.writerow([
                         row['claim_id'], row['village_name'], row['district'],
@@ -321,7 +298,6 @@ class ExportReportAPI(Resource):
         except Exception as e:
             return {'error': str(e)}, 500
 
-# Register API resources
 api.add_resource(DashboardStatsAPI, '/dashboard')
 api.add_resource(PerformanceMetricsAPI, '/performance')
 api.add_resource(ExportReportAPI, '/export')
